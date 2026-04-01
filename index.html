@@ -605,6 +605,22 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <div class="empty-sub">כשהמועצה תשלח עדכונים בתחומים שבחרת — הם יופיעו כאן</div>
       </div>
     </div>
+
+    <!-- הפניות שלי בבית -->
+    <div id="home-tickets-section" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 18px 6px">
+        <div class="section-title" style="padding:0">הפניות שלי</div>
+        <button onclick="showPage('history')" style="background:none;border:none;color:var(--gold);font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הכל ←</button>
+      </div>
+      <div id="home-tickets-list"></div>
+    </div>
+
+    <!-- לחצן מצוקה -->
+    <div style="padding:8px 14px 4px">
+      <button onclick="triggerSOS()" style="width:100%;background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white;border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 16px rgba(220,38,38,.3)">
+        🆘 לחצן מצוקה / קריאה לעזרה
+      </button>
+    </div>
   </div>
 
   <!-- REPORT -->
@@ -620,22 +636,36 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     <div class="fs">
       <div class="flbl">קטגוריה</div>
       <div class="cgrid" id="catgrid">
-        <button class="cchip" onclick="selCat(this,'הנדסה')">הנדסה</button>
-        <button class="cchip" onclick="selCat(this,'תברואה')">תברואה</button>
-        <button class="cchip" onclick="selCat(this,'תשתיות')">תשתיות</button>
-        <button class="cchip" onclick="selCat(this,'קהילה')">קהילה</button>
-        <button class="cchip" onclick="selCat(this,'חינוך')">חינוך</button>
-        <button class="cchip" onclick="selCat(this,'ספורט')">ספורט</button>
-        <button class="cchip" onclick="selCat(this,'רווחה')">רווחה</button>
-        <button class="cchip" onclick="selCat(this,'חירום/בטחון')">חירום/בטחון</button>
-        <button class="cchip" onclick="selCat(this,'איכות סביבה')">איכות סביבה</button>
-        <button class="cchip" onclick="selCat(this,'גיל שלישי')">גיל שלישי</button>
-        <button class="cchip" onclick="selCat(this,'רישוי עסקים')">רישוי עסקים</button>
-        <button class="cchip" onclick="selCat(this,'תרבות')">תרבות</button>
-        <button class="cchip" onclick="selCat(this,'דת')">דת</button>
-        <button class="cchip" onclick="selCat(this,'חדשנות')">חדשנות</button>
-        <button class="cchip" onclick="selCat(this,'גבייה')">גבייה</button>
-        <button class="cchip" onclick="selCat(this,'מנהל כללי')">מנהל כללי</button>
+        <button class="cchip" onclick="selCat(this,'הנדסה')">🔧 הנדסה</button>
+        <button class="cchip" onclick="selCat(this,'תברואה')">🗑️ תברואה</button>
+        <button class="cchip" onclick="selCat(this,'תשתיות')">🏗️ תשתיות</button>
+        <button class="cchip" onclick="selCat(this,'קהילה')">🤝 קהילה</button>
+        <button class="cchip" onclick="selCat(this,'חינוך')">📚 חינוך</button>
+        <button class="cchip" onclick="selCat(this,'ספורט')">⚽ ספורט</button>
+        <button class="cchip" onclick="selCat(this,'רווחה')">❤️ רווחה</button>
+        <button class="cchip" onclick="selCat(this,'חירום/בטחון')">🚨 חירום/בטחון</button>
+        <button class="cchip" onclick="selCat(this,'איכות סביבה')">🌿 איכות סביבה</button>
+        <button class="cchip" onclick="selCat(this,'גיל שלישי')">👴 גיל שלישי</button>
+        <button class="cchip" onclick="selCat(this,'רישוי עסקים')">📋 רישוי עסקים</button>
+        <button class="cchip" onclick="selCat(this,'תרבות')">🎭 תרבות</button>
+        <button class="cchip" onclick="selCat(this,'דת')">✡️ דת</button>
+        <button class="cchip" onclick="selCat(this,'חדשנות')">💡 חדשנות</button>
+        <button class="cchip" onclick="selCat(this,'גבייה')">💰 גבייה</button>
+        <button class="cchip" onclick="selCat(this,'מנהל כללי')">🏛️ מנהל כללי</button>
+        <button class="cchip" onclick="selCat(this,'תכנון ובנייה')">📐 תכנון ובנייה</button>
+        <button class="cchip" onclick="selCat(this,'כבישים ותחבורה')">🚗 כבישים ותחבורה</button>
+        <button class="cchip" onclick="selCat(this,'גנים ופארקים')">🌳 גנים ופארקים</button>
+        <button class="cchip" onclick="selCat(this,'מים וביוב')">💧 מים וביוב</button>
+        <button class="cchip" onclick="selCat(this,'חשמל ותאורה')">💡 חשמל ותאורה</button>
+        <button class="cchip" onclick="selCat(this,'בריאות')">🏥 בריאות</button>
+        <button class="cchip" onclick="selCat(this,'חינוך מיוחד')">🎓 חינוך מיוחד</button>
+        <button class="cchip" onclick="selCat(this,'נוער')">👶 נוער</button>
+        <button class="cchip" onclick="selCat(this,'עולים חדשים')">🌍 עולים חדשים</button>
+        <button class="cchip" onclick="selCat(this,'אירועים')">🎉 אירועים</button>
+        <button class="cchip" onclick="selCat(this,'שפ"ע')">📦 שפ"ע</button>
+        <button class="cchip" onclick="selCat(this,'ביטחון פנים')">👮 ביטחון פנים</button>
+        <button class="cchip" onclick="selCat(this,'כלבנות')">🐕 כלבנות</button>
+        <button class="cchip" onclick="selCat(this,'חקלאות')">🌾 חקלאות</button>
       </div>
     </div>
     <div class="fs">
@@ -686,7 +716,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <button class="mfbtn" onclick="filterMap('open',this)">פתוחות</button>
       <button class="mfbtn" onclick="filterMap('progress',this)">בטיפול</button>
       <button class="mfbtn" onclick="filterMap('done',this)">טופלו</button>
-      <button class="mfbtn" onclick="filterMap('emergency',this)">חירום</button>
+      <button class="mfbtn" onclick="filterMap('shelter',this)">🏠 מרחבים מוגנים</button>
+    </div>
+    <div style="background:#fff3cd;padding:8px 14px;font-size:11px;color:#856404;display:flex;align-items:center;gap:6px">
+      <span>🏠</span>
+      <span>לחץ על המפה לסימון מרחב מוגן באזורך</span>
+      <button onclick="toggleShelterMode()" id="shelter-mode-btn" style="background:#856404;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-right:auto">הפעל סימון</button>
     </div>
     <div id="map-container">
       <div id="leaflet-map"></div>
@@ -699,6 +734,97 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <div class="map-legend-item"><div class="map-dot" style="background:var(--orange)"></div>בטיפול</div>
         <div class="map-legend-item"><div class="map-dot" style="background:var(--green)"></div>טופל</div>
         <div class="map-legend-item"><div class="map-dot" style="background:#7c3aed"></div>חירום</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#0891b2"></div>מרחב מוגן</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VAAD (ועד מקומי) -->
+  <div class="page" id="page-vaad">
+    <div class="pg-hdr" style="padding-bottom:10px">
+      <h2>ועד מקומי</h2>
+      <p>ניהול ישיבות, החלטות ותקציב</p>
+    </div>
+    <div style="display:flex;gap:6px;padding:8px 14px;overflow-x:auto">
+      <button class="mfbtn on" onclick="setVaadTab('meetings',this)">ישיבות</button>
+      <button class="mfbtn" onclick="setVaadTab('decisions',this)">החלטות</button>
+      <button class="mfbtn" onclick="setVaadTab('budget',this)">תקציב</button>
+      <button class="mfbtn" onclick="setVaadTab('members',this)">חברי ועד</button>
+    </div>
+
+    <!-- ישיבות -->
+    <div id="vt-meetings">
+      <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">➕ זמן ישיבה חדשה</div>
+        <input id="meet-title" class="bc-inp" placeholder="נושא הישיבה...">
+        <input id="meet-date" class="bc-inp" type="date">
+        <textarea id="meet-agenda" class="bc-ta" placeholder="סדר יום..." style="min-height:60px"></textarea>
+        <button onclick="addMeeting()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף ישיבה</button>
+      </div>
+      <div id="meetings-list">
+        <div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות מתוכננות</div></div>
+      </div>
+    </div>
+
+    <!-- החלטות -->
+    <div id="vt-decisions" style="display:none">
+      <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">➕ הוסף החלטה</div>
+        <input id="dec-title" class="bc-inp" placeholder="תיאור ההחלטה...">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="dec-votes-for" class="bc-inp" type="number" placeholder="בעד" style="flex:1">
+          <input id="dec-votes-against" class="bc-inp" type="number" placeholder="נגד" style="flex:1">
+          <input id="dec-abstain" class="bc-inp" type="number" placeholder="נמנע" style="flex:1">
+        </div>
+        <button onclick="addDecision()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">שמור החלטה</button>
+      </div>
+      <div id="decisions-list">
+        <div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות עדיין</div></div>
+      </div>
+    </div>
+
+    <!-- תקציב -->
+    <div id="vt-budget" style="display:none">
+      <div style="background:linear-gradient(135deg,var(--navy),var(--blue));margin:0 14px 10px;border-radius:16px;padding:16px;text-align:center">
+        <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:4px">תקציב שנתי</div>
+        <div style="font-size:32px;font-weight:900;color:white" id="vaad-budget-total">₪0</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#4ade80" id="vaad-income">₪0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.4)">הכנסות</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:800;color:#f87171" id="vaad-expense">₪0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.4)">הוצאות</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">➕ הוסף פריט</div>
+        <input id="budget-desc" class="bc-inp" placeholder="תיאור...">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <select id="budget-type" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px;font-family:'Heebo',sans-serif;font-size:12px;outline:none">
+            <option value="income">הכנסה</option>
+            <option value="expense">הוצאה</option>
+          </select>
+          <input id="budget-amount" class="bc-inp" type="number" placeholder="סכום ₪" style="flex:1">
+        </div>
+        <button onclick="addBudgetItem()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף</button>
+      </div>
+      <div id="budget-list"></div>
+    </div>
+
+    <!-- חברי ועד -->
+    <div id="vt-members" style="display:none">
+      <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">➕ הוסף חבר ועד</div>
+        <input id="mem-name" class="bc-inp" placeholder="שם מלא...">
+        <input id="mem-role" class="bc-inp" placeholder="תפקיד (יו&quot;ר, גזבר...)">
+        <input id="mem-phone" class="bc-inp" placeholder="טלפון" type="tel">
+        <button onclick="addMember()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף חבר</button>
+      </div>
+      <div id="members-list">
+        <div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div></div>
       </div>
     </div>
   </div>
@@ -845,6 +971,27 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 
     <!-- KANBAN -->
     <div id="at-kanban" style="display:none">
+      <!-- טופס הוספת משימה חדשה -->
+      <div style="background:white;margin:10px 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">➕ הוסף משימה חדשה</div>
+        <input id="task-title" class="bc-inp" style="margin-bottom:6px" placeholder="כותרת המשימה..." oninput="this.style.borderColor=this.value?'var(--gold)':'var(--border)'">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <select id="task-cat" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px;font-family:'Heebo',sans-serif;font-size:12px;color:var(--navy);outline:none">
+            <option value="">קטגוריה...</option>
+            <option>הנדסה</option><option>תברואה</option><option>תשתיות</option>
+            <option>קהילה</option><option>חינוך</option><option>ספורט</option>
+            <option>רווחה</option><option>חירום/בטחון</option><option>איכות סביבה</option>
+          </select>
+          <select id="task-priority" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px;font-family:'Heebo',sans-serif;font-size:12px;color:var(--navy);outline:none">
+            <option value="normal">רגיל</option>
+            <option value="urgent">דחוף 🔴</option>
+            <option value="low">נמוך 🟢</option>
+          </select>
+        </div>
+        <input id="task-assignee" class="bc-inp" style="margin-bottom:8px" placeholder="שם האחראי (אופציונלי)...">
+        <button onclick="addTask()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף משימה</button>
+      </div>
+
       <div class="kanban-wrap">
         <div class="kanban-col">
           <div class="kanban-col-hdr"><span>📥 פתוח</span><span class="kanban-count" id="kb-open">0</span></div>
@@ -945,6 +1092,10 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     <button class="ni" id="n-admin" onclick="showPage('admin')" style="display:none">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       <span class="nilbl">ניהול</span>
+    </button>
+    <button class="ni" id="n-vaad" onclick="showPage('vaad')" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="nilbl">ועד</span>
     </button>
   </div>
 </div>
@@ -1259,7 +1410,9 @@ function startApp(){
   document.getElementById('sen-greeting').textContent=`שלום, ${fn}`;
   document.getElementById('qr-img').src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${CU.id}&color=0a1628`;
   if(CU.isAdmin) document.getElementById('n-admin').style.display='flex';
+  if(CU.isAdmin){const vn=document.getElementById('n-vaad');if(vn)vn.style.display='flex';}
   renderTickets();
+  renderHomeTickets();
   loadNotifs();
   renderNotifs();
   initDailyPoll();
@@ -1432,6 +1585,7 @@ function renderTickets(){
     </div>`).join('');
   // Admin kanban
   if(CU?.isAdmin) renderAdminTickets();
+  renderHomeTickets();
 }
 
 function openTk(i){
@@ -1591,15 +1745,283 @@ function openRatingModal(tkIdx){
   document.getElementById('rating-modal').dataset.tkIdx=tkIdx;
 }
 
+// ══════════════════════════════════════
+// SOS — לחצן מצוקה
+// ══════════════════════════════════════
+function triggerSOS(){
+  if(!confirm('האם אתה זקוק לעזרה? לחיצה על אישור תשלח קריאת מצוקה עם מיקומך.')){return;}
+  navigator.geolocation?.getCurrentPosition(pos=>{
+    const sosData={
+      userId:CU?.id,
+      name:CU?.name,
+      phone:CU?.ph,
+      lat:pos.coords.latitude,
+      lng:pos.coords.longitude,
+      time:new Date().toLocaleTimeString('he-IL'),
+      date:new Date().toLocaleDateString('he-IL')
+    };
+    const sosList=JSON.parse(localStorage.getItem('fs_sos')||'[]');
+    sosList.unshift(sosData);
+    localStorage.setItem('fs_sos',JSON.stringify(sosList));
+    // שלח התראה לכל המנהלים
+    ADMINS.forEach(adminId=>{
+      const key='fs_notifs_'+adminId;
+      const notifs=JSON.parse(localStorage.getItem(key)||'[]');
+      notifs.unshift({id:Date.now(),title:'🆘 קריאת מצוקה!',body:`${CU?.name||'תושב'} זקוק לעזרה! ${sosData.lat?.toFixed(4)||''},${sosData.lng?.toFixed(4)||''}`,type:'חירום',date:sosData.date,read:false});
+      localStorage.setItem(key,JSON.stringify(notifs));
+    });
+    document.getElementById('emg').classList.add('on');
+    toast('🆘 קריאת מצוקה נשלחה לצוות החירום!');
+  },()=>{
+    document.getElementById('emg').classList.add('on');
+    toast('🆘 קריאת מצוקה נשלחה!');
+  });
+}
+
+// ══════════════════════════════════════
+// מרחבים מוגנים
+// ══════════════════════════════════════
+let shelterMode=false;
+let shelters=JSON.parse(localStorage.getItem('fs_shelters')||'[]');
+
+function toggleShelterMode(){
+  shelterMode=!shelterMode;
+  const btn=document.getElementById('shelter-mode-btn');
+  if(btn){btn.textContent=shelterMode?'ביטול סימון':'הפעל סימון';btn.style.background=shelterMode?'#dc2626':'#856404';}
+  if(shelterMode) toast('לחץ על המפה לסימון מרחב מוגן 🏠');
+  else toast('מצב סימון בוטל');
+}
+
+function addShelter(lat,lng){
+  const name=prompt('שם המרחב המוגן (למשל: ממ"ד בבית ספר):','מרחב מוגן');
+  if(!name)return;
+  const s={id:Date.now(),lat,lng,name,addedBy:CU?.id,date:new Date().toLocaleDateString('he-IL')};
+  shelters.push(s);
+  localStorage.setItem('fs_shelters',JSON.stringify(shelters));
+  renderMapMarkers();
+  toast(`מרחב מוגן "${name}" סומן ✓`);
+  shelterMode=false;
+  const btn=document.getElementById('shelter-mode-btn');
+  if(btn){btn.textContent='הפעל סימון';btn.style.background='#856404';}
+}
+
+// ══════════════════════════════════════
+// פניות בבית
+// ══════════════════════════════════════
+function renderHomeTickets(){
+  if(!CU) return;
+  const mine=tickets.filter(t=>t.userId===CU.id && !t.hiddenFromHome);
+  const sec=document.getElementById('home-tickets-section');
+  const list=document.getElementById('home-tickets-list');
+  if(!sec||!list) return;
+  if(!mine.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  const statusColor={open:'var(--red)',progress:'var(--orange)',done:'var(--green)'};
+  const statusLabel={open:'פתוח',progress:'בטיפול',done:'טופל ✓'};
+  list.innerHTML=mine.slice(0,3).map((t,i)=>{
+    const idx=tickets.indexOf(t);
+    return `<div style="background:white;margin:0 14px 6px;border-radius:12px;padding:12px;box-shadow:0 1px 4px rgba(10,22,40,.05);border-right:3px solid ${statusColor[t.status]||'var(--gold)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:${statusColor[t.status]}">${statusLabel[t.status]||t.status}</span>
+        <button onclick="hideFromHome(${idx})" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer" title="הסר מהבית">✕</button>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy)">${t.desc?.substring(0,45)||''}${(t.desc?.length||0)>45?'...':''}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${t.cat} • ${t.date}</div>
+      ${t.adminReply?`<div style="font-size:11px;color:var(--green);margin-top:4px;font-weight:600">💬 יש תגובה מהמועצה</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function hideFromHome(idx){
+  if(tickets[idx]) tickets[idx].hiddenFromHome=true;
+  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
+  renderHomeTickets();
+}
+
+// ══════════════════════════════════════
+// VAAD — ועד מקומי
+// ══════════════════════════════════════
+let vaadData={meetings:[],decisions:[],budget:[],members:[]};
+function loadVaad(){vaadData=JSON.parse(localStorage.getItem('fs_vaad')||JSON.stringify(vaadData));}
+function saveVaad(){localStorage.setItem('fs_vaad',JSON.stringify(vaadData));}
+loadVaad();
+
+function setVaadTab(tab,el){
+  document.querySelectorAll('#page-vaad .mfbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  ['meetings','decisions','budget','members'].forEach(t=>{
+    const e=document.getElementById('vt-'+t);if(e)e.style.display=t===tab?'block':'none';
+  });
+  renderVaad(tab);
+}
+
+function renderVaad(tab){
+  if(tab==='meetings'){
+    const list=document.getElementById('meetings-list');
+    if(!vaadData.meetings.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות</div></div>';return;}
+    list.innerHTML=vaadData.meetings.map((m,i)=>`
+      <div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05);border-right:3px solid var(--gold)">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">${m.title}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">📅 ${m.date}</div>
+        ${m.agenda?`<div style="font-size:11px;color:var(--navy);margin-top:6px;background:var(--bg);border-radius:8px;padding:8px">${m.agenda}</div>`:''}
+      </div>`).join('');
+  }
+  if(tab==='decisions'){
+    const list=document.getElementById('decisions-list');
+    if(!vaadData.decisions.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות</div></div>';return;}
+    list.innerHTML=vaadData.decisions.map(d=>`
+      <div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">${d.title}</div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <span style="font-size:11px;color:var(--green);font-weight:700">✓ בעד: ${d.for||0}</span>
+          <span style="font-size:11px;color:var(--red);font-weight:700">✗ נגד: ${d.against||0}</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:700">○ נמנע: ${d.abstain||0}</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px">${d.date}</div>
+      </div>`).join('');
+  }
+  if(tab==='budget'){
+    const income=vaadData.budget.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
+    const expense=vaadData.budget.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
+    const el1=document.getElementById('vaad-income');
+    const el2=document.getElementById('vaad-expense');
+    const el3=document.getElementById('vaad-budget-total');
+    if(el1) el1.textContent=`₪${income.toLocaleString()}`;
+    if(el2) el2.textContent=`₪${expense.toLocaleString()}`;
+    if(el3) el3.textContent=`₪${(income-expense).toLocaleString()}`;
+    const list=document.getElementById('budget-list');
+    if(list) list.innerHTML=vaadData.budget.map(b=>`
+      <div style="background:white;margin:0 14px 6px;border-radius:11px;padding:12px;display:flex;justify-content:space-between;align-items:center;border-right:3px solid ${b.type==='income'?'var(--green)':'var(--red)'}">
+        <div><div style="font-size:12px;font-weight:700;color:var(--navy)">${b.desc}</div><div style="font-size:10px;color:var(--muted)">${b.date}</div></div>
+        <div style="font-size:14px;font-weight:800;color:${b.type==='income'?'var(--green)':'var(--red)'}">${b.type==='income'?'+':'-'}₪${Number(b.amount).toLocaleString()}</div>
+      </div>`).join('');
+  }
+  if(tab==='members'){
+    const list=document.getElementById('members-list');
+    if(!vaadData.members.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div></div>';return;}
+    list.innerHTML=vaadData.members.map(m=>`
+      <div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--gold);flex-shrink:0">${m.name[0]}</div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--navy)">${m.name}</div><div style="font-size:11px;color:var(--gold);font-weight:600">${m.role}</div>${m.phone?`<div style="font-size:10px;color:var(--muted)">${m.phone}</div>`:''}</div>
+      </div>`).join('');
+  }
+}
+
+function addMeeting(){
+  const title=document.getElementById('meet-title').value.trim();
+  const date=document.getElementById('meet-date').value;
+  const agenda=document.getElementById('meet-agenda').value.trim();
+  if(!title){toast('נא להזין נושא ישיבה');return;}
+  vaadData.meetings.unshift({title,date:date||new Date().toLocaleDateString('he-IL'),agenda,id:Date.now()});
+  saveVaad();
+  document.getElementById('meet-title').value='';document.getElementById('meet-date').value='';document.getElementById('meet-agenda').value='';
+  renderVaad('meetings');toast('ישיבה נוספה ✓');
+}
+function addDecision(){
+  const title=document.getElementById('dec-title').value.trim();
+  if(!title){toast('נא להזין תיאור החלטה');return;}
+  vaadData.decisions.unshift({title,for:document.getElementById('dec-votes-for').value,against:document.getElementById('dec-votes-against').value,abstain:document.getElementById('dec-abstain').value,date:new Date().toLocaleDateString('he-IL'),id:Date.now()});
+  saveVaad();
+  document.getElementById('dec-title').value='';
+  renderVaad('decisions');toast('החלטה נשמרה ✓');
+}
+function addBudgetItem(){
+  const desc=document.getElementById('budget-desc').value.trim();
+  const amount=document.getElementById('budget-amount').value;
+  if(!desc||!amount){toast('נא למלא תיאור וסכום');return;}
+  vaadData.budget.unshift({desc,amount,type:document.getElementById('budget-type').value,date:new Date().toLocaleDateString('he-IL'),id:Date.now()});
+  saveVaad();
+  document.getElementById('budget-desc').value='';document.getElementById('budget-amount').value='';
+  renderVaad('budget');toast('פריט נוסף לתקציב ✓');
+}
+function addMember(){
+  const name=document.getElementById('mem-name').value.trim();
+  const role=document.getElementById('mem-role').value.trim();
+  if(!name||!role){toast('נא למלא שם ותפקיד');return;}
+  vaadData.members.push({name,role,phone:document.getElementById('mem-phone').value,id:Date.now()});
+  saveVaad();
+  document.getElementById('mem-name').value='';document.getElementById('mem-role').value='';document.getElementById('mem-phone').value='';
+  renderVaad('members');toast('חבר ועד נוסף ✓');
+}
+let tasks = JSON.parse(localStorage.getItem('fs_tasks')||'[]');
+
+function addTask(){
+  const title=document.getElementById('task-title').value.trim();
+  const cat=document.getElementById('task-cat').value;
+  const priority=document.getElementById('task-priority').value;
+  const assignee=document.getElementById('task-assignee').value.trim();
+  if(!title){toast('נא להזין כותרת למשימה');return;}
+  const task={id:Date.now(),title,cat,priority,assignee,status:'open',date:new Date().toLocaleDateString('he-IL')};
+  tasks.push(task);
+  localStorage.setItem('fs_tasks',JSON.stringify(tasks));
+  document.getElementById('task-title').value='';
+  document.getElementById('task-cat').value='';
+  document.getElementById('task-assignee').value='';
+  document.getElementById('task-priority').value='normal';
+  renderKanban();
+  toast('משימה נוספה ✓');
+}
+
+function moveTask(id,newStatus){
+  const t=tasks.find(t=>t.id===id);
+  if(t){t.status=newStatus;localStorage.setItem('fs_tasks',JSON.stringify(tasks));renderKanban();}
+}
+
+function deleteTask(id){
+  tasks=tasks.filter(t=>t.id!==id);
+  localStorage.setItem('fs_tasks',JSON.stringify(tasks));
+  renderKanban();
+  toast('משימה נמחקה');
+}
+
 function renderKanban(){
-  const cols={open:[],progress:[],done:[]};
-  tickets.forEach((t,i)=>cols[t.status]?.push({...t,idx:i}));
+  // פניות לפי סטטוס
+  const tkCols={open:[],progress:[],done:[]};
+  tickets.forEach((t,i)=>tkCols[t.status]?.push({...t,idx:i,isTicket:true}));
+
+  // משימות לפי סטטוס
+  const taskCols={open:[],progress:[],done:[]};
+  tasks.forEach(t=>taskCols[t.status]?.push(t));
+
+  const priorityColor={urgent:'var(--red)',normal:'var(--gold)',low:'var(--green)'};
+  const priorityLabel={urgent:'🔴 דחוף',normal:'🟡 רגיל',low:'🟢 נמוך'};
+
   ['open','progress','done'].forEach(s=>{
     const col=document.getElementById('kb-col-'+s);
     const cnt=document.getElementById('kb-'+(s==='progress'?'prog':s));
     if(!col)return;
-    cnt.textContent=cols[s].length;
-    col.innerHTML=cols[s].map(t=>`<div class="kanban-item"><div class="ki-cat">${t.cat}</div><div class="ki-title">${t.desc.substring(0,40)}</div><div class="ki-meta">${t.date}</div></div>`).join('');
+    const total=(tkCols[s]?.length||0)+(taskCols[s]?.length||0);
+    cnt.textContent=total;
+
+    // פניות
+    const tkHtml=tkCols[s].map(t=>`
+      <div class="kanban-item" style="border-right:3px solid var(--accent,#3d8ef0)">
+        <div class="ki-cat">📋 ${t.cat}</div>
+        <div class="ki-title">${t.desc?.substring(0,40)||''}</div>
+        <div class="ki-meta">${t.date}</div>
+        <div style="display:flex;gap:4px;margin-top:6px">
+          ${s!=='done'?`<button onclick="setTkStatus(${t.idx},'done')" style="flex:1;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;padding:5px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">סגור</button>`:''}
+        </div>
+      </div>`).join('');
+
+    // משימות
+    const taskHtml=taskCols[s].map(t=>`
+      <div class="kanban-item" style="border-right:3px solid ${priorityColor[t.priority]||'var(--gold)'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <div class="ki-cat">${t.cat||'משימה'}</div>
+          <span style="font-size:9px;color:${priorityColor[t.priority]}">${priorityLabel[t.priority]||''}</span>
+        </div>
+        <div class="ki-title">${t.title}</div>
+        ${t.assignee?`<div class="ki-meta">👤 ${t.assignee}</div>`:''}
+        <div class="ki-meta">${t.date}</div>
+        <div style="display:flex;gap:4px;margin-top:6px">
+          ${s==='open'?`<button onclick="moveTask(${t.id},'progress')" style="flex:1;background:#eff6ff;color:#1d4ed8;border:none;border-radius:6px;padding:5px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">התחל</button>`:''}
+          ${s==='progress'?`<button onclick="moveTask(${t.id},'done')" style="flex:1;background:var(--green-bg);color:var(--green);border:none;border-radius:6px;padding:5px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">סיים</button>`:''}
+          <button onclick="deleteTask(${t.id})" style="background:var(--red-bg);color:var(--red);border:none;border-radius:6px;padding:5px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">🗑</button>
+        </div>
+      </div>`).join('');
+
+    col.innerHTML=tkHtml+taskHtml||`<div style="text-align:center;padding:20px;font-size:12px;color:var(--muted)">ריק</div>`;
   });
 }
 
@@ -1796,14 +2218,16 @@ function makeIcon(color){
 function initMap(){
   loadLeaflet(()=>{
     if(mapInst){setTimeout(()=>mapInst.invalidateSize(),100);return;}
-    // התחל במרכז ישראל — המפה תתמקד על הפניות האמיתיות
     mapInst=L.map('leaflet-map',{center:[31.5,34.8],zoom:8,zoomControl:false,attributionControl:false});
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mapInst);
     L.control.zoom({position:'bottomleft'}).addTo(mapInst);
-    // נסה לאתר מיקום המשתמש ולמרכז עליו
+    // לחיצה למרחב מוגן
+    mapInst.on('click',e=>{
+      if(shelterMode) addShelter(e.latlng.lat,e.latlng.lng);
+    });
     navigator.geolocation?.getCurrentPosition(
       pos=>mapInst.setView([pos.coords.latitude,pos.coords.longitude],13),
-      ()=>{} // אם נכשל — נשאר במרכז ישראל
+      ()=>{}
     );
     renderMapMarkers();
   });
@@ -1835,9 +2259,14 @@ function renderMapMarkers(){
     mapMarkers.push(m);
   });
 
-  // אם אין פניות עם GPS — הצג הודעה
-  if(withGPS.length===0 && filtered.length>0){
-    toast('הפניות אינן כוללות מיקום GPS מדויק');
+  // מרחבים מוגנים
+  if(activeFilter==='all'||activeFilter==='shelter'){
+    shelters.forEach(s=>{
+      const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:'<div style="background:#0891b2;border:2.5px solid white;border-radius:4px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 2px 6px rgba(0,0,0,.3)">🏠</div>',iconSize:[16,16],iconAnchor:[8,8]})})
+        .addTo(mapInst)
+        .bindPopup(`<div style="direction:rtl;font-family:'Heebo',sans-serif"><div style="font-size:12px;font-weight:700;color:#0891b2">🏠 מרחב מוגן</div><div style="font-size:11px;color:#0a1628;margin-top:2px">${s.name}</div></div>`,{maxWidth:160});
+      mapMarkers.push(m);
+    });
   }
 }
 function filterMap(f,el){activeFilter=f;document.querySelectorAll('.mfbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderMapMarkers();}
