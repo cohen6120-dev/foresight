@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f2744">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FORESIGHT — דואגים לך</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0f2744;
+  --blue: #1a4480;
+  --accent: #3d8ef0;
+  --accent2: #00c2a8;
+  --bg: #f0f4f9;
+  --card: #ffffff;
+  --text: #0f2744;
+  --muted: #7a8fa6;
+  --border: #dce6f0;
+  --red: #e53e3e;
+  --orange: #dd6b20;
+  --green: #276749;
+  --green-bg: #f0fff4;
+  --orange-bg: #fffaf0;
+  --red-bg: #fff5f5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; overflow-x: hidden; }
+
+/* AUTH */
+#auth-screen { display: flex; flex-direction: column; min-height: 100vh; background: var(--navy); }
+.auth-hero { padding: 60px 24px 40px; text-align: center; }
+.auth-logo-wrap { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.auth-logo-icon { width: 56px; height: 56px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+.auth-logo-icon svg { width: 32px; height: 32px; fill: white; }
+.auth-logo-text { font-size: 32px; font-weight: 900; color: white; letter-spacing: 4px; }
+.auth-tagline { color: var(--accent); font-size: 14px; font-weight: 400; margin-top: 4px; }
+.auth-card { background: white; border-radius: 28px 28px 0 0; flex: 1; padding: 32px 24px; }
+.auth-tabs { display: flex; background: var(--bg); border-radius: 14px; padding: 4px; margin-bottom: 24px; }
+.auth-tab { flex: 1; padding: 10px; border-radius: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; border: none; background: none; font-family: 'Heebo', sans-serif; }
+.auth-tab.active { background: white; color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+.field-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; margin-top: 16px; }
+.id-input-wrap { position: relative; }
+.id-input { width: 100%; background: var(--bg); border: 2px solid var(--bg); border-radius: 14px; padding: 16px; font-size: 22px; font-weight: 700; color: var(--navy); text-align: center; letter-spacing: 6px; font-family: 'Heebo', sans-serif; outline: none; transition: border-color .2s; }
+.id-input:focus { border-color: var(--accent); }
+.id-valid { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--accent2); font-size: 20px; }
+.id-error { color: var(--red); font-size: 12px; margin-top: 4px; text-align: right; }
+.field-input { width: 100%; background: var(--bg); border: 1.5px solid var(--bg); border-radius: 12px; padding: 14px; font-size: 15px; color: var(--navy); text-align: right; font-family: 'Heebo', sans-serif; outline: none; transition: border-color .2s; }
+.field-input:focus { border-color: var(--accent); }
+.submit-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 16px; padding: 18px; font-size: 17px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 20px; transition: transform .1s; }
+.submit-btn:active { transform: scale(0.98); }
+.submit-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+.admin-badge { background: #fff3cd; border: 1px solid #ffd700; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #856404; text-align: center; margin-top: 12px; display: none; }
+
+/* APP */
+#app { display: none; flex-direction: column; min-height: 100vh; }
+
+/* TOP BAR */
+.topbar { background: var(--navy); padding: 48px 20px 16px; position: sticky; top: 0; z-index: 100; }
+.topbar-inner { display: flex; align-items: center; justify-content: space-between; }
+.topbar-logo { display: flex; align-items: center; gap: 10px; }
+.topbar-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.topbar-icon svg { width: 20px; height: 20px; fill: white; }
+.topbar-brand { font-size: 18px; font-weight: 900; color: white; letter-spacing: 3px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-time { font-size: 12px; color: rgba(255,255,255,.6); }
+.notif-btn { width: 36px; height: 36px; background: rgba(255,255,255,.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; position: relative; }
+.notif-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
+.notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; border: 2px solid var(--navy); }
+
+/* PAGES */
+.page { display: none; flex: 1; overflow-y: auto; padding-bottom: 90px; }
+.page.active { display: block; }
+
+/* HOME */
+.home-greeting { padding: 20px 20px 0; }
+.home-greeting h2 { font-size: 22px; font-weight: 800; color: var(--navy); }
+.home-greeting p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.interest-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px; }
+.interest-chip { background: #e8f0fd; color: var(--blue); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+.section-title { font-size: 14px; font-weight: 700; color: var(--navy); padding: 8px 20px 10px; }
+.update-card { background: white; margin: 0 16px 10px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
+.update-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.update-tag { background: #e8f0fd; color: var(--blue); font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.update-date { font-size: 11px; color: var(--muted); }
+.update-title { font-size: 14px; font-weight: 700; color: var(--navy); line-height: 1.4; }
+.update-body { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+/* REPORT */
+.page-header { padding: 20px 20px 0; }
+.page-header h2 { font-size: 22px; font-weight: 800; color: var(--navy); }
+.page-header p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.form-section { padding: 16px 20px 0; }
+.form-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.cats-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-chip { padding: 8px 14px; border-radius: 20px; background: white; border: 1.5px solid var(--border); font-size: 13px; color: var(--navy); cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 600; transition: all .15s; }
+.cat-chip.selected { background: var(--navy); color: white; border-color: var(--navy); }
+.form-textarea { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 14px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; resize: none; outline: none; min-height: 100px; }
+.form-textarea:focus { border-color: var(--accent); }
+.loc-btn { width: 100%; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; font-family: 'Heebo', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; }
+.loc-btn.idle { background: var(--bg); color: var(--navy); }
+.loc-btn.verified { background: var(--green-bg); color: var(--green); border: 1.5px solid #9ae6b4; }
+.photo-row { display: flex; gap: 10px; }
+.photo-btn { flex: 1; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; color: var(--navy); font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; }
+.photo-preview { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; }
+.big-submit { width: 100%; background: var(--navy); color: white; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 8px; transition: transform .1s; }
+.big-submit:active { transform: scale(0.98); }
+
+/* HISTORY */
+.ticket-card { background: white; margin: 0 16px 10px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(15,39,68,.06); cursor: pointer; }
+.ticket-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.status-open { background: var(--red-bg); color: var(--red); border: 1px solid #feb2b2; }
+.status-progress { background: var(--orange-bg); color: var(--orange); border: 1px solid #fbd38d; }
+.status-done { background: var(--green-bg); color: var(--green); border: 1px solid #9ae6b4; }
+.ticket-date { font-size: 11px; color: var(--muted); }
+.ticket-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.ticket-meta { font-size: 12px; color: var(--muted); }
+.tracker { display: flex; align-items: center; justify-content: center; margin-top: 12px; gap: 3px; }
+.tracker-step { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tracker-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; background: var(--bg); }
+.tracker-circle.done { background: var(--navy); border-color: var(--navy); color: white; }
+.tracker-line { flex: 1; height: 2px; background: var(--border); max-width: 24px; }
+.tracker-line.done { background: var(--navy); }
+.tracker-label { font-size: 9px; color: var(--muted); text-align: center; }
+.tracker-label.done { color: var(--navy); font-weight: 700; }
+
+/* PROFILE */
+.profile-card { background: var(--navy); margin: 16px; border-radius: 20px; padding: 24px; text-align: center; }
+.profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: white; margin: 0 auto 12px; }
+.profile-name { font-size: 20px; font-weight: 800; color: white; }
+.profile-meta { font-size: 13px; color: rgba(255,255,255,.6); margin-top: 4px; }
+.points-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.1); border-radius: 20px; padding: 6px 14px; margin-top: 10px; }
+.points-badge span { font-size: 13px; font-weight: 700; color: #ffd700; }
+.profile-section { padding: 16px 20px 0; }
+.profile-section h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+.profile-input { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; outline: none; margin-bottom: 10px; }
+.profile-input:focus { border-color: var(--accent); }
+.save-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 8px; }
+.logout-btn { width: 100%; background: white; color: var(--navy); border: 1.5px solid var(--border); border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 10px; }
+.delete-btn { width: 100%; background: none; color: var(--red); border: none; padding: 12px; font-size: 13px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; }
+
+/* ADMIN */
+.admin-tabs { display: flex; overflow-x: auto; padding: 12px 16px; gap: 8px; }
+.admin-tab { white-space: nowrap; padding: 8px 16px; border-radius: 20px; background: white; border: 1.5px solid var(--border); font-size: 13px; font-weight: 600; color: var(--navy); cursor: pointer; font-family: 'Heebo', sans-serif; }
+.admin-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+.stat-card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
+.stat-num { font-size: 32px; font-weight: 900; }
+.stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.savings-card { background: var(--navy); border-radius: 20px; margin: 0 16px 16px; padding: 20px; text-align: center; }
+.savings-lbl { color: var(--accent); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.savings-amt { color: white; font-size: 40px; font-weight: 900; }
+.savings-sub { color: rgba(255,255,255,.5); font-size: 12px; margin-top: 4px; }
+.savings-total { color: var(--accent); font-size: 15px; font-weight: 800; margin-top: 8px; }
+.live-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; margin-left: 6px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
+.admin-ticket { background: white; margin: 0 16px 10px; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
+.admin-ticket-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.admin-ticket-cat { font-size: 11px; font-weight: 700; color: var(--accent); }
+.admin-ticket-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.admin-actions { display: flex; gap: 8px; }
+.admin-btn { flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 700; font-family: 'Heebo', sans-serif; border: none; cursor: pointer; }
+.admin-btn-progress { background: #ebf4ff; color: var(--blue); }
+.admin-btn-close { background: var(--green-bg); color: var(--green); }
+.broadcast-section { padding: 0 16px; }
+.broadcast-input { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; outline: none; margin-bottom: 10px; }
+.broadcast-textarea { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; resize: none; outline: none; min-height: 80px; margin-bottom: 10px; }
+.broadcast-btn { width: 100%; background: var(--red); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); display: flex; z-index: 200; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 6px 0; border: none; background: none; font-family: 'Heebo', sans-serif; }
+.nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.nav-icon svg { width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 1.8; transition: stroke .15s; }
+.nav-item.active .nav-icon svg { stroke: var(--navy); }
+.nav-label { font-size: 10px; color: var(--muted); font-weight: 600; }
+.nav-item.active .nav-label { color: var(--navy); font-weight: 700; }
+.nav-center { flex: 1; display: flex; align-items: center; justify-content: center; }
+.nav-report-btn { width: 52px; height: 52px; background: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -20px; box-shadow: 0 4px 16px rgba(15,39,68,.3); border: none; cursor: pointer; }
+.nav-report-btn svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal-card { background: white; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; max-height: 85vh; overflow-y: auto; }
+.modal-title { font-size: 18px; font-weight: 800; color: var(--navy); text-align: right; margin-bottom: 6px; }
+.modal-meta { font-size: 13px; color: var(--muted); text-align: right; margin-bottom: 16px; }
+.modal-close { width: 100%; background: none; border: none; padding: 14px; font-size: 15px; color: var(--muted); font-family: 'Heebo', sans-serif; cursor: pointer; border-top: 1px solid var(--border); margin-top: 12px; }
+.stars-row { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+.star { font-size: 36px; cursor: pointer; color: var(--border); transition: color .15s; }
+.star.lit { color: #f6ad55; }
+.rating-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--navy); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* EMERGENCY */
+.emergency-screen { display: none; position: fixed; inset: 0; background: #7f0000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
+.emergency-screen.active { display: flex; }
+.emergency-title { font-size: 32px; font-weight: 900; color: white; text-align: center; margin-bottom: 8px; }
+.emergency-sub { font-size: 15px; color: rgba(255,255,255,.7); text-align: center; margin-bottom: 40px; }
+.emergency-btn { width: 100%; border: none; border-radius: 18px; padding: 22px; font-size: 18px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-bottom: 14px; }
+.e-btn-red { background: #e53e3e; color: white; }
+.e-btn-dark { background: #2d3748; color: white; }
+.e-btn-navy { background: var(--navy); color: white; }
+.emergency-exit { background: none; border: none; color: rgba(255,255,255,.5); font-size: 14px; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 16px; }
+
+/* INSTALL BANNER */
+.install-banner { background: linear-gradient(135deg, var(--navy), var(--blue)); margin: 12px 16px; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; }
+.install-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.install-icon svg { width: 22px; height: 22px; stroke: white; fill: none; }
+.install-text { flex: 1; }
+.install-text strong { color: white; font-size: 13px; display: block; }
+.install-text span { color: rgba(255,255,255,.6); font-size: 11px; }
+.install-btn { background: white; color: var(--navy); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; white-space: nowrap; }
+
+@media (min-width: 768px) {
+  #app { max-width: 420px; margin: 0 auto; box-shadow: 0 0 40px rgba(0,0,0,.15); min-height: 100vh; }
+  body { background: #e8edf4; }
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-hero">
+    <div class="auth-logo-wrap">
+      <div class="auth-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <div>
+        <div class="auth-logo-text">FORESIGHT</div>
+        <div class="auth-tagline">דואגים לך, עוד לפני שביקשת</div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="setAuthMode('login')">כניסה</button>
+      <button class="auth-tab" onclick="setAuthMode('register')">הרשמה ראשונה</button>
+    </div>
+    <div class="field-label">מספר תעודת זהות</div>
+    <div class="id-input-wrap">
+      <input class="id-input" id="id-input" type="tel" maxlength="9" placeholder="• • • • • • • • •" oninput="validateId(this.value)" />
+      <span class="id-valid" id="id-valid" style="display:none">✓</span>
+    </div>
+    <div class="id-error" id="id-error"></div>
+    <div class="field-label">מספר טלפון</div>
+    <input class="field-input" id="phone-input" type="tel" placeholder="050-0000000" />
+    <div id="register-fields" style="display:none">
+      <div class="field-label">שם מלא</div>
+      <input class="field-input" id="name-input" type="text" placeholder="ישראל ישראלי" />
+      <div class="field-label">כתובת מגורים</div>
+      <input class="field-input" id="address-input" type="text" placeholder="רחוב הורדים 12, רמת גן" />
+    </div>
+    <div class="admin-badge" id="admin-badge">⭐ זוהית כמנהל מועצה</div>
+    <button class="submit-btn" id="auth-btn" onclick="handleAuth()">כניסה</button>
+    <p class="submit-hint">הכניסה מזוהה לפי ת.ז בלבד — ללא סיסמה</p>
+  </div>
+</div>
+
+<!-- EMERGENCY -->
+<div class="emergency-screen" id="emergency-screen">
+  <div class="emergency-title">מצב חירום פעיל</div>
+  <div class="emergency-sub">עקוב אחר הנחיות הרשות המקומית</div>
+  <button class="emergency-btn e-btn-red" onclick="showToast('מיקומך נשלח למוקד החירום')">🆘 אני צריך עזרה</button>
+  <button class="emergency-btn e-btn-dark" onclick="showToast('מציג מפת מקלטים...')">🗺️ מפת מקלטים</button>
+  <button class="emergency-btn e-btn-navy" onclick="document.getElementById('emergency-screen').classList.remove('active')">📢 עדכונים שוטפים</button>
+  <button class="emergency-exit" onclick="document.getElementById('emergency-screen').classList.remove('active')">חזרה לאפליקציה</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-logo">
+        <div class="topbar-icon">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="topbar-brand">FORESIGHT</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="topbar-time"></span>
+        <button class="notif-btn" onclick="showPage('notifications')">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-greeting">
+      <h2 id="greeting-text">שלום, תושב יקר</h2>
+      <p id="greeting-sub">3 עדכונים חדשים בתחומים שלך</p>
+    </div>
+    <div class="interest-chips" id="interest-chips">
+      <div class="interest-chip">הנדסה</div>
+      <div class="interest-chip">תשתיות</div>
+      <div class="interest-chip">קהילה</div>
+    </div>
+
+    <div id="install-banner-wrap">
+      <div class="install-banner">
+        <div class="install-icon"><svg viewBox="0 0 24 24"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 21H4"/></svg></div>
+        <div class="install-text"><strong>הוסף למסך הבית</strong><span>גישה מהירה ללא דפדפן</span></div>
+        <button class="install-btn" onclick="installApp()">הורד</button>
+      </div>
+    </div>
+
+    <div class="section-title">עדכונים בתחומים שלך</div>
+    <div class="update-card">
+      <div class="update-card-top"><div class="update-tag">תשתיות</div><div class="update-date">היום, 08:30</div></div>
+      <div class="update-title">שיפוץ כביש הראשי מתחיל ב-15.4</div>
+      <div class="update-body">צפויות הגבלות תנועה בין השעות 7:00-15:00</div>
+    </div>
+    <div class="update-card">
+      <div class="update-card-top"><div class="update-tag">הנדסה</div><div class="update-date">אתמול, 14:00</div></div>
+      <div class="update-title">תאורת רחוב הורדים עודכנה</div>
+      <div class="update-body">הותקנו 12 עמודי תאורה חדשים בשכונה</div>
+    </div>
+    <div class="update-card">
+      <div class="update-card-top"><div class="update-tag">קהילה</div><div class="update-date">01.04, 10:00</div></div>
+      <div class="update-title">פעילות קיץ לנוער — הרשמה פתוחה</div>
+      <div class="update-body">ההרשמה לפעילויות הקיץ נפתחה. מהרו להירשם!</div>
+    </div>
+    <div class="update-card">
+      <div class="update-card-top"><div class="update-tag">רווחה</div><div class="update-date">30.03, 09:00</div></div>
+      <div class="update-title">מרכז יום לגיל השלישי — שעות חדשות</div>
+      <div class="update-body">החל מאפריל המרכז פתוח גם בימי שישי</div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div class="page" id="page-report">
+    <div class="page-header"><h2>דיווח על בעיה</h2><p>דיווח מהיר ישירות לגורם הרלוונטי</p></div>
+    <div class="form-section">
+      <div class="form-label">קטגוריה</div>
+      <div class="cats-grid" id="cats-grid">
+        <button class="cat-chip" onclick="selectCat(this,'הנדסה')">הנדסה</button>
+        <button class="cat-chip" onclick="selectCat(this,'תברואה')">תברואה</button>
+        <button class="cat-chip" onclick="selectCat(this,'תשתיות')">תשתיות</button>
+        <button class="cat-chip" onclick="selectCat(this,'קהילה')">קהילה</button>
+        <button class="cat-chip" onclick="selectCat(this,'חינוך')">חינוך</button>
+        <button class="cat-chip" onclick="selectCat(this,'ספורט')">ספורט</button>
+        <button class="cat-chip" onclick="selectCat(this,'רווחה')">רווחה</button>
+        <button class="cat-chip" onclick="selectCat(this,'חירום/בטחון')">חירום/בטחון</button>
+        <button class="cat-chip" onclick="selectCat(this,'איכות סביבה')">איכות סביבה</button>
+        <button class="cat-chip" onclick="selectCat(this,'גיל שלישי')">גיל שלישי</button>
+        <button class="cat-chip" onclick="selectCat(this,'רישוי עסקים')">רישוי עסקים</button>
+        <button class="cat-chip" onclick="selectCat(this,'תרבות')">תרבות</button>
+      </div>
+    </div>
+    <div class="form-section">
+      <div class="form-label">תיאור הבעיה</div>
+      <textarea class="form-textarea" id="report-desc" placeholder="תאר את הבעיה בפירוט..."></textarea>
+    </div>
+    <div class="form-section">
+      <div class="form-label">מיקום</div>
+      <button class="loc-btn idle" id="loc-btn" onclick="getLocation()">📍 אמת מיקום GPS</button>
+    </div>
+    <div class="form-section">
+      <div class="form-label">תמונה (אופציונלי)</div>
+      <div class="photo-row">
+        <button class="photo-btn" onclick="document.getElementById('photo-input').click()">📷 צלם / גלריה</button>
+      </div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="showPhoto(this)">
+      <img id="photo-preview" class="photo-preview" alt="תמונה">
+    </div>
+    <div class="form-section" style="padding-bottom:16px">
+      <button class="big-submit" onclick="submitReport()">שלח דיווח</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="page-header" style="padding-bottom:12px"><h2>הפניות שלי</h2><p id="tickets-count">3 פניות</p></div>
+    <div id="tickets-list">
+      <div class="ticket-card" onclick="openTicket(0)">
+        <div class="ticket-top"><span class="status-badge status-done">טופל ✓</span><span class="ticket-date">28.03.2026</span></div>
+        <div class="ticket-title">בור ברחוב הורדים 12</div>
+        <div class="ticket-meta">הנדסה • רחוב הורדים 12</div>
+        <div class="tracker">
+          <div class="tracker-step"><div class="tracker-circle done">✓</div><div class="tracker-label done">התקבל</div></div>
+          <div class="tracker-line done"></div>
+          <div class="tracker-step"><div class="tracker-circle done">👤</div><div class="tracker-label done">שובץ</div></div>
+          <div class="tracker-line done"></div>
+          <div class="tracker-step"><div class="tracker-circle done">🚚</div><div class="tracker-label done">בשטח</div></div>
+          <div class="tracker-line done"></div>
+          <div class="tracker-step"><div class="tracker-circle done">★</div><div class="tracker-label done">טופל</div></div>
+        </div>
+      </div>
+      <div class="ticket-card" onclick="openTicket(1)">
+        <div class="ticket-top"><span class="status-badge status-progress">בטיפול</span><span class="ticket-date">30.03.2026</span></div>
+        <div class="ticket-title">תאורה תקולה ברח׳ הגפן</div>
+        <div class="ticket-meta">תשתיות • רחוב הגפן 5</div>
+        <div class="tracker">
+          <div class="tracker-step"><div class="tracker-circle done">✓</div><div class="tracker-label done">התקבל</div></div>
+          <div class="tracker-line done"></div>
+          <div class="tracker-step"><div class="tracker-circle done">👤</div><div class="tracker-label done">שובץ</div></div>
+          <div class="tracker-line"></div>
+          <div class="tracker-step"><div class="tracker-circle">🚚</div><div class="tracker-label">בשטח</div></div>
+          <div class="tracker-line"></div>
+          <div class="tracker-step"><div class="tracker-circle">★</div><div class="tracker-label">טופל</div></div>
+        </div>
+      </div>
+      <div class="ticket-card" onclick="openTicket(2)">
+        <div class="ticket-top"><span class="status-badge status-open">פתוח</span><span class="ticket-date">31.03.2026</span></div>
+        <div class="ticket-title">פח אשפה שבור בפארק</div>
+        <div class="ticket-meta">תברואה • פארק העירוני</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="page" id="page-notifications">
+    <div class="page-header" style="padding-bottom:12px"><h2>התראות</h2><p>עדכונים מהמועצה</p></div>
+    <div class="update-card" style="border-right:4px solid var(--accent2)">
+      <div class="update-card-top"><div class="update-tag" style="background:#f0fff4;color:var(--green)">טופל ✅</div><div class="update-date">28.03 13:45</div></div>
+      <div class="update-title">הפנייה שלך טופלה!</div>
+      <div class="update-body">בור ברחוב הורדים — הטיפול הושלם בהצלחה</div>
+      <button onclick="openRating()" style="background:var(--navy);color:white;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:10px;">דרג עכשיו ★</button>
+    </div>
+    <div class="update-card" style="border-right:4px solid var(--accent)">
+      <div class="update-card-top"><div class="update-tag">עדכון 🔄</div><div class="update-date">30.03 09:00</div></div>
+      <div class="update-title">יש התקדמות!</div>
+      <div class="update-body">צוות הנדסה קיבל את המשימה שלך ויגיע בקרוב</div>
+    </div>
+    <div class="update-card" style="border-right:4px solid #f6ad55">
+      <div class="update-card-top"><div class="update-tag" style="background:#fffaf0;color:var(--orange)">שוטף 📢</div><div class="update-date">29.03 11:00</div></div>
+      <div class="update-title">עדכון שוטף</div>
+      <div class="update-body">שיפוץ כביש הראשי — צפי סיום 20.4</div>
+    </div>
+    <div class="update-card" style="border-right:4px solid var(--red)">
+      <div class="update-card-top"><div class="update-tag" style="background:var(--red-bg);color:var(--red)">חירום 🚨</div><div class="update-date">28.03 08:00</div></div>
+      <div class="update-title">הודעה מהמועצה</div>
+      <div class="update-body">עבודות חפירה בשכונה ב — הגבלות חנייה עד סוף השבוע</div>
+    </div>
+    <div class="update-card" style="border-right:4px solid #9f7aea">
+      <div class="update-card-top"><div class="update-tag" style="background:#faf5ff;color:#6b46c1">יום הולדת 🎂</div><div class="update-date">28.03 00:00</div></div>
+      <div class="update-title">יום הולדת שמח!</div>
+      <div class="update-body">המועצה מאחלת לך שנה מצוינת ובריאה 🎉</div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profile-avatar">ד</div>
+      <div class="profile-name" id="profile-name">דוד כהן</div>
+      <div class="profile-meta" id="profile-id-display">ת.ז: 023456789</div>
+      <div class="points-badge"><span>⭐ 42 נקודות אזרחות</span></div>
+    </div>
+    <div class="profile-section">
+      <h3>פרטים אישיים</h3>
+      <input class="profile-input" id="p-name" placeholder="שם מלא" />
+      <input class="profile-input" id="p-phone" placeholder="טלפון" />
+      <input class="profile-input" id="p-address" placeholder="כתובת" />
+    </div>
+    <div class="profile-section">
+      <h3>תחומי עניין</h3>
+      <div class="cats-grid" id="interests-grid">
+        <button class="cat-chip selected" onclick="toggleInterest(this,'הנדסה')">הנדסה</button>
+        <button class="cat-chip selected" onclick="toggleInterest(this,'תשתיות')">תשתיות</button>
+        <button class="cat-chip" onclick="toggleInterest(this,'חינוך')">חינוך</button>
+        <button class="cat-chip selected" onclick="toggleInterest(this,'קהילה')">קהילה</button>
+        <button class="cat-chip" onclick="toggleInterest(this,'ספורט')">ספורט</button>
+        <button class="cat-chip" onclick="toggleInterest(this,'רווחה')">רווחה</button>
+        <button class="cat-chip" onclick="toggleInterest(this,'תרבות')">תרבות</button>
+        <button class="cat-chip" onclick="toggleInterest(this,'גיל שלישי')">גיל שלישי</button>
+      </div>
+    </div>
+    <div class="profile-section" style="padding-bottom:16px">
+      <button class="save-btn" onclick="saveProfile()">שמור שינויים</button>
+      <button class="logout-btn" onclick="logout()">התנתקות</button>
+      <button class="delete-btn" onclick="deleteAccount()">מחק חשבון</button>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="page-admin">
+    <div class="page-header" style="padding-bottom:4px"><h2>לוח ניהול</h2><p><span class="live-dot"></span>עדכון חי</p></div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="setAdminTab('stats',this)">סטטיסטיקה</button>
+      <button class="admin-tab" onclick="setAdminTab('tickets',this)">פניות</button>
+      <button class="admin-tab" onclick="setAdminTab('broadcast',this)">שידור</button>
+      <button class="admin-tab" onclick="setAdminTab('users',this)">משתמשים</button>
+    </div>
+
+    <div id="admin-stats">
+      <div class="savings-card">
+        <div class="savings-lbl">חיסכון תפעולי מצטבר</div>
+        <div class="savings-amt">₪48,500</div>
+        <div class="savings-sub">+ ₪12,300 חיסכון בשיחות מוקד</div>
+        <div class="savings-total">סה״כ: ₪60,800</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num" style="color:var(--accent)">312</div><div class="stat-lbl">תושבים רשומים</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)">12</div><div class="stat-lbl">פניות פתוחות</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)">47</div><div class="stat-lbl">טופלו</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--orange)">4.3</div><div class="stat-lbl">דירוג ממוצע</div></div>
+      </div>
+      <button onclick="document.getElementById('emergency-screen').classList.add('active')" style="width:calc(100% - 32px);margin:0 16px 16px;background:var(--red);color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;">🚨 הפעל מצב חירום</button>
+    </div>
+
+    <div id="admin-tickets" style="display:none">
+      <div class="admin-ticket">
+        <div class="admin-ticket-top"><span class="admin-ticket-cat">הנדסה</span><span class="status-badge status-open">פתוח</span></div>
+        <div class="admin-ticket-title">בור ברחוב הורדים 12</div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-progress" onclick="showToast('הפנייה הועברה לטיפול')">העבר לטיפול</button>
+          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
+        </div>
+      </div>
+      <div class="admin-ticket">
+        <div class="admin-ticket-top"><span class="admin-ticket-cat">תשתיות</span><span class="status-badge status-progress">בטיפול</span></div>
+        <div class="admin-ticket-title">תאורה תקולה ברח׳ הגפן</div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-progress" onclick="showToast('עדכון נשלח לתושב')">עדכן תושב</button>
+          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
+        </div>
+      </div>
+      <div class="admin-ticket">
+        <div class="admin-ticket-top"><span class="admin-ticket-cat">תברואה</span><span class="status-badge status-open">פתוח</span></div>
+        <div class="admin-ticket-title">פח אשפה שבור בפארק</div>
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-progress" onclick="showToast('הפנייה הועברה לטיפול')">העבר לטיפול</button>
+          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-broadcast" style="display:none">
+      <div class="broadcast-section">
+        <div class="form-label" style="margin-top:8px">כותרת ההודעה</div>
+        <input class="broadcast-input" placeholder="כותרת..." />
+        <div class="form-label">תוכן ההודעה</div>
+        <textarea class="broadcast-textarea" placeholder="תוכן..."></textarea>
+        <div class="form-label">תחום עניין (ריק = כולם)</div>
+        <input class="broadcast-input" placeholder="למשל: תשתיות" />
+        <button class="broadcast-btn" onclick="showToast('ההודעה שודרה לכל התושבים הרלוונטיים ✓')">שדר לכולם</button>
+      </div>
+    </div>
+
+    <div id="admin-users" style="display:none">
+      <div class="broadcast-section">
+        <div class="form-label" style="margin-top:8px">הוסף מנהל לפי ת.ז</div>
+        <input class="broadcast-input" id="new-admin-id" type="tel" maxlength="9" placeholder="000000000" />
+        <button class="save-btn" onclick="showToast('המשתמש הוגדר כמנהל ✓')">הגדר כמנהל</button>
+      </div>
+      <div style="padding:16px">
+        <div class="section-title" style="padding:0 0 10px">רשימת מנהלים</div>
+        <div class="ticket-card">
+          <div class="ticket-title">דוד כהן</div>
+          <div class="ticket-meta">ת.ז: 023456789 • מנהל ראשי</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="showPage('home')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span class="nav-label">בית</span>
+    </button>
+    <button class="nav-item" id="nav-history" onclick="showPage('history')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <span class="nav-label">פניות</span>
+    </button>
+    <div class="nav-center">
+      <button class="nav-report-btn" onclick="showPage('report')">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <button class="nav-item" id="nav-notifications" onclick="showPage('notifications')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <span class="nav-label">התראות</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="showPage('profile')">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span class="nav-label">פרופיל</span>
+    </button>
+    <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="nav-label">ניהול</span>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL: TICKET DETAIL -->
+<div class="modal-overlay" id="ticket-modal">
+  <div class="modal-card">
+    <div class="modal-title" id="modal-ticket-title">בור ברחוב הורדים 12</div>
+    <div class="modal-meta" id="modal-ticket-meta">הנדסה • רחוב הורדים 12</div>
+    <div id="modal-tracker"></div>
+    <div id="modal-auto-reply" style="background:#fff3cd;border-right:4px solid #f6ad55;border-radius:12px;padding:12px;margin-top:12px;display:none">
+      <div style="font-size:12px;font-weight:700;color:#856404;margin-bottom:4px">תגובה אוטומטית מהמועצה:</div>
+      <div style="font-size:13px;color:#856404">קיבלנו! הדיווח הועבר למחלקת הנדסה. צפי לטיפול: 48 שעות.</div>
+    </div>
+    <div id="modal-rating-section" style="display:none;margin-top:16px">
+      <div style="font-size:15px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:8px">איך היה השירות?</div>
+      <div class="stars-row" id="modal-stars">
+        <span class="star" onclick="rateStar(1)">★</span>
+        <span class="star" onclick="rateStar(2)">★</span>
+        <span class="star" onclick="rateStar(3)">★</span>
+        <span class="star" onclick="rateStar(4)">★</span>
+        <span class="star" onclick="rateStar(5)">★</span>
+      </div>
+      <button class="rating-btn" onclick="submitRating()">שלח דירוג</button>
+    </div>
+    <button class="modal-close" onclick="closeModal('ticket-modal')">סגור</button>
+  </div>
+</div>
+
+<!-- MODAL: RATING -->
+<div class="modal-overlay" id="rating-modal">
+  <div class="modal-card">
+    <div class="modal-title">דרג את השירות</div>
+    <div class="modal-meta">כמה שביעות רצון יש לך מהטיפול?</div>
+    <div class="stars-row" id="rating-stars">
+      <span class="star" onclick="rateStar2(1)">★</span>
+      <span class="star" onclick="rateStar2(2)">★</span>
+      <span class="star" onclick="rateStar2(3)">★</span>
+      <span class="star" onclick="rateStar2(4)">★</span>
+      <span class="star" onclick="rateStar2(5)">★</span>
+    </div>
+    <textarea style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;resize:none;outline:none;min-height:70px;margin-top:8px" placeholder="הערות נוספות (אופציונלי)..."></textarea>
+    <button class="rating-btn" style="margin-top:12px" onclick="submitRating2()">שלח דירוג</button>
+    <button class="modal-close" onclick="closeModal('rating-modal')">דרג מאוחר יותר</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// STATE
+const ADMIN_IDS = ['000000000','123456789'];
+let currentUser = null;
+let selectedCat = '';
+let locationVerified = false;
+let currentRating = 0;
+
+const tickets = [
+  { title:'בור ברחוב הורדים 12', meta:'הנדסה • רחוב הורדים 12', status:'done', date:'28.03.2026', autoReply:true },
+  { title:'תאורה תקולה ברח׳ הגפן', meta:'תשתיות • רחוב הגפן 5', status:'progress', date:'30.03.2026', autoReply:true },
+  { title:'פח אשפה שבור בפארק', meta:'תברואה • פארק העירוני', status:'open', date:'31.03.2026', autoReply:false },
+];
+
+// TIME
+function updateTime() {
+  const now = new Date();
+  document.getElementById('topbar-time').textContent = now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// AUTH
+let authMode = 'login';
+function setAuthMode(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('register-fields').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('auth-btn').textContent = mode === 'login' ? 'כניסה' : 'הרשמה';
+}
+
+function validateId(val) {
+  const err = document.getElementById('id-error');
+  const valid = document.getElementById('id-valid');
+  const badge = document.getElementById('admin-badge');
+  if (val.length === 9) {
+    const digits = val.split('').map(Number);
+    let sum = 0;
+    digits.forEach((d,i) => { let v = d*(i%2===0?1:2); if(v>9) v-=9; sum+=v; });
+    if (sum % 10 === 0) {
+      err.textContent = '';
+      valid.style.display = 'block';
+      badge.style.display = ADMIN_IDS.includes(val) ? 'block' : 'none';
+    } else {
+      err.textContent = 'ת.ז לא תקינה';
+      valid.style.display = 'none';
+      badge.style.display = 'none';
+    }
+  } else {
+    err.textContent = '';
+    valid.style.display = 'none';
+    badge.style.display = 'none';
+  }
+}
+
+function handleAuth() {
+  const id = document.getElementById('id-input').value;
+  const phone = document.getElementById('phone-input').value;
+  if (id.length < 9) { alert('נא להזין ת.ז תקינה'); return; }
+  if (!phone) { alert('נא להזין מספר טלפון'); return; }
+  if (authMode === 'register') {
+    const name = document.getElementById('name-input').value;
+    if (!name) { alert('נא להזין שם מלא'); return; }
+  }
+  const name = authMode === 'register' ? document.getElementById('name-input').value : (id === '000000000' ? 'דוד כהן' : 'תושב יקר');
+  const isAdmin = ADMIN_IDS.includes(id);
+  currentUser = { id, phone, name, isAdmin, points: 42 };
+  localStorage.setItem('foresight_user', JSON.stringify(currentUser));
+  startApp();
+}
+
+function startApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const firstName = currentUser.name.split(' ')[0];
+  document.getElementById('greeting-text').textContent = `שלום, ${firstName}`;
+  document.getElementById('profile-name').textContent = currentUser.name;
+  document.getElementById('profile-id-display').textContent = `ת.ז: ${currentUser.id}`;
+  document.getElementById('profile-avatar').textContent = currentUser.name[0];
+  document.getElementById('p-name').value = currentUser.name;
+  document.getElementById('p-phone').value = currentUser.phone;
+  if (currentUser.isAdmin) {
+    document.getElementById('nav-admin').style.display = 'flex';
+  }
+}
+
+// CHECK SAVED USER
+const saved = localStorage.getItem('foresight_user');
+if (saved) { currentUser = JSON.parse(saved); startApp(); }
+
+// NAVIGATION
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const navEl = document.getElementById('nav-'+page);
+  if (navEl) navEl.classList.add('active');
+}
+
+// REPORT
+function selectCat(el, cat) {
+  document.querySelectorAll('#cats-grid .cat-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCat = cat;
+}
+
+function getLocation() {
+  const btn = document.getElementById('loc-btn');
+  btn.textContent = '⏳ מאתר מיקום...';
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        btn.className = 'loc-btn verified';
+        btn.textContent = `✓ מיקום אומת (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`;
+        locationVerified = true;
+      },
+      () => {
+        btn.className = 'loc-btn verified';
+        btn.textContent = '✓ מיקום אומת (רחוב הורדים 12)';
+        locationVerified = true;
+      }
+    );
+  } else {
+    btn.className = 'loc-btn verified';
+    btn.textContent = '✓ מיקום אומת';
+    locationVerified = true;
+  }
+}
+
+function showPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('photo-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitReport() {
+  if (!selectedCat) { showToast('נא לבחור קטגוריה'); return; }
+  const desc = document.getElementById('report-desc').value;
+  if (!desc) { showToast('נא לתאר את הבעיה'); return; }
+  if (!locationVerified) { showToast('נא לאמת מיקום'); return; }
+  showToast('הדיווח נשלח בהצלחה! +1 נקודה אזרחית ⭐');
+  setTimeout(() => showPage('history'), 1500);
+  document.getElementById('report-desc').value = '';
+  selectedCat = '';
+  document.querySelectorAll('#cats-grid .cat-chip').forEach(c => c.classList.remove('selected'));
+  locationVerified = false;
+  document.getElementById('loc-btn').className = 'loc-btn idle';
+  document.getElementById('loc-btn').textContent = '📍 אמת מיקום GPS';
+}
+
+// HISTORY
+function openTicket(idx) {
+  const t = tickets[idx];
+  document.getElementById('modal-ticket-title').textContent = t.title;
+  document.getElementById('modal-ticket-meta').textContent = t.meta;
+  document.getElementById('modal-auto-reply').style.display = t.autoReply ? 'block' : 'none';
+  document.getElementById('modal-rating-section').style.display = t.status === 'done' ? 'block' : 'none';
+  document.getElementById('ticket-modal').classList.add('open');
+}
+
+// RATING
+function rateStar(n) {
+  currentRating = n;
+  document.querySelectorAll('#modal-stars .star').forEach((s,i) => s.classList.toggle('lit', i < n));
+}
+function rateStar2(n) {
+  currentRating = n;
+  document.querySelectorAll('#rating-stars .star').forEach((s,i) => s.classList.toggle('lit', i < n));
+}
+function submitRating() {
+  if (!currentRating) { showToast('נא לבחור דירוג'); return; }
+  closeModal('ticket-modal');
+  showToast(`תודה על הדירוג: ${currentRating}/5 ⭐`);
+}
+function submitRating2() {
+  if (!currentRating) { showToast('נא לבחור דירוג'); return; }
+  closeModal('rating-modal');
+  showToast(`תודה על הדירוג: ${currentRating}/5 ⭐`);
+}
+function openRating() { document.getElementById('rating-modal').classList.add('open'); }
+
+// PROFILE
+function toggleInterest(el) { el.classList.toggle('selected'); }
+function saveProfile() { showToast('הפרטים עודכנו בהצלחה ✓'); }
+function logout() {
+  if (confirm('להתנתק?')) {
+    localStorage.removeItem('foresight_user');
+    location.reload();
+  }
+}
+function deleteAccount() {
+  if (confirm('למחוק את החשבון? פעולה זו בלתי הפיכה.')) {
+    localStorage.removeItem('foresight_user');
+    location.reload();
+  }
+}
+
+// ADMIN
+function setAdminTab(tab, el) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['stats','tickets','broadcast','users'].forEach(t => {
+    document.getElementById('admin-'+t).style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+// MODAL
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// INSTALL PWA
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; });
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+  } else {
+    showToast('ב-iOS: לחץ שתף ← הוסף למסך הבית');
+  }
+}
+</script>
+</body>
+</html>
