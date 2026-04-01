@@ -741,10 +741,23 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 
   <!-- VAAD (ועד מקומי) -->
   <div class="page" id="page-vaad">
-    <div class="pg-hdr" style="padding-bottom:10px">
-      <h2>ועד מקומי</h2>
-      <p>ניהול ישיבות, החלטות ותקציב</p>
+    <!-- מסך כניסה לוועד -->
+    <div id="vaad-login" style="padding:32px 20px;text-align:center">
+      <div style="font-size:40px;margin-bottom:12px">🏛️</div>
+      <div style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px">ועד מקומי</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">כניסה מוגנת לחברי ועד בלבד</div>
+      <input id="vaad-password" type="password" class="pinp" placeholder="הזן סיסמת ועד..." style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--red);margin-bottom:12px;display:none" id="vaad-pw-err">סיסמה שגויה</div>
+      <button onclick="loginVaad()" style="width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:var(--gold);border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">כניסה לוועד</button>
+      <div style="margin-top:16px;font-size:11px;color:var(--muted)">כמנהל מערכת — השתמש בסיסמת מנהל לגישה לכל הועדים</div>
     </div>
+
+    <!-- תוכן הוועד (נסתר עד כניסה) -->
+    <div id="vaad-content" style="display:none">
+      <div class="pg-hdr" style="padding-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+        <div><h2>ועד מקומי</h2><p id="vaad-name-display">ניהול ישיבות, החלטות ותקציב</p></div>
+        <button onclick="logoutVaad()" style="background:none;border:none;color:var(--muted);font-size:11px;font-family:'Heebo',sans-serif;cursor:pointer">יציאה</button>
+      </div>
     <div style="display:flex;gap:6px;padding:8px 14px;overflow-x:auto">
       <button class="mfbtn on" onclick="setVaadTab('meetings',this)">ישיבות</button>
       <button class="mfbtn" onclick="setVaadTab('decisions',this)">החלטות</button>
@@ -856,17 +869,37 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <input class="pinp" id="p-addr" placeholder="כתובת">
     </div>
     <div class="psec">
-      <h3>תחומי עניין</h3>
+      <h3>תחומי עניין — בחר נושאים לקבלת התראות</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:10px">תקבל התראות רק על הנושאים שבחרת</p>
       <div class="cgrid" id="intgrid">
-        <button class="cchip" onclick="togInt(this)">הנדסה</button>
-        <button class="cchip" onclick="togInt(this)">תשתיות</button>
-        <button class="cchip" onclick="togInt(this)">חינוך</button>
-        <button class="cchip" onclick="togInt(this)">קהילה</button>
-        <button class="cchip" onclick="togInt(this)">ספורט</button>
-        <button class="cchip" onclick="togInt(this)">רווחה</button>
-        <button class="cchip" onclick="togInt(this)">תרבות</button>
-        <button class="cchip" onclick="togInt(this)">גיל שלישי</button>
-        <button class="cchip" onclick="togInt(this)">חדשנות</button>
+        <button class="cchip" onclick="togInt(this)">🔧 הנדסה</button>
+        <button class="cchip" onclick="togInt(this)">🗑️ תברואה</button>
+        <button class="cchip" onclick="togInt(this)">🏗️ תשתיות</button>
+        <button class="cchip" onclick="togInt(this)">🤝 קהילה</button>
+        <button class="cchip" onclick="togInt(this)">📚 חינוך</button>
+        <button class="cchip" onclick="togInt(this)">⚽ ספורט</button>
+        <button class="cchip" onclick="togInt(this)">❤️ רווחה</button>
+        <button class="cchip" onclick="togInt(this)">🚨 חירום/בטחון</button>
+        <button class="cchip" onclick="togInt(this)">🌿 איכות סביבה</button>
+        <button class="cchip" onclick="togInt(this)">👴 גיל שלישי</button>
+        <button class="cchip" onclick="togInt(this)">📋 רישוי עסקים</button>
+        <button class="cchip" onclick="togInt(this)">🎭 תרבות</button>
+        <button class="cchip" onclick="togInt(this)">✡️ דת</button>
+        <button class="cchip" onclick="togInt(this)">💡 חדשנות</button>
+        <button class="cchip" onclick="togInt(this)">💰 גבייה</button>
+        <button class="cchip" onclick="togInt(this)">🏛️ מנהל כללי</button>
+        <button class="cchip" onclick="togInt(this)">📐 תכנון ובנייה</button>
+        <button class="cchip" onclick="togInt(this)">🚗 כבישים ותחבורה</button>
+        <button class="cchip" onclick="togInt(this)">🌳 גנים ופארקים</button>
+        <button class="cchip" onclick="togInt(this)">💧 מים וביוב</button>
+        <button class="cchip" onclick="togInt(this)">💡 חשמל ותאורה</button>
+        <button class="cchip" onclick="togInt(this)">🏥 בריאות</button>
+        <button class="cchip" onclick="togInt(this)">👶 נוער</button>
+        <button class="cchip" onclick="togInt(this)">🌍 עולים חדשים</button>
+        <button class="cchip" onclick="togInt(this)">🎉 אירועים</button>
+        <button class="cchip" onclick="togInt(this)">👮 ביטחון פנים</button>
+        <button class="cchip" onclick="togInt(this)">🐕 כלבנות</button>
+        <button class="cchip" onclick="togInt(this)">🌾 חקלאות</button>
       </div>
     </div>
     <div class="psec">
@@ -880,7 +913,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <button class="big-btn" onclick="saveProfile()">שמור שינויים</button>
       <button style="width:100%;background:white;color:var(--navy);border:1.5px solid var(--border);border-radius:13px;padding:13px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px" onclick="logout()">התנתקות</button>
       <button style="width:100%;background:none;color:var(--red);border:none;padding:11px;font-size:12px;font-weight:600;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:2px" onclick="delAccount()">מחק חשבון</button>
-    </div>
+    </div><!-- end vaad-content -->
   </div>
 
   <!-- ADMIN SCADA -->
@@ -1680,19 +1713,31 @@ function submitReply(){
 
 function renderAdminTickets(){
   const list=document.getElementById('admin-tk-list');
-  if(!tickets.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות</div></div>';return;}
-  list.innerHTML=tickets.map((t,i)=>`
+  if(!tickets.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות</div><div class="empty-sub">פניות תושבים יופיעו כאן</div></div>';return;}
+  const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+  list.innerHTML=tickets.map((t,i)=>{
+    const user=allUsers[t.userId]||{};
+    const userName=user.name||'לא ידוע';
+    const userPhone=user.ph||'';
+    return `
     <div class="adm-tk">
-      <div class="atk-top"><span class="atk-cat">${t.cat}</span><span class="sb ${t.status==='open'?'s-open':t.status==='progress'?'s-prog':'s-done'}">${t.status==='open'?'פתוח':t.status==='progress'?'בטיפול':'טופל'}</span></div>
-      <div class="atk-title">${t.desc.substring(0,60)}</div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${t.date} ${t.userId?'• ת.ז: '+t.userId:''}</div>
-      ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">✓ נשלחה תגובה: "${t.adminReply.substring(0,50)}..."</div>`:''}
+      <div class="atk-top">
+        <span class="atk-cat">${t.cat}</span>
+        <span class="sb ${t.status==='open'?'s-open':t.status==='progress'?'s-prog':'s-done'}">${t.status==='open'?'פתוח':t.status==='progress'?'בטיפול':'טופל'}</span>
+      </div>
+      <div class="atk-title">${(t.desc||'').substring(0,60)}</div>
+      <div style="background:var(--bg);border-radius:8px;padding:6px 8px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--navy);font-weight:600">👤 ${userName}${userPhone?' • 📞 '+userPhone:''}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">📅 ${t.date||''}${t.lat?' • 📍 GPS מאומת':''}</div>
+      </div>
+      ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">✓ תגובה נשלחה: "${t.adminReply.substring(0,50)}..."</div>`:''}
       <div class="atk-acts">
         <button class="aa" style="background:#e8f0fd;color:#1a3a6b;flex:1.5" onclick="openReplyModal(${i})">💬 השב</button>
         <button class="aa aa-prog" onclick="setTkStatus(${i},'progress')">בטיפול</button>
         <button class="aa aa-close" onclick="setTkStatus(${i},'done')">סגור</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   renderKanban();
 }
 
@@ -1839,8 +1884,50 @@ function hideFromHome(idx){
 }
 
 // ══════════════════════════════════════
-// VAAD — ועד מקומי
+// VAAD LOGIN
 // ══════════════════════════════════════
+// סיסמאות ועד — ניתן לשנות
+const VAAD_PASSWORDS = {
+  'vaad2024': 'ועד שדה צבי',     // סיסמת ועד ראשי
+  'vaad2025': 'ועד שכונה א',     // ועד נוסף
+};
+const ADMIN_VAAD_PASSWORD = 'admin2024'; // סיסמת מנהל — גישה לכל הועדים
+
+let currentVaadName = '';
+
+function loginVaad(){
+  const pw = document.getElementById('vaad-password').value.trim();
+  const errEl = document.getElementById('vaad-pw-err');
+
+  if(pw === ADMIN_VAAD_PASSWORD){
+    currentVaadName = 'מנהל מערכת — גישה לכל הועדים';
+    showVaadContent();
+  } else if(VAAD_PASSWORDS[pw]){
+    currentVaadName = VAAD_PASSWORDS[pw];
+    showVaadContent();
+  } else {
+    errEl.style.display='block';
+    document.getElementById('vaad-password').style.borderColor='var(--red)';
+    setTimeout(()=>{errEl.style.display='none';document.getElementById('vaad-password').style.borderColor='';},2500);
+  }
+}
+
+function showVaadContent(){
+  document.getElementById('vaad-login').style.display='none';
+  document.getElementById('vaad-content').style.display='block';
+  document.getElementById('vaad-name-display').textContent=currentVaadName;
+  renderVaad('meetings');
+}
+
+function logoutVaad(){
+  document.getElementById('vaad-login').style.display='block';
+  document.getElementById('vaad-content').style.display='none';
+  document.getElementById('vaad-password').value='';
+  currentVaadName='';
+}
+
+// כניסה לוועד גם עם Enter
+document.getElementById('vaad-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginVaad();});
 let vaadData={meetings:[],decisions:[],budget:[],members:[]};
 function loadVaad(){vaadData=JSON.parse(localStorage.getItem('fs_vaad')||JSON.stringify(vaadData));}
 function saveVaad(){localStorage.setItem('fs_vaad',JSON.stringify(vaadData));}
