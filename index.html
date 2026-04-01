@@ -2052,23 +2052,23 @@ function saveProfile(){
   toast('הפרטים עודכנו ✓');
 }
 function logout(){
-  if(confirm('להתנתק?')){
-    try{localStorage.removeItem('fs_u');}catch(e){}
-    CU=null;
-    document.getElementById('app').style.display='none';
-    document.getElementById('chatbtn').style.display='none';
-    document.getElementById('auth').style.display='flex';
-    document.getElementById('aid').value='';
-    document.getElementById('aok').style.display='none';
-    document.getElementById('admbadge').style.display='none';
-    document.getElementById('n-admin').style.display='none';
-    document.getElementById('phone-wrap').style.display='none';
-    document.getElementById('regfields').style.display='none';
-    document.querySelectorAll('.atb').forEach((t,i)=>t.classList.toggle('on',i===0));
-    document.querySelector('.auth-btn').textContent='כניסה';
-    document.getElementById('auth-hint').textContent='כניסה לפי ת.ז בלבד';
-    authMode='login';
-  }
+  try{localStorage.removeItem('fs_u');}catch(e){}
+  CU=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('chatbtn').style.display='none';
+  document.getElementById('auth').style.display='flex';
+  document.getElementById('aid').value='';
+  document.getElementById('aok').style.display='none';
+  document.getElementById('admbadge').style.display='none';
+  document.getElementById('n-admin').style.display='none';
+  const nv=document.getElementById('n-vaad');if(nv)nv.style.display='none';
+  document.getElementById('phone-wrap').style.display='none';
+  document.getElementById('regfields').style.display='none';
+  document.querySelectorAll('.atb').forEach((t,i)=>t.classList.toggle('on',i===0));
+  document.querySelector('.auth-btn').textContent='כניסה';
+  document.getElementById('auth-hint').textContent='כניסה לפי ת.ז בלבד';
+  authMode='login';
+  toast('התנתקת בהצלחה');
 }
 function delAccount(){if(confirm('למחוק חשבון?')){localStorage.clear();location.reload();}}
 function toggleSenior(){
