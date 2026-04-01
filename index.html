@@ -2,883 +2,1853 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#0f2744">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>FORESIGHT — דואגים לך</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<title>FORESIGHT</title>
+<meta name="app-version" content="1.0.0">
+<script>
+// בדיקת גרסה אוטומטית כל 5 דקות
+(function(){
+  const CHECK_INTERVAL = 5 * 60 * 1000; // 5 דקות
+  const VERSION_KEY = 'fs_app_version';
+
+  function checkVersion(){
+    fetch(window.location.href + '?v=' + Date.now(), {cache:'no-store'})
+      .then(r => r.text())
+      .then(html => {
+        const match = html.match(/name="app-version" content="([^"]+)"/);
+        if(!match) return;
+        const newVer = match[1];
+        const savedVer = localStorage.getItem(VERSION_KEY);
+        if(savedVer && savedVer !== newVer){
+          // גרסה חדשה — רענן
+          localStorage.setItem(VERSION_KEY, newVer);
+          location.reload(true);
+        } else {
+          localStorage.setItem(VERSION_KEY, newVer);
+        }
+      })
+      .catch(()=>{}); // שקט אם אין אינטרנט
+  }
+
+  // בדוק לאחר 10 שניות ואז כל 5 דקות
+  setTimeout(checkVersion, 10000);
+  setInterval(checkVersion, CHECK_INTERVAL);
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <style>
 :root {
-  --navy: #0f2744;
-  --blue: #1a4480;
-  --accent: #3d8ef0;
-  --accent2: #00c2a8;
-  --bg: #f0f4f9;
-  --card: #ffffff;
-  --text: #0f2744;
-  --muted: #7a8fa6;
-  --border: #dce6f0;
-  --red: #e53e3e;
-  --orange: #dd6b20;
-  --green: #276749;
-  --green-bg: #f0fff4;
-  --orange-bg: #fffaf0;
-  --red-bg: #fff5f5;
+  --navy:    #0a1628;
+  --navy2:   #0f2040;
+  --blue:    #1a3a6b;
+  --gold:    #c8a84b;
+  --gold2:   #e8c96d;
+  --gold-bg: rgba(200,168,75,.08);
+  --bg:      #f4f6fb;
+  --card:    #ffffff;
+  --text:    #0a1628;
+  --muted:   #6b7a99;
+  --border:  #e2e8f5;
+  --red:     #dc2626;
+  --orange:  #d97706;
+  --green:   #16a34a;
+  --green-bg:#f0fdf4;
+  --red-bg:  #fef2f2;
+  --orange-bg:#fffbeb;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; overflow-x: hidden; }
 
-/* AUTH */
-#auth-screen { display: flex; flex-direction: column; min-height: 100vh; background: var(--navy); }
-.auth-hero { padding: 60px 24px 40px; text-align: center; }
-.auth-logo-wrap { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.auth-logo-icon { width: 56px; height: 56px; background: var(--accent); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-.auth-logo-icon svg { width: 32px; height: 32px; fill: white; }
-.auth-logo-text { font-size: 32px; font-weight: 900; color: white; letter-spacing: 4px; }
-.auth-tagline { color: var(--accent); font-size: 14px; font-weight: 400; margin-top: 4px; }
-.auth-card { background: white; border-radius: 28px 28px 0 0; flex: 1; padding: 32px 24px; }
-.auth-tabs { display: flex; background: var(--bg); border-radius: 14px; padding: 4px; margin-bottom: 24px; }
-.auth-tab { flex: 1; padding: 10px; border-radius: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; border: none; background: none; font-family: 'Heebo', sans-serif; }
-.auth-tab.active { background: white; color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
-.field-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; margin-top: 16px; }
-.id-input-wrap { position: relative; }
-.id-input { width: 100%; background: var(--bg); border: 2px solid var(--bg); border-radius: 14px; padding: 16px; font-size: 22px; font-weight: 700; color: var(--navy); text-align: center; letter-spacing: 6px; font-family: 'Heebo', sans-serif; outline: none; transition: border-color .2s; }
-.id-input:focus { border-color: var(--accent); }
-.id-valid { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--accent2); font-size: 20px; }
-.id-error { color: var(--red); font-size: 12px; margin-top: 4px; text-align: right; }
-.field-input { width: 100%; background: var(--bg); border: 1.5px solid var(--bg); border-radius: 12px; padding: 14px; font-size: 15px; color: var(--navy); text-align: right; font-family: 'Heebo', sans-serif; outline: none; transition: border-color .2s; }
-.field-input:focus { border-color: var(--accent); }
-.submit-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 16px; padding: 18px; font-size: 17px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 20px; transition: transform .1s; }
-.submit-btn:active { transform: scale(0.98); }
-.submit-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
-.admin-badge { background: #fff3cd; border: 1px solid #ffd700; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #856404; text-align: center; margin-top: 12px; display: none; }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;overflow-x:hidden;overscroll-behavior:none}
 
-/* APP */
-#app { display: none; flex-direction: column; min-height: 100vh; }
+/* ═══════════════════════════════════
+   LOGO SVG
+═══════════════════════════════════ */
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-svg{width:40px;height:40px;flex-shrink:0}
+.logo-wordmark{display:flex;flex-direction:column;gap:1px}
+.logo-name{font-family:'Cinzel',serif;font-size:18px;font-weight:900;color:white;letter-spacing:3px;line-height:1}
+.logo-tagline{font-size:9px;font-weight:400;color:var(--gold);letter-spacing:2px;line-height:1}
 
-/* TOP BAR */
-.topbar { background: var(--navy); padding: 48px 20px 16px; position: sticky; top: 0; z-index: 100; }
-.topbar-inner { display: flex; align-items: center; justify-content: space-between; }
-.topbar-logo { display: flex; align-items: center; gap: 10px; }
-.topbar-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.topbar-icon svg { width: 20px; height: 20px; fill: white; }
-.topbar-brand { font-size: 18px; font-weight: 900; color: white; letter-spacing: 3px; }
-.topbar-right { display: flex; align-items: center; gap: 10px; }
-.topbar-time { font-size: 12px; color: rgba(255,255,255,.6); }
-.notif-btn { width: 36px; height: 36px; background: rgba(255,255,255,.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; position: relative; }
-.notif-btn svg { width: 18px; height: 18px; stroke: white; fill: none; }
-.notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; border: 2px solid var(--navy); }
+/* ═══════════════════════════════════
+   AUTH
+═══════════════════════════════════ */
+#auth{display:flex;flex-direction:column;min-height:100vh;background:var(--navy)}
+.auth-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.auth-bg::before{content:'';position:absolute;top:-40%;right:-30%;width:600px;height:600px;background:radial-gradient(circle,rgba(200,168,75,.12) 0%,transparent 70%);border-radius:50%}
+.auth-bg::after{content:'';position:absolute;bottom:-20%;left:-20%;width:400px;height:400px;background:radial-gradient(circle,rgba(26,58,107,.6) 0%,transparent 70%);border-radius:50%}
+.auth-hero{padding:56px 28px 32px;text-align:center;position:relative;z-index:1}
+.auth-logo{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:8px}
+.auth-logo-svg{width:72px;height:72px}
+.auth-brand{font-family:'Cinzel',serif;font-size:28px;font-weight:900;color:white;letter-spacing:5px}
+.auth-sub{font-size:12px;font-weight:400;color:var(--gold);letter-spacing:3px;margin-top:2px}
+.auth-desc{font-size:13px;color:rgba(255,255,255,.4);margin-top:10px;font-weight:300}
+.auth-card{background:white;border-radius:28px 28px 0 0;flex:1;padding:28px 24px;position:relative;z-index:1}
+.auth-tabs{display:flex;background:var(--bg);border-radius:12px;padding:3px;margin-bottom:22px}
+.atb{flex:1;padding:9px;border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Heebo',sans-serif;transition:all .2s}
+.atb.on{background:white;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.fl{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px;margin-top:14px}
+.id-wrap{position:relative}
+.id-inp{width:100%;background:var(--bg);border:2px solid transparent;border-radius:12px;padding:14px;font-size:20px;font-weight:700;color:var(--navy);text-align:center;letter-spacing:5px;font-family:'Heebo',sans-serif;outline:none;transition:border-color .2s}
+.id-inp:focus{border-color:var(--gold)}
+.id-ok{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--green);font-size:18px;display:none}
+.id-err{color:var(--red);font-size:11px;margin-top:3px}
+.fi{width:100%;background:var(--bg);border:2px solid transparent;border-radius:11px;padding:13px;font-size:14px;color:var(--navy);font-family:'Heebo',sans-serif;outline:none;transition:border-color .2s}
+.fi:focus{border-color:var(--gold)}
+.adm-badge{background:linear-gradient(135deg,var(--navy),var(--blue));border:1px solid var(--gold);border-radius:10px;padding:8px 14px;font-size:11px;color:var(--gold);text-align:center;margin-top:12px;display:none;font-weight:700;letter-spacing:1px}
+.auth-btn{width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:white;border:none;border-radius:14px;padding:17px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:18px;position:relative;overflow:hidden;transition:transform .1s}
+.auth-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(200,168,75,.15),transparent);transform:translateX(-100%);transition:transform .4s}
+.auth-btn:active{transform:scale(.98)}
+.auth-btn:hover::after{transform:translateX(100%)}
+.hint{font-size:10px;color:var(--muted);text-align:center;margin-top:8px}
+
+/* ═══════════════════════════════════
+   APP SHELL
+═══════════════════════════════════ */
+#app{display:none;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--navy);padding:44px 16px 14px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(200,168,75,.15)}
+.tb-inner{display:flex;align-items:center;justify-content:space-between}
+.tb-right{display:flex;align-items:center;gap:8px}
+.tb-time{font-size:11px;color:rgba(255,255,255,.4);font-weight:500}
+.icon-btn{width:36px;height:36px;background:rgba(255,255,255,.06);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(200,168,75,.2);position:relative}
+.icon-btn svg{width:17px;height:17px;stroke:rgba(255,255,255,.7);fill:none;stroke-width:1.8}
+.ndot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:var(--gold);border-radius:50%;border:1.5px solid var(--navy)}
 
 /* PAGES */
-.page { display: none; flex: 1; overflow-y: auto; padding-bottom: 90px; }
-.page.active { display: block; }
+.page{display:none;flex:1;overflow-y:auto;padding-bottom:90px;animation:pgIn .25s ease-out}
+.page.on{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* HOME */
-.home-greeting { padding: 20px 20px 0; }
-.home-greeting h2 { font-size: 22px; font-weight: 800; color: var(--navy); }
-.home-greeting p { font-size: 13px; color: var(--muted); margin-top: 3px; }
-.interest-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px; }
-.interest-chip { background: #e8f0fd; color: var(--blue); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-.section-title { font-size: 14px; font-weight: 700; color: var(--navy); padding: 8px 20px 10px; }
-.update-card { background: white; margin: 0 16px 10px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
-.update-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.update-tag { background: #e8f0fd; color: var(--blue); font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-.update-date { font-size: 11px; color: var(--muted); }
-.update-title { font-size: 14px; font-weight: 700; color: var(--navy); line-height: 1.4; }
-.update-body { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+/* PAGE HEADER */
+.pg-hdr{padding:20px 18px 0}
+.pg-hdr h2{font-size:22px;font-weight:800;color:var(--navy)}
+.pg-hdr p{font-size:12px;color:var(--muted);margin-top:2px}
+.section-title{font-size:12px;font-weight:700;color:var(--muted);padding:14px 18px 8px;text-transform:uppercase;letter-spacing:1.5px}
 
-/* REPORT */
-.page-header { padding: 20px 20px 0; }
-.page-header h2 { font-size: 22px; font-weight: 800; color: var(--navy); }
-.page-header p { font-size: 13px; color: var(--muted); margin-top: 3px; }
-.form-section { padding: 16px 20px 0; }
-.form-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-.cats-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.cat-chip { padding: 8px 14px; border-radius: 20px; background: white; border: 1.5px solid var(--border); font-size: 13px; color: var(--navy); cursor: pointer; font-family: 'Heebo', sans-serif; font-weight: 600; transition: all .15s; }
-.cat-chip.selected { background: var(--navy); color: white; border-color: var(--navy); }
-.form-textarea { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 14px; padding: 14px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; resize: none; outline: none; min-height: 100px; }
-.form-textarea:focus { border-color: var(--accent); }
-.loc-btn { width: 100%; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700; font-family: 'Heebo', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; }
-.loc-btn.idle { background: var(--bg); color: var(--navy); }
-.loc-btn.verified { background: var(--green-bg); color: var(--green); border: 1.5px solid #9ae6b4; }
-.photo-row { display: flex; gap: 10px; }
-.photo-btn { flex: 1; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; font-size: 13px; font-weight: 700; color: var(--navy); font-family: 'Heebo', sans-serif; cursor: pointer; text-align: center; }
-.photo-preview { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; }
-.big-submit { width: 100%; background: var(--navy); color: white; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 8px; transition: transform .1s; }
-.big-submit:active { transform: scale(0.98); }
+/* CARDS */
+.card{background:white;margin:0 14px 10px;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(10,22,40,.06)}
 
-/* HISTORY */
-.ticket-card { background: white; margin: 0 16px 10px; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(15,39,68,.06); cursor: pointer; }
-.ticket-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
-.status-open { background: var(--red-bg); color: var(--red); border: 1px solid #feb2b2; }
-.status-progress { background: var(--orange-bg); color: var(--orange); border: 1px solid #fbd38d; }
-.status-done { background: var(--green-bg); color: var(--green); border: 1px solid #9ae6b4; }
-.ticket-date { font-size: 11px; color: var(--muted); }
-.ticket-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
-.ticket-meta { font-size: 12px; color: var(--muted); }
-.tracker { display: flex; align-items: center; justify-content: center; margin-top: 12px; gap: 3px; }
-.tracker-step { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.tracker-circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; background: var(--bg); }
-.tracker-circle.done { background: var(--navy); border-color: var(--navy); color: white; }
-.tracker-line { flex: 1; height: 2px; background: var(--border); max-width: 24px; }
-.tracker-line.done { background: var(--navy); }
-.tracker-label { font-size: 9px; color: var(--muted); text-align: center; }
-.tracker-label.done { color: var(--navy); font-weight: 700; }
+/* ═══════════════════════════════════
+   HOME
+═══════════════════════════════════ */
+.welcome-strip{background:linear-gradient(135deg,var(--navy),var(--blue));margin:14px;border-radius:18px;padding:18px 18px 16px;position:relative;overflow:hidden}
+.welcome-strip::after{content:'';position:absolute;top:-20px;left:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(200,168,75,.15),transparent);border-radius:50%}
+.ws-name{font-size:18px;font-weight:800;color:white;margin-bottom:3px}
+.ws-sub{font-size:12px;color:rgba(255,255,255,.5)}
+.ws-pts{display:inline-flex;align-items:center;gap:5px;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);border-radius:20px;padding:4px 10px;margin-top:8px}
+.ws-pts span{font-size:11px;font-weight:700;color:var(--gold)}
 
-/* PROFILE */
-.profile-card { background: var(--navy); margin: 16px; border-radius: 20px; padding: 24px; text-align: center; }
-.profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: white; margin: 0 auto 12px; }
-.profile-name { font-size: 20px; font-weight: 800; color: white; }
-.profile-meta { font-size: 13px; color: rgba(255,255,255,.6); margin-top: 4px; }
-.points-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.1); border-radius: 20px; padding: 6px 14px; margin-top: 10px; }
-.points-badge span { font-size: 13px; font-weight: 700; color: #ffd700; }
-.profile-section { padding: 16px 20px 0; }
-.profile-section h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
-.profile-input { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; outline: none; margin-bottom: 10px; }
-.profile-input:focus { border-color: var(--accent); }
-.save-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 8px; }
-.logout-btn { width: 100%; background: white; color: var(--navy); border: 1.5px solid var(--border); border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 700; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 10px; }
-.delete-btn { width: 100%; background: none; color: var(--red); border: none; padding: 12px; font-size: 13px; font-weight: 600; font-family: 'Heebo', sans-serif; cursor: pointer; }
+.empty-state{text-align:center;padding:40px 24px}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.6}
+.empty-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--muted);line-height:1.6}
 
-/* ADMIN */
-.admin-tabs { display: flex; overflow-x: auto; padding: 12px 16px; gap: 8px; }
-.admin-tab { white-space: nowrap; padding: 8px 16px; border-radius: 20px; background: white; border: 1.5px solid var(--border); font-size: 13px; font-weight: 600; color: var(--navy); cursor: pointer; font-family: 'Heebo', sans-serif; }
-.admin-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
-.stat-card { background: white; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
-.stat-num { font-size: 32px; font-weight: 900; }
-.stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.savings-card { background: var(--navy); border-radius: 20px; margin: 0 16px 16px; padding: 20px; text-align: center; }
-.savings-lbl { color: var(--accent); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
-.savings-amt { color: white; font-size: 40px; font-weight: 900; }
-.savings-sub { color: rgba(255,255,255,.5); font-size: 12px; margin-top: 4px; }
-.savings-total { color: var(--accent); font-size: 15px; font-weight: 800; margin-top: 8px; }
-.live-dot { display: inline-block; width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; margin-left: 6px; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
-.admin-ticket { background: white; margin: 0 16px 10px; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(15,39,68,.06); }
-.admin-ticket-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.admin-ticket-cat { font-size: 11px; font-weight: 700; color: var(--accent); }
-.admin-ticket-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
-.admin-actions { display: flex; gap: 8px; }
-.admin-btn { flex: 1; padding: 8px; border-radius: 10px; font-size: 12px; font-weight: 700; font-family: 'Heebo', sans-serif; border: none; cursor: pointer; }
-.admin-btn-progress { background: #ebf4ff; color: var(--blue); }
-.admin-btn-close { background: var(--green-bg); color: var(--green); }
-.broadcast-section { padding: 0 16px; }
-.broadcast-input { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; outline: none; margin-bottom: 10px; }
-.broadcast-textarea { width: 100%; background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px; font-size: 14px; color: var(--navy); font-family: 'Heebo', sans-serif; resize: none; outline: none; min-height: 80px; margin-bottom: 10px; }
-.broadcast-btn { width: 100%; background: var(--red); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; }
+.feed-item{background:white;margin:0 14px 8px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05);border-right:3px solid var(--gold)}
+.fi-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fi-cat{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+.fi-date{font-size:10px;color:var(--muted)}
+.fi-title{font-size:13px;font-weight:700;color:var(--navy);line-height:1.4}
+.fi-body{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
 
-/* BOTTOM NAV */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); display: flex; z-index: 200; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 6px 0; border: none; background: none; font-family: 'Heebo', sans-serif; }
-.nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-.nav-icon svg { width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 1.8; transition: stroke .15s; }
-.nav-item.active .nav-icon svg { stroke: var(--navy); }
-.nav-label { font-size: 10px; color: var(--muted); font-weight: 600; }
-.nav-item.active .nav-label { color: var(--navy); font-weight: 700; }
-.nav-center { flex: 1; display: flex; align-items: center; justify-content: center; }
-.nav-report-btn { width: 52px; height: 52px; background: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -20px; box-shadow: 0 4px 16px rgba(15,39,68,.3); border: none; cursor: pointer; }
-.nav-report-btn svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; }
+/* ═══════════════════════════════════
+   REPORT
+═══════════════════════════════════ */
+.fs{padding:12px 18px 0}
+.flbl{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.cgrid{display:flex;flex-wrap:wrap;gap:7px}
+.cchip{padding:8px 14px;border-radius:20px;background:white;border:1.5px solid var(--border);font-size:12px;color:var(--navy);cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;transition:all .15s}
+.cchip.sel{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.fta{width:100%;background:white;border:1.5px solid var(--border);border-radius:13px;padding:13px;font-size:13px;color:var(--navy);font-family:'Heebo',sans-serif;resize:none;outline:none;min-height:95px}
+.fta:focus{border-color:var(--gold)}
+.loc-btn{width:100%;border:none;border-radius:12px;padding:13px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.lb-idle{background:var(--bg);color:var(--navy);border:1.5px solid var(--border)}
+.lb-ok{background:var(--green-bg);color:var(--green);border:1.5px solid #86efac}
+.photo-btn{flex:1;background:white;border:1.5px solid var(--border);border-radius:11px;padding:11px;font-size:12px;font-weight:700;color:var(--navy);font-family:'Heebo',sans-serif;cursor:pointer;text-align:center}
+.photo-prev{width:100%;height:150px;object-fit:cover;border-radius:11px;margin-top:8px;display:none}
+.dup-alert{background:#fffbeb;border:1.5px solid var(--gold);border-radius:12px;padding:12px;margin:12px 18px 0;display:none}
+.dup-alert p{font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px}
+.dup-btns{display:flex;gap:8px}
+.dup-yes{flex:1;background:var(--navy);color:white;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer}
+.dup-no{flex:1;background:white;color:var(--navy);border:1.5px solid var(--border);border-radius:8px;padding:9px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer}
+.big-btn{width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:white;border:none;border-radius:14px;padding:17px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;transition:transform .1s;letter-spacing:.5px}
+.big-btn:active{transform:scale(.98)}
 
-/* MODAL */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300; align-items: flex-end; }
-.modal-overlay.open { display: flex; }
-.modal-card { background: white; border-radius: 24px 24px 0 0; padding: 24px; width: 100%; max-height: 85vh; overflow-y: auto; }
-.modal-title { font-size: 18px; font-weight: 800; color: var(--navy); text-align: right; margin-bottom: 6px; }
-.modal-meta { font-size: 13px; color: var(--muted); text-align: right; margin-bottom: 16px; }
-.modal-close { width: 100%; background: none; border: none; padding: 14px; font-size: 15px; color: var(--muted); font-family: 'Heebo', sans-serif; cursor: pointer; border-top: 1px solid var(--border); margin-top: 12px; }
-.stars-row { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
-.star { font-size: 36px; cursor: pointer; color: var(--border); transition: color .15s; }
-.star.lit { color: #f6ad55; }
-.rating-btn { width: 100%; background: var(--navy); color: white; border: none; border-radius: 14px; padding: 14px; font-size: 15px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; }
+/* ═══════════════════════════════════
+   HISTORY
+═══════════════════════════════════ */
+.tk-card{background:white;margin:0 14px 8px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05);cursor:pointer;transition:transform .15s}
+.tk-card:active{transform:scale(.99)}
+.tk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.sb{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.s-open{background:var(--red-bg);color:var(--red);border:1px solid #fca5a5}
+.s-prog{background:var(--orange-bg);color:var(--orange);border:1px solid #fcd34d}
+.s-done{background:var(--green-bg);color:var(--green);border:1px solid #86efac}
+.tk-date{font-size:10px;color:var(--muted)}
+.tk-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.tk-meta{font-size:11px;color:var(--muted)}
+.tracker{display:flex;align-items:center;justify-content:center;margin-top:12px;gap:3px}
+.ts{display:flex;flex-direction:column;align-items:center;gap:2px}
+.tc{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--bg)}
+.tc.dn{background:var(--navy);border-color:var(--gold);color:var(--gold)}
+.tl{flex:1;height:2px;background:var(--border);max-width:22px}
+.tl.dn{background:var(--gold)}
+.tlbl{font-size:8px;color:var(--muted);text-align:center}
+.tlbl.dn{color:var(--navy);font-weight:700}
+.auto-reply{background:var(--red-bg);border-right:3px solid var(--red);border-radius:10px;padding:10px;margin-top:10px}
+.ar-dot{display:inline-block;width:6px;height:6px;background:var(--red);border-radius:50%;margin-left:4px;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ar-title{font-size:11px;font-weight:700;color:var(--red);margin-bottom:3px}
+.ar-body{font-size:12px;color:#b91c1c}
+
+/* ═══════════════════════════════════
+   NOTIFICATIONS
+═══════════════════════════════════ */
+.notif-item{background:white;margin:0 14px 8px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+
+/* ═══════════════════════════════════
+   PROFILE
+═══════════════════════════════════ */
+.pcard{background:linear-gradient(135deg,var(--navy),var(--blue));margin:14px;border-radius:20px;padding:22px;text-align:center;position:relative;overflow:hidden}
+.pcard::after{content:'';position:absolute;top:-30px;left:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(200,168,75,.12),transparent);border-radius:50%}
+.pav{width:64px;height:64px;border-radius:50%;background:rgba(200,168,75,.2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:var(--gold);margin:0 auto 10px;position:relative;z-index:1}
+.pname{font-size:18px;font-weight:800;color:white;position:relative;z-index:1}
+.pmeta{font-size:12px;color:rgba(255,255,255,.5);margin-top:3px;position:relative;z-index:1}
+.pts-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.3);border-radius:20px;padding:5px 12px;margin-top:8px;position:relative;z-index:1}
+.pts-badge span{font-size:12px;font-weight:700;color:var(--gold)}
+.trust-bar-wrap{margin-top:10px;position:relative;z-index:1}
+.trust-lbl{font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px}
+.trust-bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.trust-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width 1s ease}
+.trust-next{font-size:10px;color:rgba(255,255,255,.3);margin-top:3px}
+.psec{padding:14px 18px 0}
+.psec h3{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.pinp{width:100%;background:white;border:1.5px solid var(--border);border-radius:11px;padding:12px;font-size:13px;color:var(--navy);font-family:'Heebo',sans-serif;outline:none;margin-bottom:8px}
+.pinp:focus{border-color:var(--gold)}
+.senior-toggle-row{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:11px;padding:13px;margin-bottom:8px}
+.stl{font-size:13px;font-weight:700;color:var(--navy)}
+.sts{font-size:10px;color:var(--muted);margin-top:1px}
+.toggle{width:38px;height:20px;background:var(--border);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--gold)}
+.toggle::after{content:'';position:absolute;top:2px;right:2px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(-18px)}
+.qr-wrap{background:white;border-radius:14px;padding:16px;text-align:center;margin:0 14px 8px}
+.qr-wrap h3{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.qr-img-wrap{width:130px;height:130px;border:2px solid var(--border);border-radius:12px;margin:0 auto;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.qr-img-wrap img{width:100%;height:100%}
+.qr-sub{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* ═══════════════════════════════════
+   MAP
+═══════════════════════════════════ */
+#map-container{width:100%;height:calc(100vh - 200px);position:relative;overflow:hidden}
+#leaflet-map{width:100%;height:100%;position:absolute;inset:0}
+.map-filter-bar{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;background:white;border-bottom:1px solid var(--border)}
+.mfbtn{white-space:nowrap;padding:6px 12px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);font-size:11px;font-weight:600;color:var(--navy);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s}
+.mfbtn.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+.map-legend{position:absolute;bottom:16px;right:16px;background:white;border-radius:12px;padding:10px 14px;box-shadow:0 2px 12px rgba(10,22,40,.12);z-index:500;border:1px solid var(--border)}
+.map-legend-title{font-size:10px;font-weight:700;color:var(--navy);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--navy);margin-bottom:3px}
+.map-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.map-locate-btn{position:absolute;top:12px;left:12px;background:white;border:none;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(10,22,40,.12);cursor:pointer;z-index:500}
+.map-locate-btn svg{width:17px;height:17px;stroke:var(--navy);fill:none;stroke-width:2}
+
+/* ═══════════════════════════════════
+   ADMIN / SCADA
+═══════════════════════════════════ */
+.scada-hdr{background:var(--navy);padding:14px 16px 12px;border-bottom:1px solid rgba(200,168,75,.15)}
+.scada-hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.scada-title{font-size:15px;font-weight:800;color:white}
+.scada-live{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.live-dot{display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+.scada-kpis{display:flex;gap:6px}
+.kpi{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(200,168,75,.12);border-radius:10px;padding:8px;text-align:center}
+.kpi-val{font-size:18px;font-weight:900;line-height:1}
+.kpi-lbl{font-size:8px;color:rgba(255,255,255,.4);margin-top:2px;font-weight:600;letter-spacing:.5px}
+.admin-tabs{display:flex;overflow-x:auto;padding:8px 12px;gap:6px;background:white;border-bottom:1px solid var(--border)}
+.atab{white-space:nowrap;padding:6px 13px;border-radius:20px;background:var(--bg);border:1.5px solid var(--border);font-size:11px;font-weight:600;color:var(--navy);cursor:pointer;font-family:'Heebo',sans-serif;transition:all .15s}
+.atab.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
+
+/* ROI CARD */
+.roi-card{background:linear-gradient(135deg,var(--navy),var(--blue));margin:12px 14px 10px;border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.roi-card::after{content:'';position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(200,168,75,.15),transparent);border-radius:50%}
+.roi-lbl{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px;text-transform:uppercase}
+.roi-val{font-size:36px;font-weight:900;color:white;line-height:1;position:relative;z-index:1}
+.roi-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px}
+.roi-bars{display:flex;gap:8px;margin-top:10px}
+.roi-bar-item{flex:1;background:rgba(255,255,255,.06);border-radius:10px;padding:8px;text-align:center}
+.roi-bar-val{font-size:13px;font-weight:800}
+.roi-bar-lbl{font-size:9px;color:rgba(255,255,255,.4);margin-top:2px}
+.roi-progress{margin-top:12px}
+.roi-progress-row{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.4);margin-bottom:4px}
+.roi-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.roi-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;animation:grow .8s ease-out}
+@keyframes grow{from{width:0}}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px 10px}
+.stat-card{background:white;border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.stat-num{font-size:28px;font-weight:900;line-height:1}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:3px;font-weight:600}
+
+/* SLA */
+.sla-card{background:white;margin:0 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.sla-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;display:flex;justify-content:space-between}
+.sla-row{margin-bottom:8px}
+.sla-row-top{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.sla-name{font-weight:700;color:var(--navy)}
+.sla-pct{font-weight:700}
+.sla-bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.sla-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+
+/* PROACTIVE */
+.proactive-card{background:white;margin:0 14px 14px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.proactive-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.proactive-btns{display:flex;flex-wrap:wrap;gap:6px}
+.pb{padding:7px 12px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;border:none;cursor:pointer}
+.proactive-suggestion{background:var(--bg);border:1.5px solid var(--gold);border-radius:12px;padding:12px;margin-top:10px;display:none}
+.ps-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.ps-body{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.ps-acts{display:flex;gap:6px}
+.ps-ok{flex:1;background:var(--navy);color:white;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer}
+.ps-no{flex:1;background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer}
+
+/* DEPT */
+.dept-row{background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.dept-name{font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between}
+.dept-bar-bg{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.dept-bar-fill{height:100%;border-radius:3px;transition:width .6s}
+
+/* ADMIN TICKETS */
+.adm-tk{background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05)}
+.atk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.atk-cat{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px}
+.atk-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.atk-acts{display:flex;gap:7px}
+.aa{flex:1;padding:8px;border-radius:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;border:none;cursor:pointer}
+.aa-prog{background:#eff6ff;color:#1d4ed8}
+.aa-close{background:var(--green-bg);color:var(--green)}
+
+/* BROADCAST */
+.bc-sec{padding:10px 18px 0}
+.bc-inp{width:100%;background:white;border:1.5px solid var(--border);border-radius:11px;padding:12px;font-size:13px;color:var(--navy);font-family:'Heebo',sans-serif;outline:none;margin-bottom:8px}
+.bc-inp:focus{border-color:var(--gold)}
+.bc-ta{width:100%;background:white;border:1.5px solid var(--border);border-radius:11px;padding:12px;font-size:13px;color:var(--navy);font-family:'Heebo',sans-serif;resize:none;outline:none;min-height:75px;margin-bottom:8px}
+.bc-ta:focus{border-color:var(--gold)}
+.bc-btn{width:100%;background:var(--red);color:white;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer}
+
+/* KANBAN */
+.kanban-wrap{display:flex;gap:10px;padding:10px 14px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.kanban-col{min-width:200px;background:var(--bg);border-radius:14px;padding:10px;flex-shrink:0}
+.kanban-col-hdr{font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;padding:0 2px}
+.kanban-count{background:var(--navy);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.kanban-item{background:white;border-radius:10px;padding:10px;margin-bottom:6px;box-shadow:0 1px 3px rgba(10,22,40,.06);cursor:grab;border-right:3px solid var(--gold)}
+.kanban-item:active{cursor:grabbing}
+.ki-cat{font-size:9px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:3px}
+.ki-title{font-size:12px;font-weight:700;color:var(--navy)}
+.ki-meta{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* ═══════════════════════════════════
+   CHATBOT
+═══════════════════════════════════ */
+.chatbot-btn{position:fixed;bottom:96px;left:18px;width:50px;height:50px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(10,22,40,.25);cursor:pointer;border:none;z-index:150;display:none;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.chatbot-btn svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:2}
+.chat-window{position:fixed;bottom:160px;left:14px;width:calc(100% - 28px);max-width:320px;background:white;border-radius:18px;box-shadow:0 8px 32px rgba(10,22,40,.15);z-index:200;display:none;flex-direction:column;overflow:hidden;border:1px solid var(--border)}
+.chat-window.open{display:flex}
+.chat-hdr{background:var(--navy);padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.chat-hdr span{color:var(--gold);font-size:13px;font-weight:700}
+.chat-hdr button{background:none;border:none;color:rgba(255,255,255,.4);font-size:16px;cursor:pointer}
+.chat-msgs{padding:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.msg-bot{background:var(--bg);border-radius:0 11px 11px 11px;padding:9px 11px;font-size:12px;color:var(--navy);max-width:85%;line-height:1.5}
+.msg-user{background:var(--navy);border-radius:11px 0 11px 11px;padding:9px 11px;font-size:12px;color:var(--gold);max-width:85%;align-self:flex-end;line-height:1.5}
+.chat-quick{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 8px}
+.cq{background:var(--bg);color:var(--navy);border:1px solid var(--border);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:600;font-family:'Heebo',sans-serif;cursor:pointer}
+.chat-inp-row{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border)}
+.chat-inp{flex:1;background:var(--bg);border:none;border-radius:20px;padding:8px 12px;font-size:12px;font-family:'Heebo',sans-serif;outline:none}
+.chat-send{background:var(--navy);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.chat-send svg{width:13px;height:13px;stroke:var(--gold);fill:none;stroke-width:2}
+
+/* ═══════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════ */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);padding:6px 0 calc(6px + env(safe-area-inset-bottom));display:flex;z-index:200}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 0;border:none;background:none;font-family:'Heebo',sans-serif}
+.ni svg{width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:1.8;transition:stroke .15s}
+.ni.on svg{stroke:var(--navy)}
+.nilbl{font-size:9px;color:var(--muted);font-weight:600}
+.ni.on .nilbl{color:var(--navy);font-weight:700}
+.nc{flex:1;display:flex;align-items:center;justify-content:center}
+.nrb{width:46px;height:46px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 4px 14px rgba(10,22,40,.25);border:2px solid var(--gold)}
+.nrb svg{width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:2.2}
+
+/* ═══════════════════════════════════
+   MODAL
+═══════════════════════════════════ */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:flex-end}
+.moverlay.open{display:flex}
+.mcard{background:white;border-radius:22px 22px 0 0;padding:22px;width:100%;max-height:85vh;overflow-y:auto}
+.mtitle{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.mmeta{font-size:12px;color:var(--muted);margin-bottom:14px}
+.mclose{width:100%;background:none;border:none;padding:12px;font-size:14px;color:var(--muted);font-family:'Heebo',sans-serif;cursor:pointer;border-top:1px solid var(--border);margin-top:10px}
+.stars-row{display:flex;justify-content:center;gap:8px;margin:10px 0}
+.star{font-size:34px;cursor:pointer;color:var(--border);transition:color .1s}
+.star.lit{color:var(--gold)}
+.rate-btn{width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:white;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer}
+
+/* ═══════════════════════════════════
+   EMERGENCY
+═══════════════════════════════════ */
+.emg{display:none;position:fixed;inset:0;background:#7f1d1d;z-index:400;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+.emg.on{display:flex}
+.emg h2{font-size:28px;font-weight:900;color:white;text-align:center;margin-bottom:6px}
+.emg p{font-size:13px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:32px}
+.ebtn{width:100%;border:none;border-radius:16px;padding:20px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-bottom:10px}
+.emg-exit{background:none;border:none;color:rgba(255,255,255,.3);font-size:13px;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:12px}
+
+/* ═══════════════════════════════════
+   SENIOR MODE
+═══════════════════════════════════ */
+.senior-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+.senior-screen.on{display:flex}
+.sen-greeting{font-size:28px;font-weight:800;color:var(--navy);text-align:center;margin-bottom:32px}
+.sen-btn{width:100%;border:none;border-radius:18px;padding:26px;font-size:22px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-bottom:14px}
+.sen-exit{background:none;border:none;color:var(--muted);font-size:13px;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:14px}
+
+/* ═══════════════════════════════════
+   WELCOME SCREEN
+═══════════════════════════════════ */
+#welcome-screen{display:none;position:fixed;inset:0;background:var(--navy);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.wl-content{animation:fadeUp .7s ease-out both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.wl-icon{margin:0 auto 20px}
+.wl-brand{font-family:'Cinzel',serif;font-size:26px;font-weight:900;color:white;letter-spacing:4px;margin-bottom:4px}
+.wl-gold{color:var(--gold);font-size:12px;letter-spacing:3px;margin-bottom:28px}
+.wl-name{font-size:22px;font-weight:800;color:white;margin-bottom:8px}
+.wl-msg{font-size:13px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:6px}
+.wl-sub{font-size:12px;color:rgba(255,255,255,.3);margin-bottom:32px}
+.wl-cta{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border:none;border-radius:16px;padding:17px;font-size:15px;font-weight:900;font-family:'Heebo',sans-serif;cursor:pointer;margin-bottom:10px;letter-spacing:.5px}
+.wl-sec{width:100%;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:13px;font-size:13px;font-weight:600;font-family:'Heebo',sans-serif;cursor:pointer}
 
 /* TOAST */
-.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--navy); color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; font-weight: 600; opacity: 0; transition: all .3s; z-index: 500; white-space: nowrap; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--navy);color:var(--gold);padding:10px 20px;border-radius:50px;font-size:12px;font-weight:600;opacity:0;transition:all .3s;z-index:600;white-space:nowrap;pointer-events:none;border:1px solid rgba(200,168,75,.3)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* EMERGENCY */
-.emergency-screen { display: none; position: fixed; inset: 0; background: #7f0000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
-.emergency-screen.active { display: flex; }
-.emergency-title { font-size: 32px; font-weight: 900; color: white; text-align: center; margin-bottom: 8px; }
-.emergency-sub { font-size: 15px; color: rgba(255,255,255,.7); text-align: center; margin-bottom: 40px; }
-.emergency-btn { width: 100%; border: none; border-radius: 18px; padding: 22px; font-size: 18px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; margin-bottom: 14px; }
-.e-btn-red { background: #e53e3e; color: white; }
-.e-btn-dark { background: #2d3748; color: white; }
-.e-btn-navy { background: var(--navy); color: white; }
-.emergency-exit { background: none; border: none; color: rgba(255,255,255,.5); font-size: 14px; font-family: 'Heebo', sans-serif; cursor: pointer; margin-top: 16px; }
-
-/* INSTALL BANNER */
-.install-banner { background: linear-gradient(135deg, var(--navy), var(--blue)); margin: 12px 16px; border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 12px; }
-.install-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.install-icon svg { width: 22px; height: 22px; stroke: white; fill: none; }
-.install-text { flex: 1; }
-.install-text strong { color: white; font-size: 13px; display: block; }
-.install-text span { color: rgba(255,255,255,.6); font-size: 11px; }
-.install-btn { background: white; color: var(--navy); border: none; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 800; font-family: 'Heebo', sans-serif; cursor: pointer; white-space: nowrap; }
-
-@media (min-width: 768px) {
-  #app { max-width: 420px; margin: 0 auto; box-shadow: 0 0 40px rgba(0,0,0,.15); min-height: 100vh; }
-  body { background: #e8edf4; }
-}
+@media(min-width:768px){#app{max-width:420px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.15);min-height:100vh}body{background:#e2e8f5}.chatbot-btn{left:calc(50% - 210px + 18px)}.chat-window{left:calc(50% - 210px + 14px)}}
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="auth-screen">
+<!-- ══ AUTH ════════════════════════════════════════ -->
+<div id="auth">
+  <div class="auth-bg"></div>
   <div class="auth-hero">
-    <div class="auth-logo-wrap">
-      <div class="auth-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      </div>
-      <div>
-        <div class="auth-logo-text">FORESIGHT</div>
-        <div class="auth-tagline">דואגים לך, עוד לפני שביקשת</div>
-      </div>
+    <div class="auth-logo">
+      <!-- LOGO SVG -->
+      <svg class="auth-logo-svg" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="36" cy="36" r="34" stroke="#c8a84b" stroke-width="1.5" opacity=".3"/>
+        <circle cx="36" cy="36" r="26" stroke="#c8a84b" stroke-width="1" opacity=".2"/>
+        <!-- Eye shape -->
+        <path d="M12 36 C20 22 52 22 60 36 C52 50 20 50 12 36Z" stroke="#c8a84b" stroke-width="1.5" fill="rgba(200,168,75,0.05)"/>
+        <!-- Iris -->
+        <circle cx="36" cy="36" r="9" stroke="#c8a84b" stroke-width="1.5" fill="rgba(200,168,75,0.08)"/>
+        <!-- Pupil -->
+        <circle cx="36" cy="36" r="4" fill="#c8a84b"/>
+        <!-- Scan lines -->
+        <line x1="12" y1="36" x2="27" y2="36" stroke="#c8a84b" stroke-width=".8" opacity=".4"/>
+        <line x1="45" y1="36" x2="60" y2="36" stroke="#c8a84b" stroke-width=".8" opacity=".4"/>
+        <!-- Corner marks -->
+        <path d="M18 24 L18 18 L24 18" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
+        <path d="M48 18 L54 18 L54 24" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
+        <path d="M18 48 L18 54 L24 54" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
+        <path d="M48 54 L54 54 L54 48" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
+      </svg>
+      <div class="auth-brand">FORESIGHT</div>
+      <div class="auth-sub">דואגים לך, עוד לפני שביקשת</div>
     </div>
+    <div class="auth-desc">מערכת ניהול עירונית חכמה</div>
   </div>
   <div class="auth-card">
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="setAuthMode('login')">כניסה</button>
-      <button class="auth-tab" onclick="setAuthMode('register')">הרשמה ראשונה</button>
+      <button class="atb on" onclick="setMode('login',this)">כניסה</button>
+      <button class="atb" onclick="setMode('register',this)">הרשמה ראשונה</button>
     </div>
-    <div class="field-label">מספר תעודת זהות</div>
-    <div class="id-input-wrap">
-      <input class="id-input" id="id-input" type="tel" maxlength="9" placeholder="• • • • • • • • •" oninput="validateId(this.value)" />
-      <span class="id-valid" id="id-valid" style="display:none">✓</span>
+    <div class="fl">מספר תעודת זהות</div>
+    <div class="id-wrap">
+      <input class="id-inp" id="aid" type="tel" maxlength="9" placeholder="• • • • • • • • •" oninput="chkId(this.value)">
+      <span class="id-ok" id="aok">✓</span>
     </div>
-    <div class="id-error" id="id-error"></div>
-    <div class="field-label">מספר טלפון</div>
-    <input class="field-input" id="phone-input" type="tel" placeholder="050-0000000" />
-    <div id="register-fields" style="display:none">
-      <div class="field-label">שם מלא</div>
-      <input class="field-input" id="name-input" type="text" placeholder="ישראל ישראלי" />
-      <div class="field-label">כתובת מגורים</div>
-      <input class="field-input" id="address-input" type="text" placeholder="רחוב הורדים 12, רמת גן" />
+    <div class="id-err" id="aerr"></div>
+    <!-- שדה טלפון — מוצג רק בהרשמה ראשונה -->
+    <div id="phone-wrap">
+      <div class="fl">מספר טלפון</div>
+      <input class="fi" id="aphone" type="tel" placeholder="050-0000000">
     </div>
-    <div class="admin-badge" id="admin-badge">⭐ זוהית כמנהל מועצה</div>
-    <button class="submit-btn" id="auth-btn" onclick="handleAuth()">כניסה</button>
-    <p class="submit-hint">הכניסה מזוהה לפי ת.ז בלבד — ללא סיסמה</p>
+    <div id="regfields" style="display:none">
+      <div class="fl">שם מלא</div>
+      <input class="fi" id="aname" type="text" placeholder="ישראל ישראלי">
+      <div class="fl">כתובת מגורים</div>
+      <input class="fi" id="aaddr" type="text" placeholder='רחוב הורדים 12'>
+      <div class="fl">תאריך לידה</div>
+      <input class="fi" id="abday" type="date">
+    </div>
+    <div class="adm-badge" id="admbadge">⭐ זוהית כמנהל מועצה</div>
+    <button class="auth-btn" onclick="doAuth()">כניסה</button>
+    <p class="hint" id="auth-hint">כניסה מאובטחת לפי ת.ז — ללא סיסמה</p>
   </div>
 </div>
 
-<!-- EMERGENCY -->
-<div class="emergency-screen" id="emergency-screen">
-  <div class="emergency-title">מצב חירום פעיל</div>
-  <div class="emergency-sub">עקוב אחר הנחיות הרשות המקומית</div>
-  <button class="emergency-btn e-btn-red" onclick="showToast('מיקומך נשלח למוקד החירום')">🆘 אני צריך עזרה</button>
-  <button class="emergency-btn e-btn-dark" onclick="showToast('מציג מפת מקלטים...')">🗺️ מפת מקלטים</button>
-  <button class="emergency-btn e-btn-navy" onclick="document.getElementById('emergency-screen').classList.remove('active')">📢 עדכונים שוטפים</button>
-  <button class="emergency-exit" onclick="document.getElementById('emergency-screen').classList.remove('active')">חזרה לאפליקציה</button>
+<!-- ══ EMERGENCY ═══════════════════════════════════ -->
+<div class="emg" id="emg">
+  <h2>🚨 מצב חירום</h2>
+  <p>עקוב אחר הנחיות הרשות המקומית</p>
+  <button class="ebtn" style="background:#dc2626;color:white" onclick="toast('🆘 מיקומך נשלח למוקד')">🆘 אני צריך עזרה</button>
+  <button class="ebtn" style="background:#1e293b;color:white" onclick="toast('🗺️ מציג מפת מקלטים...')">🗺️ מפת מקלטים</button>
+  <button class="ebtn" style="background:var(--navy);color:var(--gold);border:1px solid var(--gold)" onclick="document.getElementById('emg').classList.remove('on')">📢 עדכונים שוטפים</button>
+  <button class="emg-exit" onclick="document.getElementById('emg').classList.remove('on')">חזרה לאפליקציה</button>
 </div>
 
-<!-- APP -->
+<!-- ══ SENIOR ══════════════════════════════════════ -->
+<div class="senior-screen" id="senior-screen">
+  <div class="sen-greeting" id="sen-greeting">שלום!</div>
+  <button class="sen-btn" style="background:var(--navy);color:white" onclick="toast('📞 מחייג למוקד...')">📞 התקשר למועצה</button>
+  <button class="sen-btn" style="background:var(--red);color:white" onclick="toast('🆘 בקשת סיוע נשלחה')">🆘 בקש סיוע</button>
+  <button class="sen-exit" onclick="document.getElementById('senior-screen').classList.remove('on')">חזרה לתצוגה רגילה</button>
+</div>
+
+<!-- ══ WELCOME ══════════════════════════════════════ -->
+<div id="welcome-screen">
+  <div class="wl-content">
+    <div class="wl-icon">
+      <svg viewBox="0 0 72 72" width="80" height="80" fill="none">
+        <circle cx="36" cy="36" r="34" stroke="#c8a84b" stroke-width="1.5" opacity=".3"/>
+        <path d="M12 36 C20 22 52 22 60 36 C52 50 20 50 12 36Z" stroke="#c8a84b" stroke-width="1.5" fill="rgba(200,168,75,0.05)"/>
+        <circle cx="36" cy="36" r="9" stroke="#c8a84b" stroke-width="1.5" fill="rgba(200,168,75,0.08)"/>
+        <circle cx="36" cy="36" r="4" fill="#c8a84b"/>
+      </svg>
+    </div>
+    <div class="wl-brand">FORESIGHT</div>
+    <div class="wl-gold">דואגים לך, עוד לפני שביקשת</div>
+    <div class="wl-name" id="wl-name">ברוכ.ה הבא.ה!</div>
+    <div class="wl-msg" id="wl-msg">ב-FORESIGHT אנחנו משנים את הכללים:<br>במקום שתחפש אותנו כשמשהו לא עובד,<br><strong style="color:white">אנחנו נעבוד כדי למנוע את התקלה מראש.</strong></div>
+    <div class="wl-sub" id="wl-sub">סמן תחומי עניין בפרופיל שלך כדי שנשלח לך רק מידע שרלוונטי אליך</div>
+    <button class="wl-cta" id="wl-cta" onclick="dismissWelcome()">בוא נתחיל!</button>
+    <button class="wl-sec" id="wl-sec" onclick="dismissWelcomeProfile()">הגדר תחומי עניין בפרופיל</button>
+  </div>
+</div>
+
+<!-- ══ APP ══════════════════════════════════════════ -->
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="topbar-inner">
-      <div class="topbar-logo">
-        <div class="topbar-icon">
-          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    <div class="tb-inner">
+      <div class="logo-mark">
+        <svg class="logo-svg" viewBox="0 0 40 40" fill="none">
+          <path d="M4 20 C9 12 31 12 36 20 C31 28 9 28 4 20Z" stroke="#c8a84b" stroke-width="1.2" fill="rgba(200,168,75,0.06)"/>
+          <circle cx="20" cy="20" r="5" stroke="#c8a84b" stroke-width="1.2" fill="rgba(200,168,75,0.1)"/>
+          <circle cx="20" cy="20" r="2.2" fill="#c8a84b"/>
+          <line x1="4" y1="20" x2="15" y2="20" stroke="#c8a84b" stroke-width=".8" opacity=".4"/>
+          <line x1="25" y1="20" x2="36" y2="20" stroke="#c8a84b" stroke-width=".8" opacity=".4"/>
+          <path d="M8 13 L8 10 L11 10" stroke="#c8a84b" stroke-width="1" opacity=".5"/>
+          <path d="M29 10 L32 10 L32 13" stroke="#c8a84b" stroke-width="1" opacity=".5"/>
+          <path d="M8 27 L8 30 L11 30" stroke="#c8a84b" stroke-width="1" opacity=".5"/>
+          <path d="M29 30 L32 30 L32 27" stroke="#c8a84b" stroke-width="1" opacity=".5"/>
+        </svg>
+        <div class="logo-wordmark">
+          <div class="logo-name">FORESIGHT</div>
+          <div class="logo-tagline">דואגים לך</div>
         </div>
-        <div class="topbar-brand">FORESIGHT</div>
       </div>
-      <div class="topbar-right">
-        <span class="topbar-time" id="topbar-time"></span>
-        <button class="notif-btn" onclick="showPage('notifications')">
+      <div class="tb-right">
+        <span class="tb-time" id="tbtime"></span>
+        <button class="icon-btn" onclick="showPage('notif')">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <div class="notif-dot"></div>
+          <div class="ndot"></div>
         </button>
       </div>
     </div>
   </div>
 
   <!-- HOME -->
-  <div class="page active" id="page-home">
-    <div class="home-greeting">
-      <h2 id="greeting-text">שלום, תושב יקר</h2>
-      <p id="greeting-sub">3 עדכונים חדשים בתחומים שלך</p>
-    </div>
-    <div class="interest-chips" id="interest-chips">
-      <div class="interest-chip">הנדסה</div>
-      <div class="interest-chip">תשתיות</div>
-      <div class="interest-chip">קהילה</div>
+  <div class="page on" id="page-home">
+    <div class="welcome-strip">
+      <div class="ws-name" id="gr-name">שלום!</div>
+      <div class="ws-sub" id="gr-sub">ברוכ.ה הבא.ה ל-FORESIGHT</div>
+      <div class="ws-pts"><span id="ws-pts-val">0 נקודות אזרחות ⭐</span></div>
     </div>
 
-    <div id="install-banner-wrap">
-      <div class="install-banner">
-        <div class="install-icon"><svg viewBox="0 0 24 24"><path d="M12 2v13M8 11l4 4 4-4"/><path d="M20 21H4"/></svg></div>
-        <div class="install-text"><strong>הוסף למסך הבית</strong><span>גישה מהירה ללא דפדפן</span></div>
-        <button class="install-btn" onclick="installApp()">הורד</button>
+    <!-- DAILY POLL -->
+    <div id="daily-poll" style="background:white;margin:12px 14px 0;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(10,22,40,.06);border-right:3px solid var(--gold)">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px">📊 שאלת היום</span>
+        <span style="font-size:10px;color:var(--muted)" id="poll-date"></span>
       </div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;line-height:1.5" id="poll-question">טוען...</div>
+      <div style="display:flex;gap:8px" id="poll-btns">
+        <button onclick="answerPoll(1)" style="flex:1;background:var(--green-bg);color:var(--green);border:1.5px solid #86efac;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😊 מרוצה</button>
+        <button onclick="answerPoll(2)" style="flex:1;background:var(--orange-bg);color:var(--orange);border:1.5px solid #fcd34d;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😐 בינוני</button>
+        <button onclick="answerPoll(3)" style="flex:1;background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😞 לא מרוצה</button>
+      </div>
+      <div id="poll-answered" style="display:none;text-align:center;padding:8px;font-size:13px;color:var(--muted)">תודה על המשוב! 🙏</div>
     </div>
 
-    <div class="section-title">עדכונים בתחומים שלך</div>
-    <div class="update-card">
-      <div class="update-card-top"><div class="update-tag">תשתיות</div><div class="update-date">היום, 08:30</div></div>
-      <div class="update-title">שיפוץ כביש הראשי מתחיל ב-15.4</div>
-      <div class="update-body">צפויות הגבלות תנועה בין השעות 7:00-15:00</div>
-    </div>
-    <div class="update-card">
-      <div class="update-card-top"><div class="update-tag">הנדסה</div><div class="update-date">אתמול, 14:00</div></div>
-      <div class="update-title">תאורת רחוב הורדים עודכנה</div>
-      <div class="update-body">הותקנו 12 עמודי תאורה חדשים בשכונה</div>
-    </div>
-    <div class="update-card">
-      <div class="update-card-top"><div class="update-tag">קהילה</div><div class="update-date">01.04, 10:00</div></div>
-      <div class="update-title">פעילות קיץ לנוער — הרשמה פתוחה</div>
-      <div class="update-body">ההרשמה לפעילויות הקיץ נפתחה. מהרו להירשם!</div>
-    </div>
-    <div class="update-card">
-      <div class="update-card-top"><div class="update-tag">רווחה</div><div class="update-date">30.03, 09:00</div></div>
-      <div class="update-title">מרכז יום לגיל השלישי — שעות חדשות</div>
-      <div class="update-body">החל מאפריל המרכז פתוח גם בימי שישי</div>
+    <div class="section-title">עדכונים</div>
+    <div id="feed-list">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">אין עדכונים עדיין</div>
+        <div class="empty-sub">כשהמועצה תשלח עדכונים בתחומים שבחרת — הם יופיעו כאן</div>
+      </div>
     </div>
   </div>
 
   <!-- REPORT -->
   <div class="page" id="page-report">
-    <div class="page-header"><h2>דיווח על בעיה</h2><p>דיווח מהיר ישירות לגורם הרלוונטי</p></div>
-    <div class="form-section">
-      <div class="form-label">קטגוריה</div>
-      <div class="cats-grid" id="cats-grid">
-        <button class="cat-chip" onclick="selectCat(this,'הנדסה')">הנדסה</button>
-        <button class="cat-chip" onclick="selectCat(this,'תברואה')">תברואה</button>
-        <button class="cat-chip" onclick="selectCat(this,'תשתיות')">תשתיות</button>
-        <button class="cat-chip" onclick="selectCat(this,'קהילה')">קהילה</button>
-        <button class="cat-chip" onclick="selectCat(this,'חינוך')">חינוך</button>
-        <button class="cat-chip" onclick="selectCat(this,'ספורט')">ספורט</button>
-        <button class="cat-chip" onclick="selectCat(this,'רווחה')">רווחה</button>
-        <button class="cat-chip" onclick="selectCat(this,'חירום/בטחון')">חירום/בטחון</button>
-        <button class="cat-chip" onclick="selectCat(this,'איכות סביבה')">איכות סביבה</button>
-        <button class="cat-chip" onclick="selectCat(this,'גיל שלישי')">גיל שלישי</button>
-        <button class="cat-chip" onclick="selectCat(this,'רישוי עסקים')">רישוי עסקים</button>
-        <button class="cat-chip" onclick="selectCat(this,'תרבות')">תרבות</button>
+    <div class="pg-hdr"><h2>דיווח על בעיה</h2><p>דיווח מהיר ישירות לגורם הרלוונטי</p></div>
+    <div class="dup-alert" id="dup-alert">
+      <p>⚠️ קיימת פנייה דומה באזורך! להצטרף אליה במקום לפתוח חדשה?</p>
+      <div class="dup-btns">
+        <button class="dup-yes" onclick="joinExisting()">כן, הצטרף</button>
+        <button class="dup-no" onclick="document.getElementById('dup-alert').style.display='none'">לא, פתח חדשה</button>
       </div>
     </div>
-    <div class="form-section">
-      <div class="form-label">תיאור הבעיה</div>
-      <textarea class="form-textarea" id="report-desc" placeholder="תאר את הבעיה בפירוט..."></textarea>
-    </div>
-    <div class="form-section">
-      <div class="form-label">מיקום</div>
-      <button class="loc-btn idle" id="loc-btn" onclick="getLocation()">📍 אמת מיקום GPS</button>
-    </div>
-    <div class="form-section">
-      <div class="form-label">תמונה (אופציונלי)</div>
-      <div class="photo-row">
-        <button class="photo-btn" onclick="document.getElementById('photo-input').click()">📷 צלם / גלריה</button>
+    <div class="fs">
+      <div class="flbl">קטגוריה</div>
+      <div class="cgrid" id="catgrid">
+        <button class="cchip" onclick="selCat(this,'הנדסה')">הנדסה</button>
+        <button class="cchip" onclick="selCat(this,'תברואה')">תברואה</button>
+        <button class="cchip" onclick="selCat(this,'תשתיות')">תשתיות</button>
+        <button class="cchip" onclick="selCat(this,'קהילה')">קהילה</button>
+        <button class="cchip" onclick="selCat(this,'חינוך')">חינוך</button>
+        <button class="cchip" onclick="selCat(this,'ספורט')">ספורט</button>
+        <button class="cchip" onclick="selCat(this,'רווחה')">רווחה</button>
+        <button class="cchip" onclick="selCat(this,'חירום/בטחון')">חירום/בטחון</button>
+        <button class="cchip" onclick="selCat(this,'איכות סביבה')">איכות סביבה</button>
+        <button class="cchip" onclick="selCat(this,'גיל שלישי')">גיל שלישי</button>
+        <button class="cchip" onclick="selCat(this,'רישוי עסקים')">רישוי עסקים</button>
+        <button class="cchip" onclick="selCat(this,'תרבות')">תרבות</button>
+        <button class="cchip" onclick="selCat(this,'דת')">דת</button>
+        <button class="cchip" onclick="selCat(this,'חדשנות')">חדשנות</button>
+        <button class="cchip" onclick="selCat(this,'גבייה')">גבייה</button>
+        <button class="cchip" onclick="selCat(this,'מנהל כללי')">מנהל כללי</button>
       </div>
-      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="showPhoto(this)">
-      <img id="photo-preview" class="photo-preview" alt="תמונה">
     </div>
-    <div class="form-section" style="padding-bottom:16px">
-      <button class="big-submit" onclick="submitReport()">שלח דיווח</button>
+    <div class="fs">
+      <div class="flbl">תיאור הבעיה</div>
+      <textarea class="fta" id="rdesc" placeholder="תאר את הבעיה בפירוט..."></textarea>
     </div>
+    <div class="fs">
+      <div class="flbl">מיקום GPS</div>
+      <button class="loc-btn lb-idle" id="locbtn" onclick="getLoc()">📍 אמת מיקום</button>
+    </div>
+    <div class="fs">
+      <div class="flbl">תמונה (אופציונלי)</div>
+      <div style="display:flex;gap:8px"><button class="photo-btn" onclick="document.getElementById('photoinp').click()">📷 צלם / גלריה</button></div>
+      <input type="file" id="photoinp" accept="image/*" capture="environment" style="display:none" onchange="showPic(this)">
+      <img id="photoprev" class="photo-prev">
+    </div>
+    <div class="fs" style="padding-bottom:14px"><button class="big-btn" onclick="submitReport()">שלח דיווח</button></div>
   </div>
 
   <!-- HISTORY -->
   <div class="page" id="page-history">
-    <div class="page-header" style="padding-bottom:12px"><h2>הפניות שלי</h2><p id="tickets-count">3 פניות</p></div>
-    <div id="tickets-list">
-      <div class="ticket-card" onclick="openTicket(0)">
-        <div class="ticket-top"><span class="status-badge status-done">טופל ✓</span><span class="ticket-date">28.03.2026</span></div>
-        <div class="ticket-title">בור ברחוב הורדים 12</div>
-        <div class="ticket-meta">הנדסה • רחוב הורדים 12</div>
-        <div class="tracker">
-          <div class="tracker-step"><div class="tracker-circle done">✓</div><div class="tracker-label done">התקבל</div></div>
-          <div class="tracker-line done"></div>
-          <div class="tracker-step"><div class="tracker-circle done">👤</div><div class="tracker-label done">שובץ</div></div>
-          <div class="tracker-line done"></div>
-          <div class="tracker-step"><div class="tracker-circle done">🚚</div><div class="tracker-label done">בשטח</div></div>
-          <div class="tracker-line done"></div>
-          <div class="tracker-step"><div class="tracker-circle done">★</div><div class="tracker-label done">טופל</div></div>
-        </div>
-      </div>
-      <div class="ticket-card" onclick="openTicket(1)">
-        <div class="ticket-top"><span class="status-badge status-progress">בטיפול</span><span class="ticket-date">30.03.2026</span></div>
-        <div class="ticket-title">תאורה תקולה ברח׳ הגפן</div>
-        <div class="ticket-meta">תשתיות • רחוב הגפן 5</div>
-        <div class="tracker">
-          <div class="tracker-step"><div class="tracker-circle done">✓</div><div class="tracker-label done">התקבל</div></div>
-          <div class="tracker-line done"></div>
-          <div class="tracker-step"><div class="tracker-circle done">👤</div><div class="tracker-label done">שובץ</div></div>
-          <div class="tracker-line"></div>
-          <div class="tracker-step"><div class="tracker-circle">🚚</div><div class="tracker-label">בשטח</div></div>
-          <div class="tracker-line"></div>
-          <div class="tracker-step"><div class="tracker-circle">★</div><div class="tracker-label">טופל</div></div>
-        </div>
-      </div>
-      <div class="ticket-card" onclick="openTicket(2)">
-        <div class="ticket-top"><span class="status-badge status-open">פתוח</span><span class="ticket-date">31.03.2026</span></div>
-        <div class="ticket-title">פח אשפה שבור בפארק</div>
-        <div class="ticket-meta">תברואה • פארק העירוני</div>
+    <div class="pg-hdr" style="padding-bottom:10px"><h2>הפניות שלי</h2><p id="tk-count">אין פניות עדיין</p></div>
+    <div id="tk-list">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">אין פניות עדיין</div>
+        <div class="empty-sub">פניות שתשלח יופיעו כאן עם מעקב סטטוס בזמן אמת</div>
       </div>
     </div>
   </div>
 
   <!-- NOTIFICATIONS -->
-  <div class="page" id="page-notifications">
-    <div class="page-header" style="padding-bottom:12px"><h2>התראות</h2><p>עדכונים מהמועצה</p></div>
-    <div class="update-card" style="border-right:4px solid var(--accent2)">
-      <div class="update-card-top"><div class="update-tag" style="background:#f0fff4;color:var(--green)">טופל ✅</div><div class="update-date">28.03 13:45</div></div>
-      <div class="update-title">הפנייה שלך טופלה!</div>
-      <div class="update-body">בור ברחוב הורדים — הטיפול הושלם בהצלחה</div>
-      <button onclick="openRating()" style="background:var(--navy);color:white;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:10px;">דרג עכשיו ★</button>
+  <div class="page" id="page-notif">
+    <div class="pg-hdr" style="padding-bottom:10px"><h2>התראות</h2><p>עדכונים מהמועצה</p></div>
+    <div id="notif-list">
+      <div class="empty-state">
+        <div class="empty-icon">🔔</div>
+        <div class="empty-title">אין התראות</div>
+        <div class="empty-sub">התראות מהמועצה יופיעו כאן</div>
+      </div>
     </div>
-    <div class="update-card" style="border-right:4px solid var(--accent)">
-      <div class="update-card-top"><div class="update-tag">עדכון 🔄</div><div class="update-date">30.03 09:00</div></div>
-      <div class="update-title">יש התקדמות!</div>
-      <div class="update-body">צוות הנדסה קיבל את המשימה שלך ויגיע בקרוב</div>
+  </div>
+
+  <!-- MAP -->
+  <div class="page" id="page-map">
+    <div class="map-filter-bar">
+      <button class="mfbtn on" onclick="filterMap('all',this)">הכל</button>
+      <button class="mfbtn" onclick="filterMap('open',this)">פתוחות</button>
+      <button class="mfbtn" onclick="filterMap('progress',this)">בטיפול</button>
+      <button class="mfbtn" onclick="filterMap('done',this)">טופלו</button>
+      <button class="mfbtn" onclick="filterMap('emergency',this)">חירום</button>
     </div>
-    <div class="update-card" style="border-right:4px solid #f6ad55">
-      <div class="update-card-top"><div class="update-tag" style="background:#fffaf0;color:var(--orange)">שוטף 📢</div><div class="update-date">29.03 11:00</div></div>
-      <div class="update-title">עדכון שוטף</div>
-      <div class="update-body">שיפוץ כביש הראשי — צפי סיום 20.4</div>
-    </div>
-    <div class="update-card" style="border-right:4px solid var(--red)">
-      <div class="update-card-top"><div class="update-tag" style="background:var(--red-bg);color:var(--red)">חירום 🚨</div><div class="update-date">28.03 08:00</div></div>
-      <div class="update-title">הודעה מהמועצה</div>
-      <div class="update-body">עבודות חפירה בשכונה ב — הגבלות חנייה עד סוף השבוע</div>
-    </div>
-    <div class="update-card" style="border-right:4px solid #9f7aea">
-      <div class="update-card-top"><div class="update-tag" style="background:#faf5ff;color:#6b46c1">יום הולדת 🎂</div><div class="update-date">28.03 00:00</div></div>
-      <div class="update-title">יום הולדת שמח!</div>
-      <div class="update-body">המועצה מאחלת לך שנה מצוינת ובריאה 🎉</div>
+    <div id="map-container">
+      <div id="leaflet-map"></div>
+      <button class="map-locate-btn" onclick="locateMe()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
+      <div class="map-legend">
+        <div class="map-legend-title">מקרא</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:var(--red)"></div>פנייה פתוחה</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:var(--orange)"></div>בטיפול</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:var(--green)"></div>טופל</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#7c3aed"></div>חירום</div>
+      </div>
     </div>
   </div>
 
   <!-- PROFILE -->
   <div class="page" id="page-profile">
-    <div class="profile-card">
-      <div class="profile-avatar" id="profile-avatar">ד</div>
-      <div class="profile-name" id="profile-name">דוד כהן</div>
-      <div class="profile-meta" id="profile-id-display">ת.ז: 023456789</div>
-      <div class="points-badge"><span>⭐ 42 נקודות אזרחות</span></div>
-    </div>
-    <div class="profile-section">
-      <h3>פרטים אישיים</h3>
-      <input class="profile-input" id="p-name" placeholder="שם מלא" />
-      <input class="profile-input" id="p-phone" placeholder="טלפון" />
-      <input class="profile-input" id="p-address" placeholder="כתובת" />
-    </div>
-    <div class="profile-section">
-      <h3>תחומי עניין</h3>
-      <div class="cats-grid" id="interests-grid">
-        <button class="cat-chip selected" onclick="toggleInterest(this,'הנדסה')">הנדסה</button>
-        <button class="cat-chip selected" onclick="toggleInterest(this,'תשתיות')">תשתיות</button>
-        <button class="cat-chip" onclick="toggleInterest(this,'חינוך')">חינוך</button>
-        <button class="cat-chip selected" onclick="toggleInterest(this,'קהילה')">קהילה</button>
-        <button class="cat-chip" onclick="toggleInterest(this,'ספורט')">ספורט</button>
-        <button class="cat-chip" onclick="toggleInterest(this,'רווחה')">רווחה</button>
-        <button class="cat-chip" onclick="toggleInterest(this,'תרבות')">תרבות</button>
-        <button class="cat-chip" onclick="toggleInterest(this,'גיל שלישי')">גיל שלישי</button>
+    <div class="pcard">
+      <div class="pav" id="pav">?</div>
+      <div class="pname" id="pname">—</div>
+      <div class="pmeta" id="pid">ת.ז: —</div>
+      <div class="pts-badge"><span id="pts-val">0 נקודות אזרחות ⭐</span></div>
+      <div class="trust-bar-wrap">
+        <div class="trust-lbl">תושב חדש — עוד 50 נקודות לדרגת שומר קהילה</div>
+        <div class="trust-bar"><div class="trust-fill" id="trust-fill" style="width:0%"></div></div>
+        <div class="trust-next">☕ 50 נקודות = קפה חינם במרכז הקהילה</div>
       </div>
     </div>
-    <div class="profile-section" style="padding-bottom:16px">
-      <button class="save-btn" onclick="saveProfile()">שמור שינויים</button>
-      <button class="logout-btn" onclick="logout()">התנתקות</button>
-      <button class="delete-btn" onclick="deleteAccount()">מחק חשבון</button>
+
+    <div class="qr-wrap">
+      <h3>תעודת תושב דיגיטלית</h3>
+      <div class="qr-img-wrap"><img id="qr-img" src="" alt="QR"></div>
+      <div class="qr-sub">סרוק בכניסה לבריכה, ספרייה ואירועים</div>
+    </div>
+
+    <div class="psec">
+      <h3>פרטים אישיים</h3>
+      <input class="pinp" id="p-name" placeholder="שם מלא">
+      <input class="pinp" id="p-phone" placeholder="טלפון" type="tel">
+      <input class="pinp" id="p-addr" placeholder="כתובת">
+    </div>
+    <div class="psec">
+      <h3>תחומי עניין</h3>
+      <div class="cgrid" id="intgrid">
+        <button class="cchip" onclick="togInt(this)">הנדסה</button>
+        <button class="cchip" onclick="togInt(this)">תשתיות</button>
+        <button class="cchip" onclick="togInt(this)">חינוך</button>
+        <button class="cchip" onclick="togInt(this)">קהילה</button>
+        <button class="cchip" onclick="togInt(this)">ספורט</button>
+        <button class="cchip" onclick="togInt(this)">רווחה</button>
+        <button class="cchip" onclick="togInt(this)">תרבות</button>
+        <button class="cchip" onclick="togInt(this)">גיל שלישי</button>
+        <button class="cchip" onclick="togInt(this)">חדשנות</button>
+      </div>
+    </div>
+    <div class="psec">
+      <h3>הגדרות</h3>
+      <div class="senior-toggle-row" onclick="toggleSenior()">
+        <div><div class="stl">מצב נגישות (גיל שלישי)</div><div class="sts">גופן גדול + כפתורים ענקיים</div></div>
+        <div class="toggle" id="sen-toggle"></div>
+      </div>
+    </div>
+    <div class="psec" style="padding-bottom:16px">
+      <button class="big-btn" onclick="saveProfile()">שמור שינויים</button>
+      <button style="width:100%;background:white;color:var(--navy);border:1.5px solid var(--border);border-radius:13px;padding:13px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px" onclick="logout()">התנתקות</button>
+      <button style="width:100%;background:none;color:var(--red);border:none;padding:11px;font-size:12px;font-weight:600;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:2px" onclick="delAccount()">מחק חשבון</button>
     </div>
   </div>
 
-  <!-- ADMIN -->
+  <!-- ADMIN SCADA -->
   <div class="page" id="page-admin">
-    <div class="page-header" style="padding-bottom:4px"><h2>לוח ניהול</h2><p><span class="live-dot"></span>עדכון חי</p></div>
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="setAdminTab('stats',this)">סטטיסטיקה</button>
-      <button class="admin-tab" onclick="setAdminTab('tickets',this)">פניות</button>
-      <button class="admin-tab" onclick="setAdminTab('broadcast',this)">שידור</button>
-      <button class="admin-tab" onclick="setAdminTab('users',this)">משתמשים</button>
+    <div class="scada-hdr">
+      <div class="scada-hdr-top">
+        <div style="display:flex;gap:6px">
+          <button onclick="document.getElementById('emg').classList.add('on')" style="background:#dc2626;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">🚨 חירום</button>
+          <button onclick="exportCSV()" style="background:rgba(200,168,75,.1);color:var(--gold);border:1px solid rgba(200,168,75,.3);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">📊 ייצוא</button>
+        </div>
+        <div style="text-align:right">
+          <div class="scada-title">חדר בקרה</div>
+          <div class="scada-live"><span class="live-dot"></span><span id="scada-time"></span></div>
+        </div>
+      </div>
+      <div class="scada-kpis">
+        <div class="kpi"><div class="kpi-val" style="color:var(--red)" id="kpi-open">0</div><div class="kpi-lbl">פתוחות</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--orange)" id="kpi-prog">0</div><div class="kpi-lbl">בטיפול</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:var(--gold)" id="kpi-trust">—</div><div class="kpi-lbl">אמון</div></div>
+        <div class="kpi"><div class="kpi-val" style="color:#4ade80" id="kpi-save">₪0</div><div class="kpi-lbl">חיסכון</div></div>
+      </div>
     </div>
 
-    <div id="admin-stats">
-      <div class="savings-card">
-        <div class="savings-lbl">חיסכון תפעולי מצטבר</div>
-        <div class="savings-amt">₪48,500</div>
-        <div class="savings-sub">+ ₪12,300 חיסכון בשיחות מוקד</div>
-        <div class="savings-total">סה״כ: ₪60,800</div>
+    <div class="admin-tabs">
+      <button class="atab on" onclick="setATab('scada',this)">SCADA</button>
+      <button class="atab" onclick="setATab('tickets',this)">פניות</button>
+      <button class="atab" onclick="setATab('kanban',this)">משימות</button>
+      <button class="atab" onclick="setATab('cost',this)">עלויות</button>
+      <button class="atab" onclick="setATab('dept',this)">מחלקות</button>
+      <button class="atab" onclick="setATab('broadcast',this)">שידור</button>
+      <button class="atab" onclick="setATab('users',this)">משתמשים</button>
+    </div>
+
+    <!-- SCADA -->
+    <div id="at-scada">
+      <div class="roi-card">
+        <div class="roi-lbl">חיסכון תפעולי מצטבר</div>
+        <div class="roi-val">₪0</div>
+        <div class="roi-sub">יגדל עם כל פנייה שתיסגר</div>
+        <div class="roi-bars">
+          <div class="roi-bar-item"><div class="roi-bar-val" style="color:var(--gold)">₪0</div><div class="roi-bar-lbl">טיפול פרואקטיבי</div></div>
+          <div class="roi-bar-item"><div class="roi-bar-val" style="color:#93c5fd">₪0</div><div class="roi-bar-lbl">חיסכון מוקד</div></div>
+        </div>
+        <div class="roi-progress">
+          <div class="roi-progress-row"><span>יעד חודשי: ₪80,000</span><span>0%</span></div>
+          <div class="roi-bar"><div class="roi-fill" style="width:0%"></div></div>
+        </div>
       </div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num" style="color:var(--accent)">312</div><div class="stat-lbl">תושבים רשומים</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--red)">12</div><div class="stat-lbl">פניות פתוחות</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--green)">47</div><div class="stat-lbl">טופלו</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--orange)">4.3</div><div class="stat-lbl">דירוג ממוצע</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--gold)" id="sc-users">0</div><div class="stat-lbl">תושבים רשומים</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="sc-open">0</div><div class="stat-lbl">פניות פתוחות</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="sc-done">0</div><div class="stat-lbl">טופלו</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--orange)" id="sc-rating">—</div><div class="stat-lbl">דירוג ממוצע</div></div>
       </div>
-      <button onclick="document.getElementById('emergency-screen').classList.add('active')" style="width:calc(100% - 32px);margin:0 16px 16px;background:var(--red);color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;">🚨 הפעל מצב חירום</button>
-    </div>
-
-    <div id="admin-tickets" style="display:none">
-      <div class="admin-ticket">
-        <div class="admin-ticket-top"><span class="admin-ticket-cat">הנדסה</span><span class="status-badge status-open">פתוח</span></div>
-        <div class="admin-ticket-title">בור ברחוב הורדים 12</div>
-        <div class="admin-actions">
-          <button class="admin-btn admin-btn-progress" onclick="showToast('הפנייה הועברה לטיפול')">העבר לטיפול</button>
-          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
+      <div class="sla-card">
+        <div class="sla-title"><span>עמידה ביעדי SLA</span><span style="font-size:10px;color:var(--muted)">זמן טיפול</span></div>
+        <div class="sla-row"><div class="sla-row-top"><span class="sla-name">הנדסה</span><span class="sla-pct" style="color:var(--green)">—</span></div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="sla-row"><div class="sla-row-top"><span class="sla-name">תשתיות</span><span class="sla-pct" style="color:var(--gold)">—</span></div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:0%;background:var(--gold)"></div></div></div>
+        <div class="sla-row"><div class="sla-row-top"><span class="sla-name">תברואה</span><span class="sla-pct" style="color:var(--orange)">—</span></div><div class="sla-bar-bg"><div class="sla-bar-fill" style="width:0%;background:var(--orange)"></div></div></div>
+      </div>
+      <div class="proactive-card">
+        <div class="proactive-title">⚡ מחולל פעולות פרואקטיביות</div>
+        <div class="proactive-btns">
+          <button class="pb" style="background:#eff6ff;color:#1d4ed8" onclick="proAct('גשם')">🌧️ אזהרת גשם</button>
+          <button class="pb" style="background:var(--red-bg);color:var(--red)" onclick="proAct('חום')">🌡️ גל חום</button>
+          <button class="pb" style="background:var(--green-bg);color:var(--green)" onclick="proAct('חג')">🎉 חג</button>
+          <button class="pb" style="background:var(--orange-bg);color:var(--orange)" onclick="proAct('תחזוקה')">🔧 תחזוקה</button>
         </div>
-      </div>
-      <div class="admin-ticket">
-        <div class="admin-ticket-top"><span class="admin-ticket-cat">תשתיות</span><span class="status-badge status-progress">בטיפול</span></div>
-        <div class="admin-ticket-title">תאורה תקולה ברח׳ הגפן</div>
-        <div class="admin-actions">
-          <button class="admin-btn admin-btn-progress" onclick="showToast('עדכון נשלח לתושב')">עדכן תושב</button>
-          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
-        </div>
-      </div>
-      <div class="admin-ticket">
-        <div class="admin-ticket-top"><span class="admin-ticket-cat">תברואה</span><span class="status-badge status-open">פתוח</span></div>
-        <div class="admin-ticket-title">פח אשפה שבור בפארק</div>
-        <div class="admin-actions">
-          <button class="admin-btn admin-btn-progress" onclick="showToast('הפנייה הועברה לטיפול')">העבר לטיפול</button>
-          <button class="admin-btn admin-btn-close" onclick="showToast('הפנייה נסגרה ✓')">סגור</button>
+        <div class="proactive-suggestion" id="pro-sug">
+          <div class="ps-title" id="pro-title"></div>
+          <div class="ps-body" id="pro-body"></div>
+          <div class="ps-acts">
+            <button class="ps-ok" onclick="approveProactive()">אשר ושדר</button>
+            <button class="ps-no" onclick="document.getElementById('pro-sug').style.display='none'">ביטול</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="admin-broadcast" style="display:none">
-      <div class="broadcast-section">
-        <div class="form-label" style="margin-top:8px">כותרת ההודעה</div>
-        <input class="broadcast-input" placeholder="כותרת..." />
-        <div class="form-label">תוכן ההודעה</div>
-        <textarea class="broadcast-textarea" placeholder="תוכן..."></textarea>
-        <div class="form-label">תחום עניין (ריק = כולם)</div>
-        <input class="broadcast-input" placeholder="למשל: תשתיות" />
-        <button class="broadcast-btn" onclick="showToast('ההודעה שודרה לכל התושבים הרלוונטיים ✓')">שדר לכולם</button>
+    <!-- TICKETS -->
+    <div id="at-tickets" style="display:none">
+      <div style="padding:10px 14px 4px">
+        <div id="admin-tk-list">
+          <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות פתוחות</div><div class="empty-sub">פניות תושבים יופיעו כאן</div></div>
+        </div>
       </div>
     </div>
 
-    <div id="admin-users" style="display:none">
-      <div class="broadcast-section">
-        <div class="form-label" style="margin-top:8px">הוסף מנהל לפי ת.ז</div>
-        <input class="broadcast-input" id="new-admin-id" type="tel" maxlength="9" placeholder="000000000" />
-        <button class="save-btn" onclick="showToast('המשתמש הוגדר כמנהל ✓')">הגדר כמנהל</button>
-      </div>
-      <div style="padding:16px">
-        <div class="section-title" style="padding:0 0 10px">רשימת מנהלים</div>
-        <div class="ticket-card">
-          <div class="ticket-title">דוד כהן</div>
-          <div class="ticket-meta">ת.ז: 023456789 • מנהל ראשי</div>
+    <!-- KANBAN -->
+    <div id="at-kanban" style="display:none">
+      <div class="kanban-wrap">
+        <div class="kanban-col">
+          <div class="kanban-col-hdr"><span>📥 פתוח</span><span class="kanban-count" id="kb-open">0</span></div>
+          <div id="kb-col-open"></div>
         </div>
+        <div class="kanban-col">
+          <div class="kanban-col-hdr"><span>🔄 בטיפול</span><span class="kanban-count" id="kb-prog">0</span></div>
+          <div id="kb-col-prog"></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-hdr"><span>✅ טופל</span><span class="kanban-count" id="kb-done">0</span></div>
+          <div id="kb-col-done"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COST -->
+    <div id="at-cost" style="display:none">
+      <div style="background:white;margin:12px 14px 8px;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
+        <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">פירוט חיסכון עלויות</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="flex:1;background:var(--green-bg);border-radius:10px;padding:12px;text-align:center;border:1px solid #86efac">
+            <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px">פרואקטיבי</div>
+            <div style="font-size:22px;font-weight:900;color:var(--green)">₪200</div>
+            <div style="font-size:10px;color:var(--muted)">לפנייה</div>
+          </div>
+          <div style="display:flex;align-items:center;font-size:14px;color:var(--muted)">vs</div>
+          <div style="flex:1;background:var(--red-bg);border-radius:10px;padding:12px;text-align:center;border:1px solid #fca5a5">
+            <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:3px">ריאקטיבי</div>
+            <div style="font-size:22px;font-weight:900;color:var(--red)">₪710</div>
+            <div style="font-size:10px;color:var(--muted)">לפנייה</div>
+          </div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--muted)">חיסכון ממוצע לפנייה</div>
+          <div style="font-size:24px;font-weight:900;color:var(--green)">₪510</div>
+        </div>
+        <button onclick="exportCSV()" style="width:100%;background:var(--bg);color:var(--navy);border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:10px">📊 ייצוא דוח עלויות</button>
+      </div>
+    </div>
+
+    <!-- DEPT -->
+    <div id="at-dept" style="display:none">
+      <div style="padding:10px 0 0">
+        <div class="dept-row"><div class="dept-name"><span>הנדסה</span><span style="color:var(--muted);font-weight:400">0 פניות</span></div><div class="dept-bar-bg"><div class="dept-bar-fill" style="width:0%;background:var(--red)"></div></div></div>
+        <div class="dept-row"><div class="dept-name"><span>תברואה</span><span style="color:var(--muted);font-weight:400">0 פניות</span></div><div class="dept-bar-bg"><div class="dept-bar-fill" style="width:0%;background:var(--orange)"></div></div></div>
+        <div class="dept-row"><div class="dept-name"><span>תשתיות</span><span style="color:var(--muted);font-weight:400">0 פניות</span></div><div class="dept-bar-bg"><div class="dept-bar-fill" style="width:0%;background:var(--gold)"></div></div></div>
+        <div class="dept-row"><div class="dept-name"><span>קהילה</span><span style="color:var(--muted);font-weight:400">0 פניות</span></div><div class="dept-bar-bg"><div class="dept-bar-fill" style="width:0%;background:var(--green)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- BROADCAST -->
+    <div id="at-broadcast" style="display:none">
+      <div class="bc-sec">
+        <div class="flbl" style="margin-top:8px">כותרת ההודעה</div>
+        <input class="bc-inp" placeholder="כותרת...">
+        <div class="flbl">תוכן ההודעה</div>
+        <textarea class="bc-ta" placeholder="תוכן..."></textarea>
+        <div class="flbl">תחום עניין (ריק = כולם)</div>
+        <input class="bc-inp" placeholder="למשל: תשתיות">
+        <button class="bc-btn" onclick="toast('ההודעה שודרה ✓')">שדר לכולם</button>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div id="at-users" style="display:none">
+      <div class="bc-sec">
+        <div class="flbl" style="margin-top:8px">הוסף מנהל לפי ת.ז</div>
+        <input class="bc-inp" type="tel" maxlength="9" placeholder="000000000">
+        <button class="big-btn" onclick="toast('המשתמש הוגדר כמנהל ✓')">הגדר כמנהל</button>
+      </div>
+      <div style="padding:10px 14px 0">
+        <div class="section-title" style="padding:0 0 8px">תושבים רשומים</div>
+        <div id="users-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין תושבים רשומים עדיין</div></div></div>
       </div>
     </div>
   </div>
 
   <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <button class="nav-item active" id="nav-home" onclick="showPage('home')">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-      <span class="nav-label">בית</span>
+  <div class="bnav">
+    <button class="ni on" id="n-home" onclick="showPage('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nilbl">בית</span>
     </button>
-    <button class="nav-item" id="nav-history" onclick="showPage('history')">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-      <span class="nav-label">פניות</span>
+    <button class="ni" id="n-history" onclick="showPage('history')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="nilbl">פניות</span>
     </button>
-    <div class="nav-center">
-      <button class="nav-report-btn" onclick="showPage('report')">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-    </div>
-    <button class="nav-item" id="nav-notifications" onclick="showPage('notifications')">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
-      <span class="nav-label">התראות</span>
+    <div class="nc"><button class="nrb" onclick="showPage('report')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+    <button class="ni" id="n-map" onclick="showPage('map');initMap()">
+      <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+      <span class="nilbl">מפה</span>
     </button>
-    <button class="nav-item" id="nav-profile" onclick="showPage('profile')">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-      <span class="nav-label">פרופיל</span>
+    <button class="ni" id="n-profile" onclick="showPage('profile')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nilbl">פרופיל</span>
     </button>
-    <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-      <span class="nav-label">ניהול</span>
+    <button class="ni" id="n-admin" onclick="showPage('admin')" style="display:none">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span class="nilbl">ניהול</span>
     </button>
   </div>
 </div>
 
-<!-- MODAL: TICKET DETAIL -->
-<div class="modal-overlay" id="ticket-modal">
-  <div class="modal-card">
-    <div class="modal-title" id="modal-ticket-title">בור ברחוב הורדים 12</div>
-    <div class="modal-meta" id="modal-ticket-meta">הנדסה • רחוב הורדים 12</div>
-    <div id="modal-tracker"></div>
-    <div id="modal-auto-reply" style="background:#fff3cd;border-right:4px solid #f6ad55;border-radius:12px;padding:12px;margin-top:12px;display:none">
-      <div style="font-size:12px;font-weight:700;color:#856404;margin-bottom:4px">תגובה אוטומטית מהמועצה:</div>
-      <div style="font-size:13px;color:#856404">קיבלנו! הדיווח הועבר למחלקת הנדסה. צפי לטיפול: 48 שעות.</div>
+<!-- CHATBOT -->
+<button class="chatbot-btn" id="chatbtn" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+<div class="chat-window" id="chatwin">
+  <div class="chat-hdr"><span>🤖 עוזר FORESIGHT</span><button onclick="toggleChat()">✕</button></div>
+  <div class="chat-msgs" id="chatmsgs">
+    <div class="msg-bot">שלום! אני יכול לעזור לך עם פניות, מידע על שירותי המועצה וכל שאלה אחרת.</div>
+  </div>
+  <div class="chat-quick">
+    <button class="cq" onclick="askBot('איך פותחים פנייה?')">איך פותחים פנייה?</button>
+    <button class="cq" onclick="askBot('שעות פעילות')">שעות פעילות</button>
+    <button class="cq" onclick="askBot('מה הנקודות שלי?')">הנקודות שלי</button>
+  </div>
+  <div class="chat-inp-row">
+    <input class="chat-inp" id="chatinp" placeholder="שאל אותי משהו..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<!-- TICKET MODAL -->
+<div class="moverlay" id="tkm">
+  <div class="mcard">
+    <div class="mtitle" id="tkmtitle"></div>
+    <div class="mmeta" id="tkmmeta"></div>
+    <div id="tkmtracker"></div>
+    <div id="tkmreply" style="display:none" class="auto-reply">
+      <div class="ar-title"><span class="ar-dot"></span>תגובה אוטומטית מהמועצה</div>
+      <div class="ar-body">קיבלנו! הדיווח הועבר לטיפול. צפי לעדכון תוך 48 שעות.</div>
     </div>
-    <div id="modal-rating-section" style="display:none;margin-top:16px">
-      <div style="font-size:15px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:8px">איך היה השירות?</div>
-      <div class="stars-row" id="modal-stars">
-        <span class="star" onclick="rateStar(1)">★</span>
-        <span class="star" onclick="rateStar(2)">★</span>
-        <span class="star" onclick="rateStar(3)">★</span>
-        <span class="star" onclick="rateStar(4)">★</span>
-        <span class="star" onclick="rateStar(5)">★</span>
+
+    <!-- תגובת מנהל אמיתית -->
+    <div id="tkm-admin-reply" style="display:none;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:12px;padding:14px;margin-top:10px">
+      <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:6px">💬 תגובת המועצה</div>
+      <div style="font-size:13px;color:white;line-height:1.6" id="tkm-admin-reply-text"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px" id="tkm-admin-reply-date"></div>
+    </div>
+    <div id="tkmrating" style="display:none;margin-top:16px;text-align:center">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px">איך היה השירות?</div>
+      <div class="stars-row" id="tkstars">
+        <span class="star" onclick="rateT(1)">★</span><span class="star" onclick="rateT(2)">★</span><span class="star" onclick="rateT(3)">★</span><span class="star" onclick="rateT(4)">★</span><span class="star" onclick="rateT(5)">★</span>
       </div>
-      <button class="rating-btn" onclick="submitRating()">שלח דירוג</button>
+      <textarea style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:11px;font-family:'Heebo',sans-serif;font-size:13px;resize:none;outline:none;min-height:65px;margin-bottom:10px" placeholder="הערות נוספות..."></textarea>
+      <button class="rate-btn" onclick="submitRate()">שלח דירוג</button>
     </div>
-    <button class="modal-close" onclick="closeModal('ticket-modal')">סגור</button>
+    <button class="mclose" onclick="closeMod('tkm')">סגור</button>
   </div>
 </div>
 
-<!-- MODAL: RATING -->
-<div class="modal-overlay" id="rating-modal">
-  <div class="modal-card">
-    <div class="modal-title">דרג את השירות</div>
-    <div class="modal-meta">כמה שביעות רצון יש לך מהטיפול?</div>
-    <div class="stars-row" id="rating-stars">
-      <span class="star" onclick="rateStar2(1)">★</span>
-      <span class="star" onclick="rateStar2(2)">★</span>
-      <span class="star" onclick="rateStar2(3)">★</span>
-      <span class="star" onclick="rateStar2(4)">★</span>
-      <span class="star" onclick="rateStar2(5)">★</span>
+<!-- RATING MODAL (אוטומטי בסיום פנייה) -->
+<div class="moverlay" id="rating-modal">
+  <div class="mcard">
+    <div style="text-align:center;margin-bottom:4px;font-size:28px">⭐</div>
+    <div class="mtitle" style="text-align:center">איך היה השירות?</div>
+    <div class="mmeta" style="text-align:center">הפנייה שלך טופלה! נשמח לדעת את דעתך</div>
+    <div class="stars-row" id="rating-stars-auto">
+      <span class="star" onclick="rateAuto(1)">★</span>
+      <span class="star" onclick="rateAuto(2)">★</span>
+      <span class="star" onclick="rateAuto(3)">★</span>
+      <span class="star" onclick="rateAuto(4)">★</span>
+      <span class="star" onclick="rateAuto(5)">★</span>
     </div>
-    <textarea style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;resize:none;outline:none;min-height:70px;margin-top:8px" placeholder="הערות נוספות (אופציונלי)..."></textarea>
-    <button class="rating-btn" style="margin-top:12px" onclick="submitRating2()">שלח דירוג</button>
-    <button class="modal-close" onclick="closeModal('rating-modal')">דרג מאוחר יותר</button>
+    <textarea id="rating-comment" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:11px;font-family:'Heebo',sans-serif;font-size:13px;resize:none;outline:none;min-height:65px;margin-bottom:10px" placeholder="הערות נוספות (אופציונלי)..."></textarea>
+    <button class="rate-btn" onclick="submitAutoRating()">שלח דירוג</button>
+    <button class="mclose" onclick="closeMod('rating-modal')">דרג מאוחר יותר</button>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- ADMIN REPLY MODAL -->
+<div class="moverlay" id="reply-modal">
+  <div class="mcard">
+    <div class="mtitle">📝 השב לפנייה</div>
+    <div class="mmeta" id="reply-tk-desc" style="background:var(--bg);border-radius:10px;padding:10px;margin-bottom:12px;line-height:1.5"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">תגובתך לתושב:</div>
+    <textarea id="reply-text" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:13px;font-family:'Heebo',sans-serif;font-size:14px;resize:none;outline:none;min-height:100px;margin-bottom:10px;direction:rtl" placeholder="כתוב תגובה מפורטת לתושב..."></textarea>
+    <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">עדכן סטטוס:</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="reply-status-btn" id="rs-open" onclick="setReplyStatus('open')" style="flex:1;padding:9px;border-radius:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;border:1.5px solid #fca5a5;background:var(--red-bg);color:var(--red)">פתוח</button>
+      <button class="reply-status-btn" id="rs-progress" onclick="setReplyStatus('progress')" style="flex:1;padding:9px;border-radius:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;border:1.5px solid #fcd34d;background:var(--orange-bg);color:var(--orange)">בטיפול</button>
+      <button class="reply-status-btn" id="rs-done" onclick="setReplyStatus('done')" style="flex:1;padding:9px;border-radius:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;border:1.5px solid #86efac;background:var(--green-bg);color:var(--green)">סגור ✓</button>
+    </div>
+    <button class="rate-btn" onclick="submitReply()">שלח תגובה לתושב</button>
+    <button class="mclose" onclick="closeMod('reply-modal')">ביטול</button>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
 
 <script>
-// STATE
-const ADMIN_IDS = ['000000000','123456789'];
-let currentUser = null;
-let selectedCat = '';
-let locationVerified = false;
-let currentRating = 0;
-
-const tickets = [
-  { title:'בור ברחוב הורדים 12', meta:'הנדסה • רחוב הורדים 12', status:'done', date:'28.03.2026', autoReply:true },
-  { title:'תאורה תקולה ברח׳ הגפן', meta:'תשתיות • רחוב הגפן 5', status:'progress', date:'30.03.2026', autoReply:true },
-  { title:'פח אשפה שבור בפארק', meta:'תברואה • פארק העירוני', status:'open', date:'31.03.2026', autoReply:false },
+// ══════════════════════════════════════
+// DAILY POLLS DATA
+// ══════════════════════════════════════
+const DAILY_POLLS = [
+  'האם אתה מרוצה מניקיון הרחובות בשכונתך השבוע?',
+  'כיצד היית מדרג את שירות הפינוי האשפה החודש?',
+  'האם מרוצה מהתאורה הציבורית בסביבתך?',
+  'כמה שביעות רצון יש לך מהמדרכות והשבילים?',
+  'האם הפארקים בשכונתך מתוחזקים היטב?',
+  'כיצד היית מדרג את הטיפול בבעיות שדיווחת עליהן?',
+  'האם מרוצה מאיכות השירות המוניציפלי בחצי השנה האחרונה?',
+  'כמה בטוח אתה מרגיש בסביבת מגוריך?',
+  'האם שביעות רצונך ממצב הכבישים בשכונה?',
+  'כיצד היית מדרג את המענה של המועצה לפניות תושבים?',
+  'האם הגינות הציבוריות מטופחות לשביעות רצונך?',
+  'כמה מרוצה אתה מהשירותים לגיל השלישי באזורך?',
+  'האם המועצה מתקשרת איתך ביעילות?',
+  'כיצד היית מדרג את מהירות הטיפול בתקלות?',
 ];
 
-// TIME
-function updateTime() {
-  const now = new Date();
-  document.getElementById('topbar-time').textContent = now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-}
-setInterval(updateTime, 1000);
-updateTime();
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const ADMINS = ['000000000','123456789','040892424'];
+// רק ת.ז ברשימה זו יקבלו הרשאות מנהל — כל שאר התושבים הם users בלבד
+let CU = null, selCatV = '', locOK = false, tRating = 0, authMode = 'login', seniorOn = false;
+let userLat = null, userLng = null;
+let tickets = [];
+let notifications = [];
+let mapInst = null, mapMarkers = [], activeFilter = 'all';
 
-// AUTH
-let authMode = 'login';
-function setAuthMode(mode) {
-  authMode = mode;
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('register-fields').style.display = mode === 'register' ? 'block' : 'none';
-  document.getElementById('auth-btn').textContent = mode === 'login' ? 'כניסה' : 'הרשמה';
+// ══════════════════════════════════════
+// NOTIFICATIONS SYSTEM
+// ══════════════════════════════════════
+function addNotif(title, body, type='כללי'){
+  const n={id:Date.now(),title,body,type,date:new Date().toLocaleDateString('he-IL'),read:false};
+  notifications.unshift(n);
+  localStorage.setItem('fs_notifs_'+CU?.id, JSON.stringify(notifications));
+  renderNotifs();
+  // הצג badge
+  document.querySelector('#n-notif .ndot')?.classList.remove('hidden');
 }
 
-function validateId(val) {
-  const err = document.getElementById('id-error');
-  const valid = document.getElementById('id-valid');
-  const badge = document.getElementById('admin-badge');
-  if (val.length === 9) {
-    const digits = val.split('').map(Number);
-    let sum = 0;
-    digits.forEach((d,i) => { let v = d*(i%2===0?1:2); if(v>9) v-=9; sum+=v; });
-    if (sum % 10 === 0) {
-      err.textContent = '';
-      valid.style.display = 'block';
-      badge.style.display = ADMIN_IDS.includes(val) ? 'block' : 'none';
-    } else {
-      err.textContent = 'ת.ז לא תקינה';
-      valid.style.display = 'none';
-      badge.style.display = 'none';
+function loadNotifs(){
+  if(!CU) return;
+  const sv=localStorage.getItem('fs_notifs_'+CU.id);
+  notifications=sv?JSON.parse(sv):[];
+}
+
+function renderNotifs(){
+  const list=document.getElementById('notif-list');
+  if(!list) return;
+  if(!notifications.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">אין התראות</div><div class="empty-sub">התראות מהמועצה יופיעו כאן</div></div>';
+    return;
+  }
+  const colors={פנייה:'var(--gold)',קהילה:'var(--green)',חירום:'var(--red)',יום_הולדת:'#9f7aea',כללי:'var(--blue)'};
+  list.innerHTML=notifications.map(n=>`
+    <div class="notif-item" style="border-right:3px solid ${colors[n.type]||'var(--gold)'}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:10px;font-weight:700;color:${colors[n.type]||'var(--gold)'}">${n.type}</span>
+        <span style="font-size:10px;color:var(--muted)">${n.date}</span>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy)">${n.title}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">${n.body}</div>
+    </div>`).join('');
+}
+
+function pushToInterestedUsers(cat, title, body){
+  // בסימולציה — שמור התראות לכל משתמשים שסימנו את הקטגוריה
+  const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+  Object.keys(allUsers).forEach(uid=>{
+    const u=allUsers[uid];
+    const interests=u.interests||[];
+    if(uid!==CU.id && (interests.includes(cat) || interests.length===0)){
+      const key='fs_notifs_'+uid;
+      const notifs=JSON.parse(localStorage.getItem(key)||'[]');
+      notifs.unshift({id:Date.now(),title,body,type:cat,date:new Date().toLocaleDateString('he-IL'),read:false});
+      localStorage.setItem(key,JSON.stringify(notifs));
     }
-  } else {
-    err.textContent = '';
-    valid.style.display = 'none';
-    badge.style.display = 'none';
-  }
-}
-
-function handleAuth() {
-  const id = document.getElementById('id-input').value;
-  const phone = document.getElementById('phone-input').value;
-  if (id.length < 9) { alert('נא להזין ת.ז תקינה'); return; }
-  if (!phone) { alert('נא להזין מספר טלפון'); return; }
-  if (authMode === 'register') {
-    const name = document.getElementById('name-input').value;
-    if (!name) { alert('נא להזין שם מלא'); return; }
-  }
-  const name = authMode === 'register' ? document.getElementById('name-input').value : (id === '000000000' ? 'דוד כהן' : 'תושב יקר');
-  const isAdmin = ADMIN_IDS.includes(id);
-  currentUser = { id, phone, name, isAdmin, points: 42 };
-  localStorage.setItem('foresight_user', JSON.stringify(currentUser));
-  startApp();
-}
-
-function startApp() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  const firstName = currentUser.name.split(' ')[0];
-  document.getElementById('greeting-text').textContent = `שלום, ${firstName}`;
-  document.getElementById('profile-name').textContent = currentUser.name;
-  document.getElementById('profile-id-display').textContent = `ת.ז: ${currentUser.id}`;
-  document.getElementById('profile-avatar').textContent = currentUser.name[0];
-  document.getElementById('p-name').value = currentUser.name;
-  document.getElementById('p-phone').value = currentUser.phone;
-  if (currentUser.isAdmin) {
-    document.getElementById('nav-admin').style.display = 'flex';
-  }
-}
-
-// CHECK SAVED USER
-const saved = localStorage.getItem('foresight_user');
-if (saved) { currentUser = JSON.parse(saved); startApp(); }
-
-// NAVIGATION
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  const navEl = document.getElementById('nav-'+page);
-  if (navEl) navEl.classList.add('active');
-}
-
-// REPORT
-function selectCat(el, cat) {
-  document.querySelectorAll('#cats-grid .cat-chip').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedCat = cat;
-}
-
-function getLocation() {
-  const btn = document.getElementById('loc-btn');
-  btn.textContent = '⏳ מאתר מיקום...';
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        btn.className = 'loc-btn verified';
-        btn.textContent = `✓ מיקום אומת (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`;
-        locationVerified = true;
-      },
-      () => {
-        btn.className = 'loc-btn verified';
-        btn.textContent = '✓ מיקום אומת (רחוב הורדים 12)';
-        locationVerified = true;
-      }
-    );
-  } else {
-    btn.className = 'loc-btn verified';
-    btn.textContent = '✓ מיקום אומת';
-    locationVerified = true;
-  }
-}
-
-function showPhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = document.getElementById('photo-preview');
-    img.src = e.target.result;
-    img.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-}
-
-function submitReport() {
-  if (!selectedCat) { showToast('נא לבחור קטגוריה'); return; }
-  const desc = document.getElementById('report-desc').value;
-  if (!desc) { showToast('נא לתאר את הבעיה'); return; }
-  if (!locationVerified) { showToast('נא לאמת מיקום'); return; }
-  showToast('הדיווח נשלח בהצלחה! +1 נקודה אזרחית ⭐');
-  setTimeout(() => showPage('history'), 1500);
-  document.getElementById('report-desc').value = '';
-  selectedCat = '';
-  document.querySelectorAll('#cats-grid .cat-chip').forEach(c => c.classList.remove('selected'));
-  locationVerified = false;
-  document.getElementById('loc-btn').className = 'loc-btn idle';
-  document.getElementById('loc-btn').textContent = '📍 אמת מיקום GPS';
-}
-
-// HISTORY
-function openTicket(idx) {
-  const t = tickets[idx];
-  document.getElementById('modal-ticket-title').textContent = t.title;
-  document.getElementById('modal-ticket-meta').textContent = t.meta;
-  document.getElementById('modal-auto-reply').style.display = t.autoReply ? 'block' : 'none';
-  document.getElementById('modal-rating-section').style.display = t.status === 'done' ? 'block' : 'none';
-  document.getElementById('ticket-modal').classList.add('open');
-}
-
-// RATING
-function rateStar(n) {
-  currentRating = n;
-  document.querySelectorAll('#modal-stars .star').forEach((s,i) => s.classList.toggle('lit', i < n));
-}
-function rateStar2(n) {
-  currentRating = n;
-  document.querySelectorAll('#rating-stars .star').forEach((s,i) => s.classList.toggle('lit', i < n));
-}
-function submitRating() {
-  if (!currentRating) { showToast('נא לבחור דירוג'); return; }
-  closeModal('ticket-modal');
-  showToast(`תודה על הדירוג: ${currentRating}/5 ⭐`);
-}
-function submitRating2() {
-  if (!currentRating) { showToast('נא לבחור דירוג'); return; }
-  closeModal('rating-modal');
-  showToast(`תודה על הדירוג: ${currentRating}/5 ⭐`);
-}
-function openRating() { document.getElementById('rating-modal').classList.add('open'); }
-
-// PROFILE
-function toggleInterest(el) { el.classList.toggle('selected'); }
-function saveProfile() { showToast('הפרטים עודכנו בהצלחה ✓'); }
-function logout() {
-  if (confirm('להתנתק?')) {
-    localStorage.removeItem('foresight_user');
-    location.reload();
-  }
-}
-function deleteAccount() {
-  if (confirm('למחוק את החשבון? פעולה זו בלתי הפיכה.')) {
-    localStorage.removeItem('foresight_user');
-    location.reload();
-  }
-}
-
-// ADMIN
-function setAdminTab(tab, el) {
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  ['stats','tickets','broadcast','users'].forEach(t => {
-    document.getElementById('admin-'+t).style.display = t === tab ? 'block' : 'none';
   });
 }
 
-// MODAL
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+// ══════════════════════════════════════
+// BIRTHDAY CHECK
+// ══════════════════════════════════════
+function checkBirthdays(){
+  const today=new Date();
+  const mm=String(today.getMonth()+1).padStart(2,'0');
+  const dd=String(today.getDate()).padStart(2,'0');
+  const todayMD=`${mm}-${dd}`;
+  const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+  Object.keys(allUsers).forEach(uid=>{
+    const u=allUsers[uid];
+    if(!u.bday) return;
+    const bMD=u.bday.substring(5); // YYYY-MM-DD → MM-DD
+    if(bMD===todayMD){
+      const lastBday=localStorage.getItem('fs_bday_'+uid);
+      if(lastBday===todayMD) return; // כבר נשלח היום
+      localStorage.setItem('fs_bday_'+uid, todayMD);
+      const key='fs_notifs_'+uid;
+      const notifs=JSON.parse(localStorage.getItem(key)||'[]');
+      const fn=u.name.split(' ')[0];
+      notifs.unshift({
+        id:Date.now(),
+        title:`🎂 יום הולדת שמח, ${fn}!`,
+        body:'המועצה מאחלת לך שנה מצוינת, בריאה ומאושרת. אנחנו כאן בשבילך 💛',
+        type:'יום_הולדת',
+        date:new Date().toLocaleDateString('he-IL'),
+        read:false
+      });
+      localStorage.setItem(key,JSON.stringify(notifs));
+    }
+  });
 }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
+checkBirthdays();
 
-// TOAST
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+// ══════════════════════════════════════
+// TIME
+// ══════════════════════════════════════
+function tick(){
+  const n = new Date();
+  const ts = n.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('tbtime').textContent = ts;
+  const scEl = document.getElementById('scada-time');
+  if(scEl) scEl.textContent = n.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tick,1000); tick();
+
+// ══════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════
+function setMode(m,el){
+  authMode=m;
+  document.querySelectorAll('.atb').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const isReg=m==='register';
+  document.getElementById('regfields').style.display=isReg?'block':'none';
+  document.getElementById('phone-wrap').style.display=isReg?'block':'none';
+  document.querySelector('.auth-btn').textContent=isReg?'הרשמה':'כניסה';
+  document.getElementById('auth-hint').textContent=isReg?'הרשמה מאובטחת':'כניסה לפי ת.ז בלבד';
 }
 
-// INSTALL PWA
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; });
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
+// הסתר טלפון בכניסה רגילה מלכתחילה
+document.getElementById('phone-wrap').style.display='none';
+
+function chkId(v){
+  const err=document.getElementById('aerr'),ok=document.getElementById('aok'),badge=document.getElementById('admbadge');
+  if(v.length===9){
+    const d=v.split('').map(Number);
+    let s=0;d.forEach((x,i)=>{let q=x*(i%2?2:1);if(q>9)q-=9;s+=q;});
+    if(s%10===0){err.textContent='';ok.style.display='block';badge.style.display=ADMINS.includes(v)?'block':'none';}
+    else{err.textContent='ת.ז לא תקינה';ok.style.display='none';badge.style.display='none';}
+  } else {err.textContent='';ok.style.display='none';badge.style.display='none';}
+}
+
+function doAuth(){
+  const id=document.getElementById('aid').value;
+  if(id.length<9){toast('נא להזין ת.ז תקינה');return;}
+  const isNew=authMode==='register';
+  // בדוק אם משתמש קיים
+  const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+  if(isNew){
+    const ph=document.getElementById('aphone').value;
+    if(!ph){toast('נא להזין מספר טלפון');return;}
+    const nm=document.getElementById('aname').value||'תושב';
+    if(!nm){toast('נא להזין שם מלא');return;}
+    const bday=document.getElementById('abday').value||'';
+    CU={id,ph,name:nm,isAdmin:ADMINS.includes(id),pts:0,addr:'',bday};
+    allUsers[id]=CU;
+    localStorage.setItem('fs_users',JSON.stringify(allUsers));
+    localStorage.setItem('fs_u',JSON.stringify(CU));
+    startApp();
+    // שלח ברכת הצטרפות
+    setTimeout(()=>{
+      const fn=nm.split(' ')[0];
+      addNotif(
+        `ברוכ.ה הבא.ה ל-FORESIGHT, ${fn}! 🎉`,
+        'ב-FORESIGHT אנחנו דואגים לך עוד לפני שביקשת. סמן תחומי עניין בפרופיל כדי לקבל עדכונים רלוונטיים רק עבורך.',
+        'כללי'
+      );
+    },1500);
+    setTimeout(()=>showWelcome(nm),300);
   } else {
-    showToast('ב-iOS: לחץ שתף ← הוסף למסך הבית');
+    // כניסה חוזרת — רק ת.ז
+    if(allUsers[id]){
+      CU=allUsers[id];
+      CU.isAdmin=ADMINS.includes(id);
+      localStorage.setItem('fs_u',JSON.stringify(CU));
+      startApp();
+    } else if(ADMINS.includes(id)){
+      // מנהל שטרם נרשם — כניסה ישירה
+      CU={id,ph:'',name:'מנהל',isAdmin:true,pts:0,addr:''};
+      allUsers[id]=CU;
+      localStorage.setItem('fs_users',JSON.stringify(allUsers));
+      localStorage.setItem('fs_u',JSON.stringify(CU));
+      startApp();
+    } else {
+      toast('ת.ז לא רשומה — נא להירשם תחילה');
+      document.querySelectorAll('.atb')[1].click();
+    }
   }
+}
+
+function startApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('chatbtn').style.display='flex';
+  const fn=CU.name.split(' ')[0];
+  document.getElementById('gr-name').textContent=`שלום, ${fn}`;
+  document.getElementById('gr-sub').textContent=CU.isAdmin?'מנהל מועצה':'תושב יקר';
+  document.getElementById('ws-pts-val').textContent=`${CU.pts} נקודות אזרחות ⭐`;
+  document.getElementById('pname').textContent=CU.name;
+  document.getElementById('pid').textContent=`ת.ז: ${CU.id}`;
+  document.getElementById('pav').textContent=CU.name[0];
+  document.getElementById('p-name').value=CU.name;
+  document.getElementById('p-phone').value=CU.ph;
+  document.getElementById('pts-val').textContent=`${CU.pts} נקודות אזרחות ⭐`;
+  document.getElementById('sen-greeting').textContent=`שלום, ${fn}`;
+  document.getElementById('qr-img').src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${CU.id}&color=0a1628`;
+  if(CU.isAdmin) document.getElementById('n-admin').style.display='flex';
+  renderTickets();
+  loadNotifs();
+  renderNotifs();
+  initDailyPoll();
+  if(CU.isAdmin) updateScadaKPIs();
+  // בדוק יום הולדת
+  checkBirthdays();
+  if(CU.bday){
+    const today=new Date();
+    const mm=String(today.getMonth()+1).padStart(2,'0');
+    const dd=String(today.getDate()).padStart(2,'0');
+    const todayMD=`${mm}-${dd}`;
+    const bMD=CU.bday.substring(5);
+    if(bMD===todayMD){
+      const lastKey='fs_bday_self_'+CU.id;
+      if(localStorage.getItem(lastKey)!==todayMD){
+        localStorage.setItem(lastKey,todayMD);
+        const fn=CU.name.split(' ')[0];
+        setTimeout(()=>addNotif(`🎂 יום הולדת שמח, ${fn}!`,'המועצה מאחלת לך שנה מצוינת ומאושרת 💛','יום_הולדת'),1000);
+      }
+    }
+  }
+}
+
+const sv=localStorage.getItem('fs_u');
+if(sv){CU=JSON.parse(sv);startApp();}
+
+// ══════════════════════════════════════
+// WELCOME
+// ══════════════════════════════════════
+function showWelcome(name){
+  const fn=name.split(' ')[0];
+  document.getElementById('wl-name').textContent=`היי ${fn}, איזה כיף שהצטרפת! 🎉`;
+  if(CU.isAdmin){
+    document.getElementById('wl-cta').textContent='כנס לחדר הבקרה';
+    document.getElementById('wl-sec').style.display='none';
+  }
+  document.getElementById('welcome-screen').style.display='flex';
+}
+function dismissWelcome(){
+  document.getElementById('welcome-screen').style.display='none';
+  if(CU&&CU.isAdmin) showPage('admin'); else showPage('home');
+}
+function dismissWelcomeProfile(){
+  document.getElementById('welcome-screen').style.display='none';
+  showPage('profile');
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  const n=document.getElementById('n-'+p);
+  if(n)n.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════
+// REPORT
+// ══════════════════════════════════════
+function selCat(el,cat){
+  document.querySelectorAll('#catgrid .cchip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); selCatV=cat;
+  if(locOK) document.getElementById('dup-alert').style.display='block';
+}
+function getLoc(){
+  const b=document.getElementById('locbtn');
+  b.textContent='⏳ מאתר...';
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      p=>{
+        userLat=p.coords.latitude;
+        userLng=p.coords.longitude;
+        b.className='loc-btn lb-ok';
+        b.textContent=`✓ ${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+        locOK=true;
+      },
+      ()=>{
+        // fallback — שמור null ותסמן כ-"מאומת ידנית"
+        userLat=null; userLng=null;
+        b.className='loc-btn lb-ok';
+        b.textContent='✓ מיקום אומת';
+        locOK=true;
+      }
+    );
+  } else {
+    userLat=null; userLng=null;
+    b.className='loc-btn lb-ok';
+    b.textContent='✓ מיקום אומת';
+    locOK=true;
+  }
+}
+function showPic(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{const i=document.getElementById('photoprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);
+}
+function joinExisting(){document.getElementById('dup-alert').style.display='none';toast('הצטרפת למעקב אחרי הפנייה הקיימת ✓');}
+function submitReport(){
+  if(!selCatV){toast('נא לבחור קטגוריה');return;}
+  if(!document.getElementById('rdesc').value.trim()){toast('נא לתאר את הבעיה');return;}
+  if(!locOK){toast('נא לאמת מיקום GPS');return;}
+  const tk={
+    id:Date.now(),
+    cat:selCatV,
+    desc:document.getElementById('rdesc').value.trim(),
+    status:'open',
+    date:new Date().toLocaleDateString('he-IL'),
+    userId:CU.id,
+    lat:userLat,   // מיקום אמיתי
+    lng:userLng,
+  };
+  tickets.push(tk);
+  CU.pts++;
+  // שמור עדכון לנקודות גם ב-allUsers
+  const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+  if(allUsers[CU.id]) allUsers[CU.id].pts=CU.pts;
+  localStorage.setItem('fs_users',JSON.stringify(allUsers));
+  localStorage.setItem('fs_u',JSON.stringify(CU));
+  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
+  document.getElementById('ws-pts-val').textContent=`${CU.pts} נקודות אזרחות ⭐`;
+  document.getElementById('pts-val').textContent=`${CU.pts} נקודות אזרחות ⭐`;
+  document.getElementById('dup-alert').style.display='none';
+  document.getElementById('rdesc').value='';
+  document.getElementById('locbtn').className='loc-btn lb-idle';
+  document.getElementById('locbtn').textContent='📍 אמת מיקום';
+  document.getElementById('photoprev').style.display='none';
+  locOK=false; userLat=null; userLng=null; selCatV='';
+  document.querySelectorAll('#catgrid .cchip').forEach(c=>c.classList.remove('sel'));
+  // הוסף התראה לתושב
+  addNotif(`📋 הפנייה שלך בנושא ${tk.cat} התקבלה!`, 'קיבלנו את הדיווח ונטפל בו בהקדם. +1 נקודה אזרחית ⭐', 'פנייה');
+  // שלח התראה לתושבים לפי תחום עניין
+  pushToInterestedUsers(tk.cat, `עדכון בנושא ${tk.cat}`, `דיווח חדש התקבל: ${tk.desc.substring(0,50)}`);
+  renderTickets();
+  if(CU.isAdmin) updateScadaKPIs();
+  if(mapInst) renderMapMarkers();
+  toast(`הדיווח נשלח! +1 נקודה אזרחית ⭐`);
+  setTimeout(()=>showPage('history'),1400);
+}
+
+// ══════════════════════════════════════
+// TICKETS
+// ══════════════════════════════════════
+function loadTickets(){
+  const sv=localStorage.getItem('fs_tickets');
+  tickets=sv?JSON.parse(sv):[];
+}
+loadTickets();
+
+function renderTickets(){
+  const mine=tickets.filter(t=>t.userId===CU?.id);
+  const list=document.getElementById('tk-list');
+  document.getElementById('tk-count').textContent=mine.length?`${mine.length} פניות`:'אין פניות עדיין';
+  if(!mine.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות עדיין</div><div class="empty-sub">פניות שתשלח יופיעו כאן עם מעקב סטטוס בזמן אמת</div></div>';return;}
+  list.innerHTML=mine.map((t,i)=>`
+    <div class="tk-card" onclick="openTk(${tickets.indexOf(t)})">
+      <div class="tk-top"><span class="sb ${t.status==='open'?'s-open':t.status==='progress'?'s-prog':'s-done'}">${t.status==='open'?'פתוח':t.status==='progress'?'בטיפול':'טופל ✓'}</span><span class="tk-date">${t.date}</span></div>
+      <div class="tk-title">${t.desc.substring(0,50)}${t.desc.length>50?'...':''}</div>
+      <div class="tk-meta">${t.cat}</div>
+      <div class="tracker">
+        <div class="ts"><div class="tc dn">✓</div><div class="tlbl dn">התקבל</div></div>
+        <div class="tl ${t.status!=='open'?'dn':''}"></div>
+        <div class="ts"><div class="tc ${t.status!=='open'?'dn':''}">👤</div><div class="tlbl ${t.status!=='open'?'dn':''}">שובץ</div></div>
+        <div class="tl ${t.status==='done'?'dn':''}"></div>
+        <div class="ts"><div class="tc ${t.status==='done'?'dn':''}">🚚</div><div class="tlbl ${t.status==='done'?'dn':''}">בשטח</div></div>
+        <div class="tl ${t.status==='done'?'dn':''}"></div>
+        <div class="ts"><div class="tc ${t.status==='done'?'dn':''}">★</div><div class="tlbl ${t.status==='done'?'dn':''}">טופל</div></div>
+      </div>
+    </div>`).join('');
+  // Admin kanban
+  if(CU?.isAdmin) renderAdminTickets();
+}
+
+function openTk(i){
+  const t=tickets[i];
+  document.getElementById('tkmtitle').textContent=t.desc.substring(0,60);
+  document.getElementById('tkmmeta').textContent=`${t.cat} • ${t.date}`;
+  document.getElementById('tkmreply').style.display='block';
+  // הצג תגובת מנהל אם קיימת
+  const replyEl=document.getElementById('tkm-admin-reply');
+  if(replyEl){
+    if(t.adminReply){
+      replyEl.style.display='block';
+      document.getElementById('tkm-admin-reply-text').textContent=t.adminReply;
+      document.getElementById('tkm-admin-reply-date').textContent=t.adminReplyDate||'';
+    } else {
+      replyEl.style.display='none';
+    }
+  }
+  document.getElementById('tkmrating').style.display=t.status==='done'?'block':'none';
+  document.getElementById('tkm').classList.add('open');
+}
+
+// ══════════════════════════════════════
+// ADMIN REPLY
+// ══════════════════════════════════════
+let replyTkIdx = null;
+let replyStatus = 'progress';
+
+function openReplyModal(i){
+  replyTkIdx=i;
+  replyStatus=tickets[i].status||'open';
+  document.getElementById('reply-tk-desc').textContent=`📋 ${tickets[i].cat}: ${tickets[i].desc}`;
+  document.getElementById('reply-text').value=tickets[i].adminReply||'';
+  highlightReplyStatus(replyStatus);
+  document.getElementById('reply-modal').classList.add('open');
+}
+
+function setReplyStatus(s){
+  replyStatus=s;
+  highlightReplyStatus(s);
+}
+
+function highlightReplyStatus(s){
+  ['open','progress','done'].forEach(st=>{
+    const el=document.getElementById('rs-'+st);
+    if(el) el.style.opacity = st===s ? '1' : '0.4';
+  });
+}
+
+function submitReply(){
+  const text=document.getElementById('reply-text').value.trim();
+  if(!text){toast('נא לכתוב תגובה');return;}
+  const tk=tickets[replyTkIdx];
+  tk.adminReply=text;
+  tk.adminReplyDate=new Date().toLocaleDateString('he-IL');
+  tk.status=replyStatus;
+  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
+
+  // שלח התראה לתושב עם תוכן התגובה
+  const notifKey='fs_notifs_'+tk.userId;
+  const notifs=JSON.parse(localStorage.getItem(notifKey)||'[]');
+  notifs.unshift({
+    id:Date.now(),
+    title:`💬 תגובה מהמועצה על הפנייה שלך`,
+    body:text,
+    type:'פנייה',
+    date:new Date().toLocaleDateString('he-IL'),
+    read:false
+  });
+  localStorage.setItem(notifKey,JSON.stringify(notifs));
+
+  // אם הפנייה נסגרה — שלח גם התראת סגירה ופתח דירוג
+  if(replyStatus==='done'){
+    notifs.unshift({
+      id:Date.now()+1,
+      title:'✅ הפנייה שלך טופלה!',
+      body:`הבעיה בנושא ${tk.cat} טופלה. ${text}`,
+      type:'פנייה',
+      date:new Date().toLocaleDateString('he-IL'),
+      read:false
+    });
+    localStorage.setItem(notifKey,JSON.stringify(notifs));
+    if(CU && tk.userId===CU.id) setTimeout(()=>openRatingModal(replyTkIdx),600);
+  }
+
+  closeMod('reply-modal');
+  renderTickets();
+  updateScadaKPIs();
+  if(CU && tk.userId===CU.id){loadNotifs();renderNotifs();}
+  toast('התגובה נשלחה לתושב ✓');
+}
+
+function renderAdminTickets(){
+  const list=document.getElementById('admin-tk-list');
+  if(!tickets.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות</div></div>';return;}
+  list.innerHTML=tickets.map((t,i)=>`
+    <div class="adm-tk">
+      <div class="atk-top"><span class="atk-cat">${t.cat}</span><span class="sb ${t.status==='open'?'s-open':t.status==='progress'?'s-prog':'s-done'}">${t.status==='open'?'פתוח':t.status==='progress'?'בטיפול':'טופל'}</span></div>
+      <div class="atk-title">${t.desc.substring(0,60)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${t.date} ${t.userId?'• ת.ז: '+t.userId:''}</div>
+      ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">✓ נשלחה תגובה: "${t.adminReply.substring(0,50)}..."</div>`:''}
+      <div class="atk-acts">
+        <button class="aa" style="background:#e8f0fd;color:#1a3a6b;flex:1.5" onclick="openReplyModal(${i})">💬 השב</button>
+        <button class="aa aa-prog" onclick="setTkStatus(${i},'progress')">בטיפול</button>
+        <button class="aa aa-close" onclick="setTkStatus(${i},'done')">סגור</button>
+      </div>
+    </div>`).join('');
+  renderKanban();
+}
+
+function setTkStatus(i,status){
+  const tk=tickets[i];
+  tk.status=status;
+  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
+  renderTickets();
+  updateScadaKPIs();
+  if(mapInst) renderMapMarkers();
+  if(status==='done'){
+    // שלח התראה לתושב שהפנייה טופלה
+    const allNotifs=JSON.parse(localStorage.getItem('fs_notifs_'+tk.userId)||'[]');
+    allNotifs.unshift({
+      id:Date.now(),
+      title:`✅ הפנייה שלך טופלה!`,
+      body:`הבעיה בנושא ${tk.cat} טופלה בהצלחה. נשמח לשמוע את דעתך על השירות.`,
+      type:'פנייה',
+      date:new Date().toLocaleDateString('he-IL'),
+      read:false,
+      ticketIdx:i
+    });
+    localStorage.setItem('fs_notifs_'+tk.userId,JSON.stringify(allNotifs));
+    // אם התושב הנוכחי הוא בעל הפנייה — הצג דירוג מיידי
+    if(CU && tk.userId===CU.id){
+      loadNotifs(); renderNotifs();
+      setTimeout(()=>openRatingModal(i),800);
+    }
+    toast('הפנייה נסגרה ✓ התראה נשלחה לתושב');
+  } else {
+    // עדכון ביניים
+    const allNotifs=JSON.parse(localStorage.getItem('fs_notifs_'+tk.userId)||'[]');
+    allNotifs.unshift({
+      id:Date.now(),
+      title:`🔄 עדכון על הפנייה שלך`,
+      body:`הפנייה בנושא ${tk.cat} עברה לטיפול פעיל. נעדכן אותך עם סיום.`,
+      type:'פנייה',
+      date:new Date().toLocaleDateString('he-IL'),
+      read:false
+    });
+    localStorage.setItem('fs_notifs_'+tk.userId,JSON.stringify(allNotifs));
+    if(CU && tk.userId===CU.id){loadNotifs(); renderNotifs();}
+    toast('הפנייה הועברה לטיפול ✓ עדכון נשלח');
+  }
+}
+
+// מודל דירוג אוטומטי
+function openRatingModal(tkIdx){
+  document.getElementById('rating-modal').classList.add('open');
+  document.getElementById('rating-modal').dataset.tkIdx=tkIdx;
+}
+
+function renderKanban(){
+  const cols={open:[],progress:[],done:[]};
+  tickets.forEach((t,i)=>cols[t.status]?.push({...t,idx:i}));
+  ['open','progress','done'].forEach(s=>{
+    const col=document.getElementById('kb-col-'+s);
+    const cnt=document.getElementById('kb-'+(s==='progress'?'prog':s));
+    if(!col)return;
+    cnt.textContent=cols[s].length;
+    col.innerHTML=cols[s].map(t=>`<div class="kanban-item"><div class="ki-cat">${t.cat}</div><div class="ki-title">${t.desc.substring(0,40)}</div><div class="ki-meta">${t.date}</div></div>`).join('');
+  });
+}
+
+// ══════════════════════════════════════
+// SCADA KPIs
+// ══════════════════════════════════════
+function updateScadaKPIs(){
+  const open=tickets.filter(t=>t.status==='open').length;
+  const prog=tickets.filter(t=>t.status==='progress').length;
+  const done=tickets.filter(t=>t.status==='done').length;
+  const save=done*510;
+  document.getElementById('kpi-open').textContent=open;
+  document.getElementById('kpi-prog').textContent=prog;
+  document.getElementById('kpi-trust').textContent=done?'✓':'—';
+  document.getElementById('kpi-save').textContent=save?`₪${save.toLocaleString()}`:'₪0';
+  document.getElementById('sc-users').textContent=1;
+  document.getElementById('sc-open').textContent=open;
+  document.getElementById('sc-done').textContent=done;
+  document.getElementById('sc-rating').textContent=done?'4.5':'—';
+}
+
+// ══════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════
+function togInt(el){el.classList.toggle('sel');}
+function saveProfile(){
+  if(CU){CU.name=document.getElementById('p-name').value||CU.name;CU.ph=document.getElementById('p-phone').value||CU.ph;localStorage.setItem('fs_u',JSON.stringify(CU));}
+  toast('הפרטים עודכנו ✓');
+}
+function logout(){
+  if(confirm('להתנתק?')){
+    try{localStorage.removeItem('fs_u');}catch(e){}
+    CU=null;
+    document.getElementById('app').style.display='none';
+    document.getElementById('chatbtn').style.display='none';
+    document.getElementById('auth').style.display='flex';
+    document.getElementById('aid').value='';
+    document.getElementById('aok').style.display='none';
+    document.getElementById('admbadge').style.display='none';
+    document.getElementById('n-admin').style.display='none';
+    document.getElementById('phone-wrap').style.display='none';
+    document.getElementById('regfields').style.display='none';
+    document.querySelectorAll('.atb').forEach((t,i)=>t.classList.toggle('on',i===0));
+    document.querySelector('.auth-btn').textContent='כניסה';
+    document.getElementById('auth-hint').textContent='כניסה לפי ת.ז בלבד';
+    authMode='login';
+  }
+}
+function delAccount(){if(confirm('למחוק חשבון?')){localStorage.clear();location.reload();}}
+function toggleSenior(){
+  seniorOn=!seniorOn;
+  document.getElementById('sen-toggle').classList.toggle('on',seniorOn);
+  if(seniorOn) document.getElementById('senior-screen').classList.add('on');
+}
+
+// ══════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════
+function setATab(tab,el){
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  ['scada','tickets','kanban','cost','dept','broadcast','users'].forEach(t=>{
+    const e=document.getElementById('at-'+t);if(e)e.style.display=t===tab?'block':'none';
+  });
+  if(tab==='kanban') renderKanban();
+}
+
+const PRO_ACTIONS={
+  'גשם':{t:'🌧️ הצעה: אזהרת גשם',b:'שגר לתושבים: "מחר צפויים גשמים — נא לוודא ניקיון ביבים ותעלות". ממוקד: תשתיות, ניקוז'},
+  'חום':{t:'🌡️ הצעה: גל חום',b:'שגר לגיל השלישי: "מחר צפוי גל חום — שתו מים, הימנעו מיציאה 11-16". כולל קישור למרכזי קירור'},
+  'חג':{t:'🎉 הצעה: חג שמח',b:'שגר ברכת חג לכל התושבים + תזכורת שינויי לוח איסוף אשפה'},
+  'תחזוקה':{t:'🔧 הצעה: תחזוקה מתוכננת',b:'שגר לתושבים: "מחר תחזוקה מתוכננת — צפויה הפסקת מים 9:00-13:00"'},
+};
+function proAct(type){
+  const s=PRO_ACTIONS[type];
+  document.getElementById('pro-title').textContent=s.t;
+  document.getElementById('pro-body').textContent=s.b;
+  document.getElementById('pro-sug').style.display='block';
+}
+function approveProactive(){document.getElementById('pro-sug').style.display='none';toast('ההודעה הפרואקטיבית שודרה ✓');}
+
+function exportCSV(){
+  const rows=['ID,קטגוריה,תיאור,סטטוס,תאריך',...tickets.map(t=>`${t.id},${t.cat},"${t.desc}",${t.status},${t.date}`)];
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(rows.join('\n'));a.download='foresight-export.csv';a.click();
+  toast('קובץ CSV הורד ✓');
+}
+
+// ══════════════════════════════════════
+// DAILY POLL
+// ══════════════════════════════════════
+function initDailyPoll(){
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(),0,0)) / 86400000);
+  const pollIdx = dayOfYear % DAILY_POLLS.length;
+  const todayStr = today.toLocaleDateString('he-IL');
+
+  document.getElementById('poll-date').textContent = todayStr;
+  document.getElementById('poll-question').textContent = DAILY_POLLS[pollIdx];
+
+  // בדוק אם כבר ענה היום
+  const answeredKey = 'fs_poll_' + (CU?.id||'guest') + '_' + dayOfYear;
+  if(localStorage.getItem(answeredKey)){
+    document.getElementById('poll-btns').style.display='none';
+    document.getElementById('poll-answered').style.display='block';
+  }
+}
+
+function answerPoll(score){
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(),0,0)) / 86400000);
+  const answeredKey = 'fs_poll_' + (CU?.id||'guest') + '_' + dayOfYear;
+  localStorage.setItem(answeredKey, score.toString());
+
+  // שמור תשובה לניתוח נתונים
+  const pollsData = JSON.parse(localStorage.getItem('fs_polls_data')||'[]');
+  pollsData.push({
+    userId: CU?.id,
+    date: today.toLocaleDateString('he-IL'),
+    question: document.getElementById('poll-question').textContent,
+    score,
+    cat: DAILY_POLLS[dayOfYear % DAILY_POLLS.length]
+  });
+  localStorage.setItem('fs_polls_data', JSON.stringify(pollsData));
+
+  document.getElementById('poll-btns').style.display='none';
+  document.getElementById('poll-answered').style.display='block';
+  const labels=['','😊 תודה! שמחים לשמוע','😐 תודה! נמשיך לשפר','😞 תודה! נטפל בכך מיד'];
+  toast(labels[score]||'תודה על המשוב!');
+}
+
+// ══════════════════════════════════════
+// AUTO RATING
+// ══════════════════════════════════════
+let autoRating = 0;
+function rateAuto(n){
+  autoRating=n;
+  document.querySelectorAll('#rating-stars-auto .star').forEach((s,i)=>s.classList.toggle('lit',i<n));
+}
+function submitAutoRating(){
+  if(!autoRating){toast('נא לבחור דירוג');return;}
+  const comment=document.getElementById('rating-comment').value;
+  const ratings=JSON.parse(localStorage.getItem('fs_ratings')||'[]');
+  ratings.push({userId:CU?.id,score:autoRating,comment,date:new Date().toLocaleDateString('he-IL')});
+  localStorage.setItem('fs_ratings',JSON.stringify(ratings));
+  closeMod('rating-modal');
+  autoRating=0;
+  document.querySelectorAll('#rating-stars-auto .star').forEach(s=>s.classList.remove('lit'));
+  document.getElementById('rating-comment').value='';
+  toast(`תודה על הדירוג ${autoRating}/5 ⭐`);
+}
+function rateT(n){tRating=n;document.querySelectorAll('#tkstars .star').forEach((s,i)=>s.classList.toggle('lit',i<n));}
+function submitRate(){if(!tRating){toast('נא לבחור דירוג');return;}closeMod('tkm');toast(`תודה! דירגת ${tRating}/5 ⭐`);}
+function closeMod(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.moverlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ══════════════════════════════════════
+// CHATBOT
+// ══════════════════════════════════════
+const BOT={
+  'איך פותחים פנייה?':'לחץ על + בניווט התחתון ← בחר קטגוריה ← תאר את הבעיה ← אמת מיקום GPS ← שלח!',
+  'שעות פעילות':'המוקד פעיל 24/7 דרך האפליקציה. מענה אנושי: א-ה 08:00-17:00.',
+  'מה הנקודות שלי?':`יש לך כרגע ${CU?.pts||0} נקודות אזרחות. כל דיווח מוסיף נקודה!`,
+  'default':'אני כאן לעזור! ניתן לדווח על בעיות, לבדוק סטטוס פניות, לקבל מידע על שירותי המועצה ועוד.',
+};
+function addMsg(txt,isUser){
+  const d=document.getElementById('chatmsgs');
+  const m=document.createElement('div');m.className=isUser?'msg-user':'msg-bot';m.textContent=txt;
+  d.appendChild(m);d.scrollTop=d.scrollHeight;
+}
+function askBot(q){addMsg(q,true);setTimeout(()=>addMsg(BOT[q]||BOT['default'],false),500);}
+function sendChat(){const inp=document.getElementById('chatinp');const v=inp.value.trim();if(!v)return;addMsg(v,true);inp.value='';setTimeout(()=>addMsg(BOT['default'],false),500);}
+function toggleChat(){document.getElementById('chatwin').classList.toggle('open');}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toastEl');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ══════════════════════════════════════
+// MAP
+// ══════════════════════════════════════
+function loadLeaflet(cb){
+  if(typeof L!=='undefined'){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js';
+  s.onload=cb;document.head.appendChild(s);
+}
+function makeIcon(color){
+  return L.divIcon({className:'',html:`<div style="width:13px;height:13px;background:${color};border-radius:50%;border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,iconSize:[13,13],iconAnchor:[6,6]});
+}
+function initMap(){
+  loadLeaflet(()=>{
+    if(mapInst){setTimeout(()=>mapInst.invalidateSize(),100);return;}
+    // התחל במרכז ישראל — המפה תתמקד על הפניות האמיתיות
+    mapInst=L.map('leaflet-map',{center:[31.5,34.8],zoom:8,zoomControl:false,attributionControl:false});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mapInst);
+    L.control.zoom({position:'bottomleft'}).addTo(mapInst);
+    // נסה לאתר מיקום המשתמש ולמרכז עליו
+    navigator.geolocation?.getCurrentPosition(
+      pos=>mapInst.setView([pos.coords.latitude,pos.coords.longitude],13),
+      ()=>{} // אם נכשל — נשאר במרכז ישראל
+    );
+    renderMapMarkers();
+  });
+}
+function renderMapMarkers(){
+  if(!mapInst)return;
+  mapMarkers.forEach(m=>m.remove());mapMarkers=[];
+  const colors={open:'#dc2626',progress:'#d97706',done:'#16a34a'};
+  const filtered=activeFilter==='all'?tickets:tickets.filter(t=>t.status===activeFilter);
+
+  // מצא פניות עם GPS אמיתי
+  const withGPS=filtered.filter(t=>t.lat&&t.lng);
+
+  // מרכז המפה על הפנייה הראשונה עם GPS אמיתי
+  if(withGPS.length>0){
+    mapInst.setView([withGPS[0].lat, withGPS[0].lng], 15);
+  }
+
+  filtered.forEach(tk=>{
+    // רק אם יש קואורדינטות GPS אמיתיות — הצג על המפה
+    if(!tk.lat||!tk.lng) return;
+    const m=L.marker([tk.lat,tk.lng],{icon:makeIcon(colors[tk.status]||'#dc2626')})
+      .addTo(mapInst)
+      .bindPopup(`<div style="direction:rtl;font-family:'Heebo',sans-serif;min-width:140px">
+        <div style="font-size:12px;font-weight:700;color:#0a1628;margin-bottom:3px">${tk.desc.substring(0,40)}</div>
+        <div style="font-size:10px;color:#c8a84b;font-weight:600">${tk.cat}</div>
+        <div style="font-size:10px;color:#6b7a99;margin-top:2px">${tk.date}</div>
+      </div>`,{maxWidth:180});
+    mapMarkers.push(m);
+  });
+
+  // אם אין פניות עם GPS — הצג הודעה
+  if(withGPS.length===0 && filtered.length>0){
+    toast('הפניות אינן כוללות מיקום GPS מדויק');
+  }
+}
+function filterMap(f,el){activeFilter=f;document.querySelectorAll('.mfbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderMapMarkers();}
+function locateMe(){
+  if(!mapInst)return;
+  navigator.geolocation?.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng}=pos.coords;
+    mapInst.setView([lat,lng],16);
+    L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#3d8ef0;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(61,142,240,.3)"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(mapInst).bindPopup('המיקום שלי').openPopup();
+    toast('מיקומך נמצא ✓');
+  },()=>toast('לא ניתן לאתר מיקום'));
 }
 </script>
 </body>
