@@ -5,7 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="app-version" content="2.1.0">
+<meta name="app-version" content="2.2.0">
+<script>
+// מחק Service Workers ישנים
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
+}
+// מחק קאש
+if('caches' in window){
+  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+}
+</script>
 <title>FORESIGHT</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
