@@ -5,16 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="app-version" content="2.2.0">
-<script>
-// מחק Service Workers ישנים
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
-}
-// מחק קאש
-if('caches' in window){
-  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
-}
+<meta name="app-version" content="3.0.0">
+<script type="module">
+// ── FIREBASE CONFIG ──────────────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDWx5oT1Li8O1NzfNYUtwdbDD_7-ItR9Zs",
+  authDomain: "foresight-d3cde.firebaseapp.com",
+  projectId: "foresight-d3cde",
+  storageBucket: "foresight-d3cde.firebasestorage.app",
+  messagingSenderId: "481432685510",
+  appId: "1:481432685510:web:34239dc6239e9e011400c7"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+// חשוף את הפונקציות לשאר הקוד
+window.DB = db;
+window.FS = { collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy };
+window.firebaseReady = true;
+
+// הפעל את האפליקציה אחרי שFirebase מוכן
+document.dispatchEvent(new Event('firebase-ready'));
 </script>
 <title>FORESIGHT</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
@@ -913,6 +928,9 @@ function startApp(){
   initDailyPoll();
   if(CU.isAdmin)updateScadaKPIs();
   checkBirthday();
+  // חבר Firestore
+  if(window.firebaseReady){initFirestore();}
+  else{document.addEventListener('firebase-ready',initFirestore);}
 }
 
 const sv=localStorage.getItem('fs_u');
@@ -960,27 +978,51 @@ function getLoc(){
   } else {b.className='loc-btn lb-ok';b.textContent='✓ מיקום אומת';locOK=true;}
 }
 function showPic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const i=safe('photoprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);}
-function submitReport(){
+
+// ── FIRESTORE ──────────────────────────
+function initFirestore(){
+  if(!window.DB)return;
+  const {collection,onSnapshot,query,orderBy}=window.FS;
+  const q=query(collection(window.DB,'tickets'),orderBy('timestamp','desc'));
+  onSnapshot(q,snap=>{
+    tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
+    renderTickets();
+    if(CU?.isAdmin)updateScadaKPIs();
+    renderMapMarkers();
+  });
+}
+
+async function submitReport(){
   if(!selCatV){toast('נא לבחור קטגוריה');return;}
   if(!safe('rdesc').value.trim()){toast('נא לתאר את הבעיה');return;}
   if(!locOK){toast('נא לאמת מיקום GPS');return;}
-  const tk={id:Date.now(),cat:selCatV,desc:safe('rdesc').value.trim(),status:'open',date:new Date().toLocaleDateString('he-IL'),userId:CU.id,lat:userLat,lng:userLng};
-  tickets.push(tk);
+  const tk={
+    id:Date.now(),timestamp:Date.now(),
+    cat:selCatV,desc:safe('rdesc').value.trim(),
+    status:'open',date:new Date().toLocaleDateString('he-IL'),
+    userId:CU.id,userName:CU.name,userPhone:CU.ph||'',
+    lat:userLat,lng:userLng,
+  };
+  if(window.DB){
+    try{
+      const {collection,addDoc}=window.FS;
+      await addDoc(collection(window.DB,'tickets'),tk);
+    }catch(e){tickets.push(tk);localStorage.setItem('fs_tickets',JSON.stringify(tickets));}
+  } else {
+    tickets.push(tk);localStorage.setItem('fs_tickets',JSON.stringify(tickets));
+    renderTickets();
+  }
   CU.pts++;
   const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
   if(allUsers[CU.id])allUsers[CU.id].pts=CU.pts;
   localStorage.setItem('fs_users',JSON.stringify(allUsers));
   localStorage.setItem('fs_u',JSON.stringify(CU));
-  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
   updatePtsDisplay();
-  safe('rdesc').value=''; safe('locbtn').className='loc-btn lb-idle'; safe('locbtn').textContent='📍 אמת מיקום';
+  safe('rdesc').value='';safe('locbtn').className='loc-btn lb-idle';safe('locbtn').textContent='📍 אמת מיקום';
   const pp=safe('photoprev');if(pp)pp.style.display='none';
   locOK=false;userLat=null;userLng=null;selCatV='';
   document.querySelectorAll('#catgrid .cchip').forEach(c=>c.classList.remove('sel'));
   addNotif(`📋 הפנייה בנושא ${tk.cat} התקבלה!`,'נטפל בה בהקדם. +1 נקודה ⭐','פנייה');
-  renderTickets();
-  if(CU.isAdmin)updateScadaKPIs();
-  if(mapInst)renderMapMarkers();
   toast(`הדיווח נשלח! +1 נקודה ⭐`);
   setTimeout(()=>showPage('history'),1400);
 }
@@ -1071,16 +1113,19 @@ function renderAdminTickets(){
   }).join('');
 }
 
-function setTkStatus(i,status){
+async function setTkStatus(i,status){
   const tk=tickets[i]; tk.status=status;
-  localStorage.setItem('fs_tickets',JSON.stringify(tickets));
-  renderTickets(); updateScadaKPIs(); if(mapInst)renderMapMarkers();
+  if(window.DB && tk._fireId){
+    try{const {doc,updateDoc}=window.FS;await updateDoc(doc(window.DB,'tickets',tk._fireId),{status});}
+    catch(e){localStorage.setItem('fs_tickets',JSON.stringify(tickets));}
+  } else {localStorage.setItem('fs_tickets',JSON.stringify(tickets));renderTickets();}
+  updateScadaKPIs(); if(mapInst)renderMapMarkers();
   const notifs=JSON.parse(localStorage.getItem('fs_notifs_'+tk.userId)||'[]');
   notifs.unshift({id:Date.now(),title:status==='done'?'✅ הפנייה שלך טופלה!':'🔄 עדכון על הפנייה',body:status==='done'?`${tk.cat} טופלה. נשמח לדירוג!`:`${tk.cat} עברה לטיפול.`,type:'פנייה',date:new Date().toLocaleDateString('he-IL'),read:false});
   localStorage.setItem('fs_notifs_'+tk.userId,JSON.stringify(notifs));
   if(CU&&tk.userId===CU.id){loadNotifs();renderNotifs();}
   if(status==='done'&&CU&&tk.userId===CU.id)setTimeout(()=>openRatingModal(i),800);
-  toast(status==='done'?'נסגרה ✓ תושב עודכן':'הועברה לטיפול ✓');
+  toast(status==='done'?'נסגרה ✓':'הועברה לטיפול ✓');
 }
 
 function openReplyModal(i){
