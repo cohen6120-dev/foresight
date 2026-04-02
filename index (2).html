@@ -885,7 +885,7 @@ function chkId(v){
   } else {err.textContent='';ok.style.display='none';if(badge)badge.style.display='none';}
 }
 
-function doAuth(){
+async function doAuth(){
   const id=safe('aid').value;
   if(id.length<9){toast('נא להזין ת.ז תקינה');return;}
   const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
@@ -893,17 +893,36 @@ function doAuth(){
     const ph=safe('aphone').value; if(!ph){toast('נא להזין טלפון');return;}
     const nm=safe('aname').value||'תושב';
     const bday=safe('abday').value||'';
-    CU={id,ph,name:nm,isAdmin:ADMINS.includes(id),pts:0,bday};
+    CU={id,ph,name:nm,isAdmin:ADMINS.includes(id),pts:0,bday,joinDate:new Date().toLocaleDateString('he-IL')};
     allUsers[id]=CU;
     localStorage.setItem('fs_users',JSON.stringify(allUsers));
     localStorage.setItem('fs_u',JSON.stringify(CU));
+    // שמור ב-Firestore
+    if(window.DB){
+      try{
+        const {doc,updateDoc,collection,addDoc}=window.FS;
+        await addDoc(collection(window.DB,'users'),{...CU,timestamp:Date.now()});
+      }catch(e){console.warn('Firestore user save error',e);}
+    }
     startApp();
     setTimeout(()=>addNotif(`ברוכ.ה הבא.ה ל-FORESIGHT, ${nm.split(' ')[0]}! 🎉`,'אנחנו דואגים לך עוד לפני שביקשת.','כללי'),1500);
     setTimeout(()=>showWelcome(nm),300);
   } else {
-    if(allUsers[id]){CU={...allUsers[id],isAdmin:ADMINS.includes(id)};localStorage.setItem('fs_u',JSON.stringify(CU));startApp();}
-    else if(ADMINS.includes(id)){CU={id,ph:'',name:'מנהל',isAdmin:true,pts:0,bday:''};allUsers[id]=CU;localStorage.setItem('fs_users',JSON.stringify(allUsers));localStorage.setItem('fs_u',JSON.stringify(CU));startApp();}
-    else{toast('ת.ז לא רשומה — נא להירשם תחילה');document.querySelectorAll('.atb')[1].click();}
+    // בדוק ב-localStorage קודם
+    if(allUsers[id]){
+      CU={...allUsers[id],isAdmin:ADMINS.includes(id)};
+      localStorage.setItem('fs_u',JSON.stringify(CU));
+      startApp();
+    } else if(ADMINS.includes(id)){
+      CU={id,ph:'',name:'מנהל',isAdmin:true,pts:0,bday:''};
+      allUsers[id]=CU;
+      localStorage.setItem('fs_users',JSON.stringify(allUsers));
+      localStorage.setItem('fs_u',JSON.stringify(CU));
+      startApp();
+    } else {
+      toast('ת.ז לא רשומה — נא להירשם תחילה');
+      document.querySelectorAll('.atb')[1].click();
+    }
   }
 }
 
@@ -983,13 +1002,29 @@ function showPic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader()
 function initFirestore(){
   if(!window.DB)return;
   const {collection,onSnapshot,query,orderBy}=window.FS;
+  
+  // האזן לפניות בזמן אמת
   const q=query(collection(window.DB,'tickets'),orderBy('timestamp','desc'));
   onSnapshot(q,snap=>{
     tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
     renderTickets();
     if(CU?.isAdmin)updateScadaKPIs();
-    renderMapMarkers();
+    if(mapInst)renderMapMarkers();
   });
+
+  // האזן למשתמשים (למנהל בלבד)
+  if(CU?.isAdmin){
+    const qu=query(collection(window.DB,'users'),orderBy('timestamp','desc'));
+    onSnapshot(qu,snap=>{
+      const users=snap.docs.map(d=>d.data());
+      // עדכן את רשימת המשתמשים המקומית
+      const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+      users.forEach(u=>{if(u.id)allUsers[u.id]=u;});
+      localStorage.setItem('fs_users',JSON.stringify(allUsers));
+      // עדכן KPIs
+      const sc=safe('sc-users');if(sc)sc.textContent=snap.docs.length;
+    });
+  }
 }
 
 async function submitReport(){
