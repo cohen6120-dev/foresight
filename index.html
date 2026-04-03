@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="app-version" content="4.0.0">
+<meta name="app-version" content="5.0.0">
 <script>
 // ── מחק Service Workers ישנים ──────────
 if('serviceWorker' in navigator){
@@ -398,7 +398,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <!-- HOME -->
   <div class="page on" id="page-home">
     <div class="welcome-strip">
-      <div class="ws-name" id="gr-name">שלום!</div>
+      <div class="ws-name" id="gr-name">שלום! 👋</div>
       <div class="ws-sub" id="gr-sub">ברוכ.ה הבא.ה</div>
       <div class="ws-pts"><span id="ws-pts-val">0 נקודות ⭐</span></div>
     </div>
@@ -712,7 +712,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">אין קריאות מצוקה</div><div class="empty-sub">קריאות SOS יופיעו כאן בזמן אמת</div></div>
       </div>
     </div>
-    <div id="at-scada">
+    <div id="at-scada" style="display:block">
       <div class="roi-card">
         <div class="roi-lbl">חיסכון תפעולי מצטבר</div>
         <div class="roi-val" id="roi-total">₪0</div>
@@ -1458,29 +1458,17 @@ async function broadcastMsg(){
   const title=safe('bc-title')?.value.trim();
   const body=safe('bc-body')?.value.trim();
   if(!title||!body){toast('נא למלא כותרת ותוכן');return;}
-
-  const msg={
-    id:Date.now(),timestamp:Date.now(),
-    title,body,
-    date:new Date().toLocaleDateString('he-IL'),
-    sentBy:CU?.name||'מנהל'
-  };
-
-  // שמור ב-Firestore — כל המשתמשים יראו
-  if(window.DB){
-    try{
-      await window.DB.collection('broadcasts').add(msg);
-      toast('✅ ההודעה שודרה לכל התושבים!');
-    }catch(e){
-      console.warn(e);
-      toast('ההודעה שודרה ✓');
-    }
-  } else {
-    toast('ההודעה שודרה ✓');
+  const msg={id:Date.now(),timestamp:Date.now(),title,body,date:new Date().toLocaleDateString('he-IL'),sentBy:CU?.name||'מנהל'};
+  if(!window.DB){toast('Firebase לא מחובר');return;}
+  try{
+    await window.DB.collection('broadcasts').add(msg);
+    toast('✅ ההודעה שודרה לכל התושבים!');
+    if(safe('bc-title'))safe('bc-title').value='';
+    if(safe('bc-body'))safe('bc-body').value='';
+  }catch(e){
+    console.error(e);
+    toast('שגיאה: '+e.message);
   }
-
-  if(safe('bc-title'))safe('bc-title').value='';
-  if(safe('bc-body'))safe('bc-body').value='';
 }
 function exportCSV(){
   const rows=['ID,קטגוריה,תיאור,סטטוס,תאריך',...tickets.map(t=>`${t.id},${t.cat},"${t.desc}",${t.status},${t.date}`)];
