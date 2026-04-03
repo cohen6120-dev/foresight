@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="app-version" content="3.2.0">
+<meta name="app-version" content="4.0.0">
 <script>
-// טען Firebase באופן סינכרוני
+// ── מחק Service Workers ישנים ──────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+}
+// ── מחק קאש ישן ───────────────────────
+if('caches' in window){
+  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+}
+// ── טען Firebase ───────────────────────
 function loadScript(src){
   return new Promise((res,rej)=>{
     const s=document.createElement('script');
@@ -30,6 +40,8 @@ Promise.all([
   };
   firebase.initializeApp(cfg);
   window.DB=firebase.firestore();
+  // הפעל עדכונים בזמן אמת גם כשהאפליקציה ברקע
+  firebase.firestore().enableNetwork();
   window.firebaseReady=true;
   console.log('Firebase ready ✓');
   document.dispatchEvent(new Event('firebase-ready'));
@@ -515,6 +527,24 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <div class="pname" id="pname">—</div>
       <div class="pmeta" id="pid">ת.ז: —</div>
       <div class="pts-badge"><span id="pts-val">0 נקודות ⭐</span></div>
+      <div style="display:flex;gap:10px;margin-top:14px;position:relative;z-index:1">
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:white" id="prof-stat-tickets">0</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px">פניות</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:var(--green)" id="prof-stat-done">0</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px">טופלו</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:var(--gold)" id="prof-stat-pts">0</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px">נקודות</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:#93c5fd" id="prof-stat-join">—</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px">הצטרף</div>
+        </div>
+      </div>
     </div>
     <div class="psec">
       <h3>פרטים אישיים</h3>
@@ -895,6 +925,7 @@ async function doAuth(){
   const id=safe('aid').value;
   if(id.length<9){toast('נא להזין ת.ז תקינה');return;}
   const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+
   if(authMode==='register'){
     const ph=safe('aphone').value; if(!ph){toast('נא להזין טלפון');return;}
     const nm=safe('aname').value||'תושב';
@@ -903,30 +934,54 @@ async function doAuth(){
     allUsers[id]=CU;
     localStorage.setItem('fs_users',JSON.stringify(allUsers));
     localStorage.setItem('fs_u',JSON.stringify(CU));
-    // שמור ב-Firestore
     if(window.DB){
-      try{await window.DB.collection('users').add({...CU,timestamp:Date.now()});}
-      catch(e){console.warn('Firestore user save error',e);}
+      try{
+        // בדוק אם כבר קיים
+        const existing=await window.DB.collection('users').where('id','==',id).get();
+        if(existing.empty){
+          await window.DB.collection('users').add({...CU,timestamp:Date.now()});
+        }
+      }catch(e){console.warn('Firestore user save error',e);}
     }
     startApp();
     setTimeout(()=>addNotif(`ברוכ.ה הבא.ה ל-FORESIGHT, ${nm.split(' ')[0]}! 🎉`,'אנחנו דואגים לך עוד לפני שביקשת.','כללי'),1500);
     setTimeout(()=>showWelcome(nm),300);
+
   } else {
-    // בדוק ב-localStorage קודם
+    // כניסה — בדוק קודם ב-localStorage
     if(allUsers[id]){
       CU={...allUsers[id],isAdmin:ADMINS.includes(id)};
       localStorage.setItem('fs_u',JSON.stringify(CU));
       startApp();
-    } else if(ADMINS.includes(id)){
+      return;
+    }
+    // מנהל ישיר
+    if(ADMINS.includes(id)){
       CU={id,ph:'',name:'מנהל',isAdmin:true,pts:0,bday:''};
       allUsers[id]=CU;
       localStorage.setItem('fs_users',JSON.stringify(allUsers));
       localStorage.setItem('fs_u',JSON.stringify(CU));
       startApp();
-    } else {
-      toast('ת.ז לא רשומה — נא להירשם תחילה');
-      document.querySelectorAll('.atb')[1].click();
+      return;
     }
+    // בדוק ב-Firestore (מכשיר אחר)
+    if(window.DB){
+      try{
+        toast('מאמת...');
+        const snap=await window.DB.collection('users').where('id','==',id).get();
+        if(!snap.empty){
+          const userData=snap.docs[0].data();
+          CU={...userData,isAdmin:ADMINS.includes(id)};
+          allUsers[id]=CU;
+          localStorage.setItem('fs_users',JSON.stringify(allUsers));
+          localStorage.setItem('fs_u',JSON.stringify(CU));
+          startApp();
+          return;
+        }
+      }catch(e){console.warn('Firestore lookup error',e);}
+    }
+    toast('ת.ז לא רשומה — נא להירשם תחילה');
+    document.querySelectorAll('.atb')[1].click();
   }
 }
 
@@ -945,13 +1000,13 @@ function startApp(){
   const pa=safe('pav');if(pa)pa.textContent=CU.name[0];
   const pp=safe('p-name');if(pp)pp.value=CU.name;
   const pph=safe('p-phone');if(pph)pph.value=CU.ph||'';
+  loadInterests();
   renderTickets();
   renderHomeTickets();
   loadNotifs(); renderNotifs();
   initDailyPoll();
   if(CU.isAdmin)updateScadaKPIs();
   checkBirthday();
-  // חבר Firestore
   if(window.firebaseReady){initFirestore();}
   else{document.addEventListener('firebase-ready',initFirestore);}
 }
@@ -1074,6 +1129,11 @@ function renderTickets(){
   const mine=tickets.filter(t=>t.userId===CU?.id);
   const list=safe('tk-list'),cnt=safe('tk-count');
   if(cnt)cnt.textContent=mine.length?`${mine.length} פניות`:'אין פניות';
+  // עדכן סטטיסטיקות פרופיל
+  const st=safe('prof-stat-tickets');if(st)st.textContent=mine.length;
+  const sd=safe('prof-stat-done');if(sd)sd.textContent=mine.filter(t=>t.status==='done').length;
+  const sp=safe('prof-stat-pts');if(sp)sp.textContent=CU?.pts||0;
+  const sj=safe('prof-stat-join');if(sj)sj.textContent=CU?.joinDate?.split('.').slice(1).join('.')||'—';
   if(!list)return;
   if(!mine.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין פניות עדיין</div></div>';renderHomeTickets();return;}
   list.innerHTML=mine.map(t=>`
@@ -1368,9 +1428,43 @@ function answerPoll(score){
 }
 
 // ── PROFILE ────────────────────────────
-function togInt(el){el.classList.toggle('sel');}
-function saveProfile(){
-  if(CU){CU.name=safe('p-name').value||CU.name;CU.ph=safe('p-phone').value||CU.ph;localStorage.setItem('fs_u',JSON.stringify(CU));}
+function togInt(el){el.classList.toggle('sel');saveInterests();}
+
+function saveInterests(){
+  const selected=[...document.querySelectorAll('#intgrid .cchip.sel')].map(b=>b.textContent.trim());
+  if(CU){
+    CU.interests=selected;
+    localStorage.setItem('fs_u',JSON.stringify(CU));
+    const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+    if(allUsers[CU.id]){allUsers[CU.id].interests=selected;localStorage.setItem('fs_users',JSON.stringify(allUsers));}
+  }
+}
+
+function loadInterests(){
+  const interests=CU?.interests||[];
+  document.querySelectorAll('#intgrid .cchip').forEach(btn=>{
+    const txt=btn.textContent.trim();
+    btn.classList.toggle('sel', interests.includes(txt));
+  });
+}
+
+async function saveProfile(){
+  if(CU){
+    CU.name=safe('p-name').value||CU.name;
+    CU.ph=safe('p-phone').value||CU.ph;
+    const interests=[...document.querySelectorAll('#intgrid .cchip.sel')].map(b=>b.textContent.trim());
+    CU.interests=interests;
+    localStorage.setItem('fs_u',JSON.stringify(CU));
+    const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+    if(allUsers[CU.id]){allUsers[CU.id]={...CU};localStorage.setItem('fs_users',JSON.stringify(allUsers));}
+    // עדכן ב-Firestore
+    if(window.DB){
+      try{
+        const snap=await window.DB.collection('users').where('id','==',CU.id).get();
+        if(!snap.empty){await snap.docs[0].ref.update({name:CU.name,ph:CU.ph,interests});}
+      }catch(e){console.warn('Profile save error',e);}
+    }
+  }
   toast('הפרטים עודכנו ✓');
 }
 function logout(){
