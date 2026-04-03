@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="app-version" content="5.0.0">
+<meta name="app-version" content="6.0.0">
 <script>
 // ── מחק Service Workers ישנים ──────────
 if('serviceWorker' in navigator){
@@ -28,7 +28,7 @@ function loadScript(src){
 window.firebaseReady=false;
 Promise.all([
   loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js'),
-]).then(()=>loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'))
+]).then(()=>Promise.all([loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'),loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js')]))
 .then(()=>{
   const cfg={
     apiKey:"AIzaSyDWx5oT1Li8O1NzfNYUtwdbDD_7-ItR9Zs",
@@ -40,8 +40,11 @@ Promise.all([
   };
   firebase.initializeApp(cfg);
   window.DB=firebase.firestore();
-  // הפעל עדכונים בזמן אמת גם כשהאפליקציה ברקע
-  firebase.firestore().enableNetwork();
+  window.VAPID_KEY="BHxHsUQNXS4bpZu2gevXaPlfQ8W9sIO-BUxLodmYOQPG86AhZIAQc_XqLpshXT8vaa54qNDtwbVfRcsvq77VNN4";
+  // FCM Push Notifications
+  try{
+    window.FCM=firebase.messaging();
+  }catch(e){console.warn('FCM not available:',e);}
   window.firebaseReady=true;
   console.log('Firebase ready ✓');
   document.dispatchEvent(new Event('firebase-ready'));
@@ -272,6 +275,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .chat-inp{flex:1;background:var(--bg);border:none;border-radius:20px;padding:8px 12px;font-size:12px;font-family:'Heebo',sans-serif;outline:none}
 .chat-send{background:var(--navy);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .chat-send svg{width:13px;height:13px;stroke:var(--gold);fill:none;stroke-width:2}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @media(min-width:768px){#app{max-width:420px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.15)}body{background:#e2e8f5}}
 </style>
 </head>
@@ -361,9 +365,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       </div>
       <div class="tb-right">
         <span class="tb-time" id="tbtime"></span>
-        <button class="icon-btn" onclick="showPage('notif')">
+        <button class="icon-btn" onclick="showPage('notif');markNotifsRead()">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <div class="ndot"></div>
+          <div class="ndot" id="notif-dot" style="display:none"></div>
         </button>
         <button class="icon-btn" onclick="toggleDrawer()">
           <svg viewBox="0 0 24 24" style="stroke:white;fill:none;stroke-width:2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -398,9 +402,42 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <!-- HOME -->
   <div class="page on" id="page-home">
     <div class="welcome-strip">
-      <div class="ws-name" id="gr-name">שלום! 👋</div>
-      <div class="ws-sub" id="gr-sub">ברוכ.ה הבא.ה</div>
-      <div class="ws-pts"><span id="ws-pts-val">0 נקודות ⭐</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="ws-name" id="gr-name">שלום! 👋</div>
+          <div class="ws-sub" id="gr-sub">ברוכ.ה הבא.ה</div>
+          <div class="ws-pts" style="margin-top:10px"><span id="ws-pts-val">0 נקודות ⭐</span></div>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;text-align:center">
+          <div style="font-size:28px" id="weather-icon">☀️</div>
+          <div style="font-size:13px;color:white;font-weight:800;margin-top:2px" id="weather-temp">—°C</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:1px">תל אביב</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600" id="rank-label">תושב חדש</span>
+          <span style="font-size:10px;color:var(--gold);font-weight:700" id="rank-next">←</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden">
+          <div id="rank-bar" style="height:100%;background:linear-gradient(90deg,var(--gold),#e8c96d);border-radius:3px;width:0%;transition:width 1.5s ease"></div>
+        </div>
+      </div>
+    </div>
+        <!-- QUICK ACTIONS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 14px 0">
+      <button onclick="showPage('report')" style="background:white;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(10,22,40,.08);border:none;font-family:'Heebo',sans-serif;transition:transform .15s" onactive="this.style.transform='scale(.96)'">
+        <div style="font-size:26px;margin-bottom:6px">📝</div><div style="font-size:11px;font-weight:700;color:var(--navy)">דיווח</div>
+      </button>
+      <button onclick="navTo('history')" style="background:white;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(10,22,40,.08);border:none;font-family:'Heebo',sans-serif">
+        <div style="font-size:26px;margin-bottom:6px">📋</div><div style="font-size:11px;font-weight:700;color:var(--navy)">הפניות</div>
+      </button>
+      <button onclick="navTo('map')" style="background:white;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(10,22,40,.08);border:none;font-family:'Heebo',sans-serif">
+        <div style="font-size:26px;margin-bottom:6px">🗺️</div><div style="font-size:11px;font-weight:700;color:var(--navy)">מפה</div>
+      </button>
+      <button onclick="triggerSOS()" style="background:var(--red-bg);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(220,38,38,.15);border:2px solid #fca5a5;font-family:'Heebo',sans-serif">
+        <div style="font-size:26px;margin-bottom:6px">🆘</div><div style="font-size:11px;font-weight:700;color:var(--red)">מצוקה</div>
+      </button>
     </div>
     <div id="daily-poll" style="background:white;margin:12px 14px 0;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(10,22,40,.06);border-right:3px solid var(--gold)">
       <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:6px">📊 שאלת היום</div>
@@ -1026,6 +1063,47 @@ function startApp(){
   checkBirthday();
   if(window.firebaseReady){initFirestore();}
   else{document.addEventListener('firebase-ready',initFirestore);}
+  // מזג אוויר
+  fetchWeather();
+  // מערכת דרגות
+  updateRankBar();
+}
+
+// ── WEATHER ────────────────────────────
+async function fetchWeather(){
+  try{
+    const res=await fetch('https://wttr.in/Tel+Aviv?format=j1');
+    const data=await res.json();
+    const temp=data.current_condition[0].temp_C;
+    const code=Number(data.current_condition[0].weatherCode);
+    const icons={113:'☀️',116:'⛅',119:'☁️',122:'☁️',176:'🌦️',185:'🌧️',200:'⛈️',227:'🌨️',230:'❄️'};
+    let icon='🌤️';
+    for(const [k,v] of Object.entries(icons)){if(code<=Number(k)){icon=v;break;}}
+    const wi=safe('weather-icon');const wt=safe('weather-temp');
+    if(wi)wi.textContent=icon;
+    if(wt)wt.textContent=temp+'°C';
+  }catch(e){}
+}
+
+// ── RANK SYSTEM ────────────────────────
+const RANKS=[
+  {name:'תושב חדש',min:0,max:10,color:'#94a3b8'},
+  {name:'תושב פעיל',min:10,max:25,color:'#60a5fa'},
+  {name:'שומר קהילה',min:25,max:50,color:'#4ade80'},
+  {name:'שגריר שכונה',min:50,max:100,color:'var(--gold)'},
+  {name:'גיבור עיר',min:100,max:200,color:'#f472b6'},
+  {name:'אזרח כבוד',min:200,max:999,color:'#e879f9'},
+];
+function updateRankBar(){
+  if(!CU)return;
+  const pts=CU.pts||0;
+  const rank=RANKS.find(r=>pts>=r.min&&pts<r.max)||RANKS[RANKS.length-1];
+  const next=RANKS[RANKS.indexOf(rank)+1];
+  const pct=next?Math.min(100,((pts-rank.min)/(next.min-rank.min))*100):100;
+  const rl=safe('rank-label');const rn=safe('rank-next');const rb=safe('rank-bar');
+  if(rl)rl.textContent=`⭐ ${rank.name}`;
+  if(rn)rn.textContent=next?`עוד ${next.min-pts} נקודות ל${next.name}`:'דרגה מקסימלית! 🏆';
+  if(rb){rb.style.width=pct+'%';rb.style.background=`linear-gradient(90deg,${rank.color},${rank.color}dd)`;}
 }
 
 const sv=localStorage.getItem('fs_u');
@@ -1034,6 +1112,7 @@ if(sv){try{CU=JSON.parse(sv);startApp();}catch(e){localStorage.removeItem('fs_u'
 function updatePtsDisplay(){
   const pts=CU?.pts||0;
   ['ws-pts-val','pts-val'].forEach(id=>{const e=safe(id);if(e)e.textContent=`${pts} נקודות ⭐`;});
+  updateRankBar();
 }
 
 // ── WELCOME ────────────────────────────
@@ -1204,6 +1283,7 @@ function renderTickets(){
     </div>`).join('');
   if(CU?.isAdmin)renderAdminTickets();
   renderHomeTickets();
+  checkAchievements();
 }
 
 function openTk(i){
@@ -1389,8 +1469,16 @@ function addNotif(title,body,type='כללי'){
   notifications.unshift(n);
   if(CU)localStorage.setItem('fs_notifs_'+CU.id,JSON.stringify(notifications));
   renderNotifs();
+  // הצג badge
+  const dot=safe('notif-dot');if(dot)dot.style.display='block';
 }
 function loadNotifs(){if(!CU)return;const sv=localStorage.getItem('fs_notifs_'+CU.id);notifications=sv?JSON.parse(sv):[];}
+function markNotifsRead(){
+  notifications.forEach(n=>n.read=true);
+  if(CU)localStorage.setItem('fs_notifs_'+CU.id,JSON.stringify(notifications));
+  const dot=safe('notif-dot');if(dot)dot.style.display='none';
+}
+
 function renderNotifs(){
   const list=safe('notif-list'); if(!list)return;
   if(!notifications.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">אין התראות</div></div>';return;}
@@ -2156,6 +2244,130 @@ function renderMapMarkers(){
 }
 function filterMap(f,el){activeFilter=f;document.querySelectorAll('.mfbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderMapMarkers();}
 function locateMe(){if(!mapInst)return;navigator.geolocation?.getCurrentPosition(p=>{const{latitude:lat,longitude:lng}=p.coords;mapInst.setView([lat,lng],16);L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#3d8ef0;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(61,142,240,.3)"></div>',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(mapInst);toast('מיקומך נמצא ✓');},()=>toast('לא ניתן לאתר מיקום'));}
+
+
+// ══════════════════════════════════════════
+// PUSH NOTIFICATIONS SYSTEM
+// ══════════════════════════════════════════
+let pushToken = null;
+
+async function initPushNotifications(){
+  if(!('Notification' in window)){console.warn('Notifications not supported');return;}
+  if(!window.FCM){console.warn('FCM not ready');return;}
+  
+  try{
+    // רשום Service Worker
+    const swReg = await navigator.serviceWorker.register('/foresight/firebase-messaging-sw.js');
+    console.log('SW registered:', swReg.scope);
+    
+    // בקש הרשאה
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){
+      console.log('Push permission denied');
+      return;
+    }
+    
+    // קבל FCM token
+    const token = await window.FCM.getToken({
+      vapidKey: window.VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
+    
+    if(token){
+      pushToken = token;
+      console.log('FCM Token:', token.substring(0,20)+'...');
+      // שמור token ב-Firestore
+      await savePushToken(token);
+      toast('🔔 התראות פעילות!');
+    }
+  }catch(e){
+    console.warn('Push init error:', e);
+  }
+  
+  // האזן להודעות כשהאפליקציה פתוחה
+  if(window.FCM){
+    window.FCM.onMessage((payload)=>{
+      console.log('Foreground message:', payload);
+      const title = payload.notification?.title || payload.data?.title || 'FORESIGHT';
+      const body = payload.notification?.body || payload.data?.body || '';
+      addNotif(title, body, payload.data?.type||'כללי');
+    });
+  }
+}
+
+async function savePushToken(token){
+  if(!window.DB||!CU||!token)return;
+  try{
+    // שמור token עם userId
+    await window.DB.collection('pushTokens').doc(CU.id).set({
+      userId: CU.id,
+      token: token,
+      updatedAt: Date.now(),
+      platform: /Mobile|Android|iPhone/i.test(navigator.userAgent)?'mobile':'desktop'
+    });
+    console.log('Push token saved to Firestore');
+    
+    // עדכן גם ב-users
+    const snap = await window.DB.collection('users').where('id','==',CU.id).get();
+    if(!snap.empty) await snap.docs[0].ref.update({pushToken: token});
+  }catch(e){console.warn('Save token error:',e);}
+}
+
+// שלח Push Notification לתושב דרך Firestore trigger
+async function sendPushToUser(userId, title, body, type='פנייה'){
+  if(!window.DB)return;
+  try{
+    // שמור ב-pushQueue — Cloud Function תשלח (או נשלח ישירות)
+    await window.DB.collection('pushQueue').add({
+      userId, title, body, type,
+      timestamp: Date.now(),
+      sentBy: CU?.id
+    });
+  }catch(e){console.warn('Push queue error:',e);}
+}
+
+// ══════════════════════════════════════════
+// ACHIEVEMENTS SYSTEM
+// ══════════════════════════════════════════
+const ACHIEVEMENTS=[
+  {id:'first_report',icon:'🎯',title:'הדיווח הראשון',desc:'שלחת את הדיווח הראשון שלך!',pts:5},
+  {id:'five_reports',icon:'🌟',title:'5 דיווחים',desc:'שלחת 5 דיווחים. תושב פעיל!',pts:10},
+  {id:'ten_reports',icon:'🏆',title:'10 דיווחים',desc:'שלחת 10 דיווחים. גיבור השכונה!',pts:20},
+  {id:'first_poll',icon:'📊',title:'מצביע פעיל',desc:'השתתפת בסקר היומי הראשון!',pts:3},
+  {id:'profile_complete',icon:'👤',title:'פרופיל מלא',desc:'מילאת את כל פרטי הפרופיל!',pts:5},
+];
+
+function checkAchievements(){
+  if(!CU)return;
+  const earned=JSON.parse(localStorage.getItem('fs_achievements_'+CU.id)||'[]');
+  const mine=tickets.filter(t=>t.userId===CU.id);
+  const toCheck=[
+    {id:'first_report',condition:mine.length>=1},
+    {id:'five_reports',condition:mine.length>=5},
+    {id:'ten_reports',condition:mine.length>=10},
+  ];
+  toCheck.forEach(a=>{
+    if(a.condition&&!earned.includes(a.id)){
+      earned.push(a.id);
+      localStorage.setItem('fs_achievements_'+CU.id,JSON.stringify(earned));
+      const ach=ACHIEVEMENTS.find(x=>x.id===a.id);
+      if(ach){
+        CU.pts=(CU.pts||0)+ach.pts;
+        localStorage.setItem('fs_u',JSON.stringify(CU));
+        updatePtsDisplay();
+        setTimeout(()=>showAchievement(ach),500);
+      }
+    }
+  });
+}
+
+function showAchievement(ach){
+  const div=document.createElement('div');
+  div.style.cssText='position:fixed;top:80px;left:50%;transform:translateX(-50%);background:white;border-radius:20px;padding:20px 24px;box-shadow:0 8px 32px rgba(10,22,40,.2);z-index:700;text-align:center;min-width:260px;animation:slideDown .4s ease-out;border:2px solid var(--gold)';
+  div.innerHTML=`<div style="font-size:40px;margin-bottom:8px">${ach.icon}</div><div style="font-size:16px;font-weight:900;color:var(--navy);margin-bottom:4px">🏆 הישג חדש!</div><div style="font-size:14px;font-weight:700;color:var(--gold)">${ach.title}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${ach.desc}</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:8px">+${ach.pts} נקודות ⭐</div>`;
+  document.body.appendChild(div);
+  setTimeout(()=>div.remove(),3500);
+}
 </script>
 </body>
 </html>
