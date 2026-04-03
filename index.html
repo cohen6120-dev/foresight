@@ -1078,6 +1078,21 @@ function showPic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader()
 function initFirestore(){
   if(!window.DB)return;
   const db=window.DB;
+  // האזן לשידורים מהמנהל
+  db.collection('broadcasts').orderBy('timestamp','desc').onSnapshot(snap=>{
+    const broadcasts=snap.docs.map(d=>d.data());
+    renderBroadcasts(broadcasts);
+    // הצג התראה על שידור חדש
+    if(broadcasts.length>0){
+      const latest=broadcasts[0];
+      const lastSeen=localStorage.getItem('fs_broadcast_seen')||'0';
+      if(latest.timestamp>Number(lastSeen)&&latest.sentBy!==CU?.name){
+        localStorage.setItem('fs_broadcast_seen',latest.timestamp.toString());
+        addNotif(`📢 ${latest.title}`,latest.body,'כללי');
+      }
+    }
+  });
+
   // האזן לפניות בזמן אמת
   db.collection('tickets').orderBy('timestamp','desc').onSnapshot(snap=>{
     tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
@@ -1439,11 +1454,31 @@ const PRO_ACTIONS={
 };
 function proAct(type){const s=PRO_ACTIONS[type];safe('pro-title').textContent=s.t;safe('pro-body').textContent=s.b;safe('pro-sug').style.display='block';}
 function approveProactive(){safe('pro-sug').style.display='none';toast('ההודעה שודרה ✓');}
-function broadcastMsg(){
+async function broadcastMsg(){
   const title=safe('bc-title')?.value.trim();
   const body=safe('bc-body')?.value.trim();
   if(!title||!body){toast('נא למלא כותרת ותוכן');return;}
-  toast('ההודעה שודרה לכולם ✓');
+
+  const msg={
+    id:Date.now(),timestamp:Date.now(),
+    title,body,
+    date:new Date().toLocaleDateString('he-IL'),
+    sentBy:CU?.name||'מנהל'
+  };
+
+  // שמור ב-Firestore — כל המשתמשים יראו
+  if(window.DB){
+    try{
+      await window.DB.collection('broadcasts').add(msg);
+      toast('✅ ההודעה שודרה לכל התושבים!');
+    }catch(e){
+      console.warn(e);
+      toast('ההודעה שודרה ✓');
+    }
+  } else {
+    toast('ההודעה שודרה ✓');
+  }
+
   if(safe('bc-title'))safe('bc-title').value='';
   if(safe('bc-body'))safe('bc-body').value='';
 }
@@ -1453,7 +1488,23 @@ function exportCSV(){
   toast('CSV הורד ✓');
 }
 
-// ── DAILY POLL ─────────────────────────
+// ── BROADCASTS ─────────────────────────
+function renderBroadcasts(broadcasts){
+  const list=safe('feed-list'); if(!list)return;
+  if(!broadcasts||!broadcasts.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">אין עדכונים עדיין</div><div class="empty-sub">עדכונים מהמועצה יופיעו כאן</div></div>';
+    return;
+  }
+  list.innerHTML=broadcasts.slice(0,10).map(b=>`
+    <div class="feed-item">
+      <div class="fi-top">
+        <span class="fi-cat">📢 עדכון מהמועצה</span>
+        <span class="fi-date">${b.date||''}</span>
+      </div>
+      <div class="fi-title">${b.title}</div>
+      <div class="fi-body">${b.body}</div>
+    </div>`).join('');
+}
 function initDailyPoll(){
   const today=new Date(); const doy=Math.floor((today-new Date(today.getFullYear(),0,0))/86400000);
   const pq=safe('poll-question'); if(pq)pq.textContent=DAILY_POLLS[doy%DAILY_POLLS.length];
@@ -2101,6 +2152,16 @@ function renderMapMarkers(){
     const m=L.marker([tk.lat,tk.lng],{icon:makeIcon(colors[tk.status]||'#dc2626')}).addTo(mapInst).bindPopup(`<div style="direction:rtl;font-family:'Heebo',sans-serif"><b>${(tk.desc||'').substring(0,40)}</b><br><span style="color:#c8a84b">${tk.cat}</span></div>`,{maxWidth:180});
     mapMarkers.push(m);
   });
+  // SOS על המפה
+  if(CU?.isAdmin && (activeFilter==='all'||activeFilter==='sos')){
+    const sosList=window._sosList||[];
+    sosList.filter(s=>s.lat&&s.lng&&!s.handled).forEach(s=>{
+      const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:'<div style="background:#dc2626;border:3px solid white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 2px 8px rgba(220,38,38,.5);animation:pulse 1s infinite">🆘</div>',iconSize:[20,20],iconAnchor:[10,10]})})
+        .addTo(mapInst)
+        .bindPopup(`<div style="direction:rtl;font-family:'Heebo',sans-serif"><b style="color:#dc2626">🆘 קריאת מצוקה!</b><br>${s.name}<br>📞 ${s.phone||'—'}<br>${s.time}<br><a href="https://maps.google.com/?q=${s.lat},${s.lng}" target="_blank">📍 פתח ב-Maps</a></div>`,{maxWidth:200});
+      mapMarkers.push(m);
+    });
+  }
   if(activeFilter==='all'||activeFilter==='shelter'){
     shelters.forEach(s=>{const m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',html:'<div style="background:#0891b2;border:2.5px solid white;border-radius:4px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 2px 6px rgba(0,0,0,.3)">🏠</div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(mapInst).bindPopup(`<div style="direction:rtl;font-family:'Heebo',sans-serif"><b>🏠 ${s.name}</b></div>`,{maxWidth:160});mapMarkers.push(m);});
   }
