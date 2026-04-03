@@ -423,8 +423,13 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     <div id="feed-list">
       <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">אין עדכונים עדיין</div><div class="empty-sub">עדכונים מהמועצה יופיעו כאן</div></div>
     </div>
-    <div style="padding:8px 14px 16px">
+    <div style="padding:8px 14px 4px">
       <button onclick="triggerSOS()" style="width:100%;background:linear-gradient(135deg,#7f1d1d,#dc2626);color:white;border:none;border-radius:16px;padding:18px;font-size:16px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(220,38,38,.3)">🆘 לחצן מצוקה / קריאה לעזרה</button>
+    </div>
+    <div style="padding:4px 14px 16px">
+      <button id="pwa-install-btn" onclick="installPWA()" style="display:none;width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:var(--gold);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:14px;font-size:14px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;align-items:center;justify-content:center;gap:8px">
+        📲 הורד כאפליקציה למכשיר
+      </button>
     </div>
   </div>
 
@@ -691,9 +696,21 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     </div>
     <div class="admin-tabs">
       <button class="atab on" onclick="setATab('scada',this)">SCADA</button>
+      <button class="atab" onclick="setATab('sos',this)" id="sos-tab" style="position:relative">🆘 מצוקה<span id="sos-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;display:none;align-items:center;justify-content:center;font-weight:700">0</span></button>
       <button class="atab" onclick="setATab('tickets',this)">פניות</button>
       <button class="atab" onclick="setATab('kanban',this)">משימות</button>
       <button class="atab" onclick="setATab('broadcast',this)">שידור</button>
+    </div>
+
+    <!-- SOS PANEL -->
+    <div id="at-sos" style="display:none">
+      <div style="background:linear-gradient(135deg,#7f1d1d,#dc2626);margin:12px 14px;border-radius:18px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:4px">🆘 קריאות מצוקה פעילות</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5)">מתעדכן בזמן אמת</div>
+      </div>
+      <div id="sos-list">
+        <div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">אין קריאות מצוקה</div><div class="empty-sub">קריאות SOS יופיעו כאן בזמן אמת</div></div>
+      </div>
     </div>
     <div id="at-scada">
       <div class="roi-card">
@@ -1071,7 +1088,16 @@ function initFirestore(){
   // האזן ל-SOS (למנהל בלבד)
   if(CU?.isAdmin){
     db.collection('sos').orderBy('timestamp','desc').onSnapshot(snap=>{
-      const sosList=snap.docs.map(d=>d.data());
+      const sosList=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
+      window._sosList=sosList;
+      // עדכן badge
+      const unread=sosList.filter(s=>!s.handled).length;
+      const badge=safe('sos-badge');
+      if(badge){
+        badge.textContent=unread;
+        badge.style.display=unread>0?'flex':'none';
+      }
+      // הצג התראה על SOS חדש
       if(sosList.length>0){
         const latest=sosList[0];
         const lastSeen=localStorage.getItem('fs_sos_seen')||'0';
@@ -1079,8 +1105,15 @@ function initFirestore(){
           localStorage.setItem('fs_sos_seen',latest.timestamp.toString());
           const mapsLink=latest.lat?`https://maps.google.com/?q=${latest.lat},${latest.lng}`:'אין GPS';
           addNotif(`🆘 קריאת מצוקה — ${latest.name}`,`📞 ${latest.phone||'—'} | ⏰ ${latest.time} | 📍 ${mapsLink}`,'חירום');
+          // החלף לשונית SOS אוטומטית
+          if(CU?.isAdmin){
+            showPage('admin');
+            const sosTabBtn=document.querySelector('.atab:nth-child(2)');
+            if(sosTabBtn)setATab('sos',sosTabBtn);
+          }
         }
       }
+      renderSOSList();
     });
     db.collection('users').onSnapshot(snap=>{
       const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
@@ -1385,9 +1418,10 @@ function updateScadaKPIs(){
 
 function setATab(tab,el){
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
-  ['scada','tickets','kanban','broadcast'].forEach(t=>{const e=safe('at-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  ['scada','sos','tickets','kanban','broadcast'].forEach(t=>{const e=safe('at-'+t);if(e)e.style.display=t===tab?'block':'none';});
   if(tab==='tickets')renderAdminTickets();
   if(tab==='kanban')renderKanban();
+  if(tab==='sos')renderSOSList();
 }
 
 // ── PROACTIVE ──────────────────────────
@@ -1897,7 +1931,62 @@ function getPushMessages(cat){
   ];
 }
 
-// ── SHELTERS ───────────────────────────
+// ── SOS LIST ───────────────────────────
+function renderSOSList(){
+  const list=safe('sos-list'); if(!list)return;
+  const sosList=window._sosList||[];
+  if(!sosList.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">אין קריאות מצוקה</div><div class="empty-sub">קריאות SOS יופיעו כאן בזמן אמת</div></div>';
+    return;
+  }
+  list.innerHTML=sosList.map((s,i)=>`
+    <div style="background:white;margin:0 14px 8px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.08);border-right:4px solid ${s.handled?'var(--green)':'#dc2626'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:800;color:${s.handled?'var(--green)':'#dc2626'}">${s.handled?'✅ טופל':'🆘 פעיל'}</span>
+        <span style="font-size:10px;color:var(--muted)">${s.date} ${s.time}</span>
+      </div>
+      <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:4px">👤 ${s.name||'לא ידוע'}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">📞 ${s.phone||'—'}</div>
+      ${s.lat?`
+        <a href="https://maps.google.com/?q=${s.lat},${s.lng}" target="_blank" style="display:block;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:8px">
+          📍 פתח מיקום ב-Google Maps
+        </a>
+        <div style="font-size:10px;color:var(--muted);text-align:center">${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}</div>
+      `:'<div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center;font-size:11px;color:var(--muted)">📍 מיקום GPS לא זמין</div>'}
+      ${!s.handled?`<button onclick="handleSOS('${s._fireId}')" style="width:100%;background:var(--green);color:white;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">✅ סמן כטופל</button>`:''}
+    </div>`).join('');
+}
+
+async function handleSOS(fireId){
+  if(!window.DB||!fireId)return;
+  try{
+    await window.DB.collection('sos').doc(fireId).update({handled:true});
+    toast('קריאת מצוקה סומנה כטופלת ✓');
+  }catch(e){console.warn(e);}
+}
+
+// ── PWA INSTALL ────────────────────────
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  // הצג כפתור התקנה
+  const btn=safe('pwa-install-btn');
+  if(btn)btn.style.display='flex';
+});
+
+async function installPWA(){
+  if(!deferredPrompt){
+    toast('פתח בדפדפן Chrome להתקנה כאפליקציה');
+    return;
+  }
+  deferredPrompt.prompt();
+  const result=await deferredPrompt.userChoice;
+  if(result.outcome==='accepted'){toast('האפליקציה הותקנה! 🎉');}
+  deferredPrompt=null;
+  const btn=safe('pwa-install-btn');
+  if(btn)btn.style.display='none';
+}
 function toggleShelterMode(){
   shelterMode=!shelterMode;
   const btn=safe('shelter-mode-btn');
