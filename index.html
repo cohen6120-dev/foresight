@@ -1018,21 +1018,15 @@ function initFirestore(){
     db.collection('sos').orderBy('timestamp','desc').onSnapshot(snap=>{
       const sosList=snap.docs.map(d=>d.data());
       if(sosList.length>0){
-        // הצג התראה אם יש SOS חדש
         const latest=sosList[0];
         const lastSeen=localStorage.getItem('fs_sos_seen')||'0';
         if(latest.timestamp>Number(lastSeen)){
           localStorage.setItem('fs_sos_seen',latest.timestamp.toString());
           const mapsLink=latest.lat?`https://maps.google.com/?q=${latest.lat},${latest.lng}`:'אין GPS';
-          addNotif(
-            `🆘 קריאת מצוקה — ${latest.name}`,
-            `📞 ${latest.phone||'—'} | ⏰ ${latest.time}\n📍 ${mapsLink}`,
-            'חירום'
-          );
+          addNotif(`🆘 קריאת מצוקה — ${latest.name}`,`📞 ${latest.phone||'—'} | ⏰ ${latest.time} | 📍 ${mapsLink}`,'חירום');
         }
       }
     });
-  }
     db.collection('users').onSnapshot(snap=>{
       const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
       snap.docs.forEach(d=>{const u=d.data();if(u.id)allUsers[u.id]=u;});
