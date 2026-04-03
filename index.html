@@ -1105,11 +1105,13 @@ function initFirestore(){
           localStorage.setItem('fs_sos_seen',latest.timestamp.toString());
           const mapsLink=latest.lat?`https://maps.google.com/?q=${latest.lat},${latest.lng}`:'אין GPS';
           addNotif(`🆘 קריאת מצוקה — ${latest.name}`,`📞 ${latest.phone||'—'} | ⏰ ${latest.time} | 📍 ${mapsLink}`,'חירום');
-          // החלף לשונית SOS אוטומטית
+          // עבור ללשונית SOS אוטומטית
           if(CU?.isAdmin){
             showPage('admin');
-            const sosTabBtn=document.querySelector('.atab:nth-child(2)');
-            if(sosTabBtn)setATab('sos',sosTabBtn);
+            setTimeout(()=>{
+              const sosBtn=safe('sos-tab');
+              setATab('sos',sosBtn);
+            },300);
           }
         }
       }
@@ -1417,8 +1419,12 @@ function updateScadaKPIs(){
 }
 
 function setATab(tab,el){
-  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
-  ['scada','sos','tickets','kanban','broadcast'].forEach(t=>{const e=safe('at-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
+  ['scada','sos','tickets','kanban','broadcast'].forEach(t=>{
+    const e=safe('at-'+t);
+    if(e)e.style.display=t===tab?'block':'none';
+  });
   if(tab==='tickets')renderAdminTickets();
   if(tab==='kanban')renderKanban();
   if(tab==='sos')renderSOSList();
@@ -1521,44 +1527,35 @@ function toggleSenior(){seniorOn=!seniorOn;const t=safe('sen-toggle');if(t)t.cla
 function triggerSOS(){
   const doSOS=(lat,lng)=>{
     const sosData={
-      id:Date.now(),
-      userId:CU?.id,
-      name:CU?.name||'תושב',
-      phone:CU?.ph||'',
-      lat,lng,
-      time:new Date().toLocaleTimeString('he-IL'),
-      date:new Date().toLocaleDateString('he-IL'),
-      address:CU?.addr||'',
-      timestamp:Date.now()
+      id:Date.now(),timestamp:Date.now(),
+      userId:CU?.id,name:CU?.name||'תושב',phone:CU?.ph||'',
+      lat,lng,time:new Date().toLocaleTimeString('he-IL'),
+      date:new Date().toLocaleDateString('he-IL'),handled:false
     };
     // שמור ב-Firestore
     if(window.DB){
-      window.DB.collection('sos').add(sosData).then(()=>{
-        console.log('SOS saved to Firestore');
-      }).catch(e=>console.warn(e));
+      window.DB.collection('sos').add(sosData).catch(e=>console.warn(e));
     }
-    // שמור גם ב-localStorage
-    const sosList=JSON.parse(localStorage.getItem('fs_sos')||'[]');
-    sosList.unshift(sosData);
-    localStorage.setItem('fs_sos',JSON.stringify(sosList));
-    // שלח התראה לכל המנהלים
-    const mapsLink=lat?`https://maps.google.com/?q=${lat},${lng}`:'אין מיקום GPS';
+    // התראה למנהלים
+    const mapsLink=lat?`https://maps.google.com/?q=${lat},${lng}`:'אין GPS';
     ADMINS.forEach(id=>{
       const k='fs_notifs_'+id;
       const ns=JSON.parse(localStorage.getItem(k)||'[]');
-      ns.unshift({
-        id:Date.now(),
-        title:'🆘 קריאת מצוקה!',
-        body:`${sosData.name} • 📞 ${sosData.phone||'לא ידוע'} • ${sosData.time}\n📍 ${lat?`${lat.toFixed(5)}, ${lng.toFixed(5)}`:'מיקום לא זמין'}\n🗺️ ${mapsLink}`,
-        type:'חירום',
-        date:sosData.date,
-        lat,lng,
-        read:false
-      });
+      ns.unshift({id:Date.now(),title:'🆘 קריאת מצוקה!',body:`${sosData.name} • 📞 ${sosData.phone||'—'} • ${sosData.time} • ${mapsLink}`,type:'חירום',date:sosData.date,read:false});
       localStorage.setItem(k,JSON.stringify(ns));
     });
+    // הצג מסך חירום לתושב
     safe('emg').classList.add('on');
-    toast('🆘 קריאת מצוקה נשלחה עם מיקום!');
+    toast('🆘 קריאת מצוקה נשלחה!');
+    // אם המנהל שלח — עבור לחדר בקרה לשונית SOS
+    if(CU?.isAdmin){
+      safe('emg').classList.remove('on');
+      showPage('admin');
+      setTimeout(()=>{
+        const sosBtn=safe('sos-tab');
+        setATab('sos',sosBtn);
+      },300);
+    }
   };
   navigator.geolocation?.getCurrentPosition(
     p=>doSOS(p.coords.latitude,p.coords.longitude),
