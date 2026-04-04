@@ -522,7 +522,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <div class="weather-box">
           <div style="font-size:26px" id="weather-icon">🌤️</div>
           <div style="font-size:14px;color:white;font-weight:900;margin-top:3px" id="weather-temp">—°</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px" id="weather-city">GPS...</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.4);margin-top:2px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="weather-city">מאתר...</div>
         </div>
       </div>
       <div class="ws-stats">
@@ -547,6 +547,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <button class="qa" onclick="navTo('history')"><span class="qa-icon">📋</span><span class="qa-lbl">פניות</span></button>
       <button class="qa" onclick="navTo('map')"><span class="qa-icon">🗺️</span><span class="qa-lbl">מפה</span></button>
       <button class="qa qa-sos" onclick="triggerSOS()"><span class="qa-icon">🆘</span><span class="qa-lbl">מצוקה</span></button>
+    </div>
+    <!-- VAAD IDEA BUTTON -->
+    <div style="padding:10px 14px 0">
+      <button onclick="openVaadIdeaModal()" style="width:100%;background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #fde68a;border-radius:var(--radius);padding:14px;font-size:13px;font-weight:800;color:#92400e;font-family:'Heebo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+        💡 שלח רעיון / פנייה לועד המקומי
+      </button>
     </div>
     <div id="daily-poll" style="background:white;margin:12px 14px 0;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(10,22,40,.06);border-right:3px solid var(--gold)">
       <div style="font-size:10px;font-weight:700;color:var(--gold);margin-bottom:6px">📊 שאלת היום</div>
@@ -749,77 +755,192 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 
   <!-- VAAD -->
   <div class="page" id="page-vaad">
-    <div id="vaad-login" style="padding:32px 20px;text-align:center">
-      <div style="font-size:40px;margin-bottom:12px">🏛️</div>
-      <div style="font-size:20px;font-weight:800;color:var(--navy);margin-bottom:6px">ועד מקומי</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">כניסה מוגנת לחברי ועד בלבד</div>
-      <input id="vaad-password" type="password" class="pinp" placeholder="סיסמת ועד..." style="text-align:center;font-size:18px;letter-spacing:4px">
-      <div style="font-size:11px;color:var(--red);display:none;margin-bottom:8px" id="vaad-pw-err">סיסמה שגויה</div>
-      <button onclick="loginVaad()" style="width:100%;background:linear-gradient(135deg,var(--navy),var(--blue));color:var(--gold);border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">כניסה לוועד</button>
-      <div style="margin-top:16px;font-size:11px;color:var(--muted)">סיסמת מנהל: admin2024</div>
+    <!-- LOGIN -->
+    <div id="vaad-login" style="padding:48px 24px;text-align:center">
+      <div style="font-size:64px;margin-bottom:16px;animation:eyePulse 3s ease infinite">🏛️</div>
+      <div style="font-size:24px;font-weight:900;color:var(--navy);margin-bottom:6px">ועד מקומי</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6">כניסה מוגנת לחברי ועד ולמנהל<br>הרשות בלבד</div>
+      <input id="vaad-password" type="password" class="pinp" placeholder="סיסמת ועד..." style="text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:4px">
+      <div style="font-size:11px;color:var(--red);display:none;margin-bottom:10px;font-weight:700" id="vaad-pw-err">❌ סיסמה שגויה</div>
+      <button onclick="loginVaad()" class="big-btn" style="margin-top:12px">כניסה לוועד המקומי</button>
+      <div style="margin-top:20px;font-size:11px;color:var(--muted)">מנהל מערכת — השתמש בסיסמת מנהל</div>
     </div>
+
+    <!-- CONTENT -->
     <div id="vaad-content" style="display:none">
-      <div class="pg-hdr" style="padding-bottom:6px;display:flex;align-items:center;justify-content:space-between">
-        <div><h2>ועד מקומי</h2><p id="vaad-name-display">—</p></div>
-        <button onclick="logoutVaad()" style="background:none;border:none;color:var(--muted);font-size:11px;font-family:'Heebo',sans-serif;cursor:pointer">יציאה</button>
+      <!-- HEADER -->
+      <div style="background:linear-gradient(145deg,var(--navy),var(--blue));padding:20px 18px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:radial-gradient(circle,rgba(200,168,75,.1),transparent);pointer-events:none"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1">
+          <button onclick="logoutVaad()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">יציאה</button>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:900;color:white">🏛️ ועד מקומי</div>
+            <div style="font-size:12px;color:var(--gold);margin-top:2px" id="vaad-name-display">—</div>
+          </div>
+        </div>
+        <!-- MONTHLY SUMMARY -->
+        <div style="display:flex;gap:8px;margin-top:16px;position:relative;z-index:1" id="vaad-month-kpis">
+          <div style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">חודש זה</div>
+            <div style="font-size:18px;font-weight:900;color:#4ade80" id="vaad-month-income">₪0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:2px">הכנסות</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">חודש זה</div>
+            <div style="font-size:18px;font-weight:900;color:#f87171" id="vaad-month-expense">₪0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:2px">הוצאות</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center">
+            <div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">יתרה שנתית</div>
+            <div style="font-size:18px;font-weight:900;color:var(--gold)" id="vaad-year-balance">₪0</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.3);margin-top:2px">מצטבר</div>
+          </div>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;padding:8px 14px;overflow-x:auto">
-        <button class="mfbtn on" onclick="setVaadTab('meetings',this)">ישיבות</button>
-        <button class="mfbtn" onclick="setVaadTab('decisions',this)">החלטות</button>
-        <button class="mfbtn" onclick="setVaadTab('budget',this)">תקציב</button>
-        <button class="mfbtn" onclick="setVaadTab('members',this)">חברי ועד</button>
+
+      <!-- TABS -->
+      <div style="display:flex;overflow-x:auto;padding:10px 14px;gap:8px;background:var(--card);border-bottom:1px solid var(--border);scrollbar-width:none">
+        <button class="mfbtn on" onclick="setVaadTab('meetings',this)">📅 ישיבות</button>
+        <button class="mfbtn" onclick="setVaadTab('decisions',this)">📜 החלטות</button>
+        <button class="mfbtn" onclick="setVaadTab('budget',this)">💰 תקציב</button>
+        <button class="mfbtn" onclick="setVaadTab('budget-plan',this)">📋 תכנית תקציב</button>
+        <button class="mfbtn" onclick="setVaadTab('members',this)">👥 חברי ועד</button>
+        <button class="mfbtn" onclick="setVaadTab('resident-ideas',this)">💡 פניות תושבים</button>
       </div>
+
+      <!-- ═══ MEETINGS ═══ -->
       <div id="vt-meetings">
-        <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
-          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">➕ ישיבה חדשה</div>
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ ישיבה חדשה</div>
           <input id="meet-title" class="bc-inp" placeholder="נושא הישיבה...">
           <input id="meet-date" class="bc-inp" type="date">
-          <textarea id="meet-agenda" class="bc-ta" placeholder="סדר יום..." style="min-height:60px"></textarea>
-          <button onclick="addMeeting()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף</button>
+          <textarea id="meet-protocol" class="bc-ta" placeholder="פרוטוקול ישיבה מלא — רשום כאן את כל שנאמר בישיבה..." style="min-height:120px"></textarea>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">נוכחים</div>
+          <input id="meet-attendees" class="bc-inp" placeholder="שמות המשתתפים (מופרדים בפסיק)...">
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button onclick="addMeeting()" class="big-btn" style="flex:2;font-size:13px;padding:13px">שמור ישיבה</button>
+            <button onclick="publishMeetingSummary()" style="flex:1;background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:var(--radius);padding:13px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📢 שדר לתושבים</button>
+          </div>
         </div>
-        <div id="meetings-list"><div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות</div></div></div>
+        <div class="section-title">פרוטוקולים שמורים</div>
+        <div id="meetings-list"><div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות</div><div class="empty-sub">פרוטוקולי הישיבות יישמרו כאן</div></div></div>
       </div>
+
+      <!-- ═══ DECISIONS ═══ -->
       <div id="vt-decisions" style="display:none">
-        <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(10,22,40,.05)">
-          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">➕ החלטה חדשה</div>
-          <input id="dec-title" class="bc-inp" placeholder="תיאור ההחלטה...">
-          <div style="display:flex;gap:6px;margin-bottom:8px">
-            <input id="dec-for" class="bc-inp" type="number" placeholder="בעד" style="flex:1;margin-bottom:0">
-            <input id="dec-against" class="bc-inp" type="number" placeholder="נגד" style="flex:1;margin-bottom:0">
-            <input id="dec-abstain" class="bc-inp" type="number" placeholder="נמנע" style="flex:1;margin-bottom:0">
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ החלטה חדשה</div>
+          <input id="dec-title" class="bc-inp" placeholder="נושא ההחלטה...">
+          <textarea id="dec-details" class="bc-ta" placeholder="פרטי ההחלטה המלאים..." style="min-height:80px"></textarea>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">תוצאות הצבעה</div>
+          <div style="display:flex;gap:8px">
+            <input id="dec-for" class="bc-inp" type="number" placeholder="בעד" style="flex:1;margin-bottom:0;text-align:center">
+            <input id="dec-against" class="bc-inp" type="number" placeholder="נגד" style="flex:1;margin-bottom:0;text-align:center">
+            <input id="dec-abstain" class="bc-inp" type="number" placeholder="נמנע" style="flex:1;margin-bottom:0;text-align:center">
           </div>
-          <button onclick="addDecision()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">שמור</button>
-        </div>
-        <div id="decisions-list"><div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות</div></div></div>
-      </div>
-      <div id="vt-budget" style="display:none">
-        <div style="background:linear-gradient(135deg,var(--navy),var(--blue));margin:0 14px 10px;border-radius:16px;padding:16px;text-align:center">
-          <div style="font-size:11px;color:var(--gold);margin-bottom:4px">תקציב שנתי</div>
-          <div style="font-size:32px;font-weight:900;color:white" id="vaad-budget-total">₪0</div>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:#4ade80" id="vaad-income">₪0</div><div style="font-size:9px;color:rgba(255,255,255,.4)">הכנסות</div></div>
-            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:#f87171" id="vaad-expense">₪0</div><div style="font-size:9px;color:rgba(255,255,255,.4)">הוצאות</div></div>
+            <button onclick="addDecision()" class="big-btn" style="flex:2;font-size:13px;padding:13px">שמור החלטה</button>
+            <button onclick="publishDecision()" style="flex:1;background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:var(--radius);padding:13px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📢 פרסם</button>
           </div>
         </div>
-        <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px">
-          <input id="budget-desc" class="bc-inp" placeholder="תיאור...">
-          <div style="display:flex;gap:6px;margin-bottom:8px">
-            <select id="budget-type" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px;font-family:'Heebo',sans-serif;font-size:12px;outline:none"><option value="income">הכנסה</option><option value="expense">הוצאה</option></select>
-            <input id="budget-amount" class="bc-inp" type="number" placeholder="₪" style="flex:1;margin-bottom:0">
+        <div class="section-title">ארכיון החלטות</div>
+        <div id="decisions-list"><div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות</div><div class="empty-sub">כל החלטות הועד יישמרו כאן</div></div></div>
+      </div>
+
+      <!-- ═══ BUDGET ═══ -->
+      <div id="vt-budget" style="display:none">
+        <!-- MONTH SELECTOR -->
+        <div style="background:var(--card);padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <button onclick="vaadMonthNav(-1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">← הקודם</button>
+          <div style="text-align:center">
+            <div style="font-size:15px;font-weight:900;color:var(--navy)" id="vaad-month-label">—</div>
+            <div style="font-size:11px;color:var(--muted)">חודש תקציבי</div>
           </div>
-          <button onclick="addBudgetItem()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">הוסף</button>
+          <button onclick="vaadMonthNav(1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הבא →</button>
         </div>
+        <!-- MONTH SUMMARY -->
+        <div style="background:linear-gradient(145deg,var(--navy),var(--blue));margin:12px 14px;border-radius:var(--radius-lg);padding:20px;text-align:center;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(200,168,75,.1),transparent);pointer-events:none"></div>
+          <div style="font-size:11px;color:var(--gold);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:1px">יתרה חודשית</div>
+          <div style="font-size:44px;font-weight:900;color:white;letter-spacing:-2px" id="vaad-budget-total">₪0</div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:900;color:#4ade80" id="vaad-income">₪0</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;font-weight:700">הכנסות</div>
+            </div>
+            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:900;color:#f87171" id="vaad-expense">₪0</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;font-weight:700">הוצאות</div>
+            </div>
+          </div>
+          <button onclick="exportMonthlyReport()" style="width:100%;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:12px;padding:11px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:14px">📊 הפק דוח רווח והפסד חודשי ← שדר לתושבים</button>
+        </div>
+        <!-- ADD ITEM -->
+        <div class="card">
+          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ רשומה חדשה</div>
+          <input id="budget-desc" class="bc-inp" placeholder="תיאור ההכנסה/הוצאה...">
+          <div style="display:flex;gap:8px">
+            <select id="budget-type" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:13px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)"><option value="income">💚 הכנסה</option><option value="expense">❤️ הוצאה</option></select>
+            <select id="budget-category" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:13px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)">
+              <option>תשלומי ועד</option><option>תמיכת מועצה</option><option>תרומות</option>
+              <option>ניקיון</option><option>גינון</option><option>אחזקה</option>
+              <option>אירועים</option><option>משרד</option><option>אחר</option>
+            </select>
+          </div>
+          <input id="budget-amount" class="bc-inp" type="number" placeholder="סכום בש״ח" style="margin-top:8px">
+          <button onclick="addBudgetItem()" class="big-btn" style="font-size:13px;padding:13px;margin-top:4px">הוסף רשומה</button>
+        </div>
+        <div class="section-title">רשומות חודש זה</div>
         <div id="budget-list"></div>
       </div>
-      <div id="vt-members" style="display:none">
-        <div style="background:white;margin:0 14px 10px;border-radius:14px;padding:14px">
-          <input id="mem-name" class="bc-inp" placeholder="שם מלא...">
-          <input id="mem-role" class="bc-inp" placeholder="תפקיד...">
-          <input id="mem-phone" class="bc-inp" placeholder="טלפון" type="tel">
-          <button onclick="addMember()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הוסף חבר</button>
+
+      <!-- ═══ BUDGET PLAN ═══ -->
+      <div id="vt-budget-plan" style="display:none">
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:14px;font-weight:900;color:var(--navy);margin-bottom:4px">📋 תכנית תקציב שנתית</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">להגשה לגזבר המועצה — גזבר יכול להוסיף הערות</div>
+          <input id="bp-year" class="bc-inp" placeholder="שנת תקציב (למשל: 2025)" type="number">
+          <textarea id="bp-content" class="bc-ta" placeholder="פרט את תכנית התקציב המבוקשת:&#10;&#10;הכנסות צפויות:&#10;• תשלומי ועד: ₪___&#10;• תמיכת מועצה: ₪___&#10;&#10;הוצאות מתוכננות:&#10;• ניקיון: ₪___&#10;• גינון: ₪___&#10;• אירועים: ₪___&#10;• אחזקה: ₪___" style="min-height:200px"></textarea>
+          <button onclick="submitBudgetPlan()" class="big-btn" style="font-size:13px;padding:13px">הגש תכנית תקציב למועצה</button>
         </div>
-        <div id="members-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div></div></div>
+        <div class="section-title">תכניות תקציב שהוגשו</div>
+        <div id="budget-plans-list"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין תכניות תקציב</div><div class="empty-sub">תכניות שהוגשו יופיעו כאן עם הערות הגזבר</div></div></div>
       </div>
+
+      <!-- ═══ MEMBERS ═══ -->
+      <div id="vt-members" style="display:none">
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ חבר ועד חדש</div>
+          <input id="mem-name" class="bc-inp" placeholder="שם מלא...">
+          <input id="mem-role" class="bc-inp" placeholder="תפקיד (יו״ר / גזבר / מזכיר / חבר)...">
+          <input id="mem-phone" class="bc-inp" placeholder="טלפון" type="tel">
+          <button onclick="addMember()" class="big-btn" style="font-size:13px;padding:13px">הוסף חבר ועד</button>
+        </div>
+        <div class="section-title">חברי הועד</div>
+        <div id="members-list"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div><div class="empty-sub">הוסף את חברי הועד</div></div></div>
+      </div>
+
+      <!-- ═══ RESIDENT IDEAS ═══ -->
+      <div id="vt-resident-ideas" style="display:none">
+        <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);margin:12px 14px 0;border-radius:var(--radius);padding:14px;border-right:4px solid var(--gold)">
+          <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:4px">💡 פניות ורעיונות מתושבים לועד</div>
+          <div style="font-size:12px;color:var(--muted)">פניות שהוגשו לועד המקומי — נפרד מפניות למועצה</div>
+        </div>
+        <div class="section-title">פניות ורעיונות <span style="background:var(--red);color:white;border-radius:10px;padding:2px 8px;font-size:9px" id="vaad-ideas-count">0</span></div>
+        <div id="vaad-ideas-list"><div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">אין פניות לועד</div><div class="empty-sub">פניות תושבים לועד המקומי יופיעו כאן</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESIDENT VAAD IDEA MODAL -->
+  <div class="moverlay" id="vaad-idea-modal">
+    <div class="mcard">
+      <div class="mtitle">💡 פנייה לועד המקומי</div>
+      <div class="mmeta">שאלות, רעיונות ובקשות לועד — לא למועצה</div>
+      <input id="idea-title" class="bc-inp" placeholder="נושא הפנייה...">
+      <textarea id="idea-body" class="bc-ta" placeholder="פרט את הרעיון / הבקשה שלך..." style="min-height:100px"></textarea>
+      <button onclick="submitVaadIdea()" class="rate-btn">שלח לועד</button>
+      <button class="mclose" onclick="closeMod('vaad-idea-modal')">ביטול</button>
     </div>
   </div>
 
@@ -2284,7 +2405,13 @@ function renderKanban(){
   });
 }
 
-// ── VAAD ───────────────────────────────
+// ══════════════════════════════════════════
+// VAAD SYSTEM - FULL VERSION
+// ══════════════════════════════════════════
+let vaadCurrentMonth=new Date().getMonth();
+let vaadCurrentYear=new Date().getFullYear();
+const MONTHS_HE=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
 function loginVaad(){
   const pw=safe('vaad-password').value.trim();
   if(pw===ADMIN_VAAD_PASSWORD){currentVaadName='מנהל מערכת';openVaad();}
@@ -2293,33 +2420,231 @@ function loginVaad(){
 }
 safe('vaad-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginVaad();});
 function openVaad(){
-  safe('vaad-login').style.display='none'; safe('vaad-content').style.display='block';
-  const vnd=safe('vaad-name-display');if(vnd)vnd.textContent=currentVaadName;
-  renderVaad('meetings');
+  safe('vaad-login').style.display='none';safe('vaad-content').style.display='block';
+  const vn=safe('vaad-name-display');if(vn)vn.textContent=currentVaadName;
+  updateVaadMonthLabel();renderVaad('meetings');updateVaadKPIs();renderVaadIdeas();
 }
 function logoutVaad(){safe('vaad-login').style.display='block';safe('vaad-content').style.display='none';safe('vaad-password').value='';currentVaadName='';}
 function saveVaad(){localStorage.setItem('fs_vaad',JSON.stringify(vaadData));}
+function updateVaadMonthLabel(){const lbl=safe('vaad-month-label');if(lbl)lbl.textContent=`${MONTHS_HE[vaadCurrentMonth]} ${vaadCurrentYear}`;}
+function vaadMonthNav(dir){
+  vaadCurrentMonth+=dir;
+  if(vaadCurrentMonth>11){vaadCurrentMonth=0;vaadCurrentYear++;}
+  if(vaadCurrentMonth<0){vaadCurrentMonth=11;vaadCurrentYear--;}
+  updateVaadMonthLabel();renderVaad('budget');updateVaadKPIs();
+}
+function updateVaadKPIs(){
+  const now=new Date();const curM=now.getMonth();const curY=now.getFullYear();
+  const monthItems=vaadData.budget.filter(b=>{const d=new Date(b.date||Date.now());return d.getMonth()===curM&&d.getFullYear()===curY;});
+  const mInc=monthItems.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
+  const mExp=monthItems.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
+  const yInc=vaadData.budget.filter(b=>b.type==='income'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const yExp=vaadData.budget.filter(b=>b.type==='expense'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const sv=(id,v)=>{const e=safe(id);if(e)e.textContent=v;};
+  sv('vaad-month-income',`₪${mInc.toLocaleString()}`);sv('vaad-month-expense',`₪${mExp.toLocaleString()}`);sv('vaad-year-balance',`₪${(yInc-yExp).toLocaleString()}`);
+}
 function setVaadTab(tab,el){
-  document.querySelectorAll('#page-vaad .mfbtn').forEach(b=>b.classList.remove('on')); el.classList.add('on');
-  ['meetings','decisions','budget','members'].forEach(t=>{const e=safe('vt-'+t);if(e)e.style.display=t===tab?'block':'none';});
-  renderVaad(tab);
+  document.querySelectorAll('#page-vaad .mfbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  ['meetings','decisions','budget','budget-plan','members','resident-ideas'].forEach(t=>{const e=safe('vt-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  renderVaad(tab);if(tab==='resident-ideas')renderVaadIdeas();if(tab==='budget-plan')renderBudgetPlans();
 }
 function renderVaad(tab){
-  if(tab==='meetings'){const l=safe('meetings-list');if(!l)return;l.innerHTML=vaadData.meetings.length?vaadData.meetings.map(m=>`<div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05);border-right:3px solid var(--gold)"><div style="font-size:13px;font-weight:700;color:var(--navy)">${m.title}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">📅 ${m.date}</div>${m.agenda?`<div style="font-size:11px;color:var(--navy);margin-top:6px;background:var(--bg);border-radius:8px;padding:8px">${m.agenda}</div>`:''}</div>`).join(''):'<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות</div></div>';}
-  if(tab==='decisions'){const l=safe('decisions-list');if(!l)return;l.innerHTML=vaadData.decisions.length?vaadData.decisions.map(d=>`<div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;box-shadow:0 1px 4px rgba(10,22,40,.05)"><div style="font-size:13px;font-weight:700;color:var(--navy)">${d.title}</div><div style="display:flex;gap:10px;margin-top:6px"><span style="font-size:11px;color:var(--green);font-weight:700">✓ בעד: ${d.for||0}</span><span style="font-size:11px;color:var(--red);font-weight:700">✗ נגד: ${d.against||0}</span><span style="font-size:11px;color:var(--muted)">○ נמנע: ${d.abstain||0}</span></div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות</div></div>';}
-  if(tab==='budget'){
-    const inc=vaadData.budget.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
-    const exp=vaadData.budget.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
-    const vi=safe('vaad-income');const ve=safe('vaad-expense');const vt=safe('vaad-budget-total');
-    if(vi)vi.textContent=`₪${inc.toLocaleString()}`;if(ve)ve.textContent=`₪${exp.toLocaleString()}`;if(vt)vt.textContent=`₪${(inc-exp).toLocaleString()}`;
-    const l=safe('budget-list');if(l)l.innerHTML=vaadData.budget.map(b=>`<div style="background:white;margin:0 14px 6px;border-radius:11px;padding:12px;display:flex;justify-content:space-between;border-right:3px solid ${b.type==='income'?'var(--green)':'var(--red)'}"><div><div style="font-size:12px;font-weight:700;color:var(--navy)">${b.desc}</div></div><div style="font-size:14px;font-weight:800;color:${b.type==='income'?'var(--green)':'var(--red)'}">${b.type==='income'?'+':'-'}₪${Number(b.amount).toLocaleString()}</div></div>`).join('');
+  if(tab==='meetings'){
+    const l=safe('meetings-list');if(!l)return;
+    l.innerHTML=vaadData.meetings.length?[...vaadData.meetings].reverse().map((m,i)=>`
+      <div class="card" style="border-right:4px solid var(--gold)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:700;color:var(--muted)">📅 ${m.date||'—'}</span>
+          <span style="font-size:10px;color:var(--muted)">👥 ${m.attendees||''}</span>
+        </div>
+        <div style="font-size:16px;font-weight:900;color:var(--navy);margin-bottom:8px">${m.title}</div>
+        ${m.protocol?`<div style="background:var(--bg);border-radius:10px;padding:12px;font-size:12px;color:var(--text2);line-height:1.7;max-height:100px;overflow:hidden">${m.protocol.substring(0,250)}${m.protocol.length>250?'...':''}</div>`:''}
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="publishMeetingSummaryById(${vaadData.meetings.length-1-i})" style="flex:1;background:var(--green-bg);color:var(--green);border:2px solid #86efac;border-radius:10px;padding:9px;font-size:11px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📢 שדר לתושבים</button>
+          <button onclick="deleteMeeting(${vaadData.meetings.length-1-i})" style="background:var(--red-bg);color:var(--red);border:2px solid #fca5a5;border-radius:10px;padding:9px 12px;font-size:11px;font-family:'Heebo',sans-serif;cursor:pointer">🗑</button>
+        </div>
+      </div>`).join(''):'<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">אין ישיבות</div><div class="empty-sub">פרוטוקולי הישיבות יישמרו כאן</div></div>';
   }
-  if(tab==='members'){const l=safe('members-list');if(!l)return;l.innerHTML=vaadData.members.length?vaadData.members.map(m=>`<div style="background:white;margin:0 14px 8px;border-radius:13px;padding:13px;display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--gold)">${m.name[0]}</div><div><div style="font-size:13px;font-weight:700;color:var(--navy)">${m.name}</div><div style="font-size:11px;color:var(--gold)">${m.role}</div>${m.phone?`<div style="font-size:10px;color:var(--muted)">${m.phone}</div>`:''}</div></div>`).join(''):'<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div></div>';}
+  if(tab==='decisions'){
+    const l=safe('decisions-list');if(!l)return;
+    l.innerHTML=vaadData.decisions.length?[...vaadData.decisions].reverse().map((d,i)=>`
+      <div class="card">
+        <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:6px">${d.title}</div>
+        ${d.details?`<div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">${d.details}</div>`:''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="font-size:12px;color:var(--green);font-weight:800;background:var(--green-bg);padding:5px 12px;border-radius:20px">✓ בעד: ${d.for||0}</span>
+          <span style="font-size:12px;color:var(--red);font-weight:800;background:var(--red-bg);padding:5px 12px;border-radius:20px">✗ נגד: ${d.against||0}</span>
+          <span style="font-size:12px;color:var(--muted);font-weight:700;background:var(--bg);padding:5px 12px;border-radius:20px">○ נמנע: ${d.abstain||0}</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">📅 ${d.date||'—'}</div>
+        <button onclick="publishDecisionById(${vaadData.decisions.length-1-i})" style="width:100%;background:var(--green-bg);color:var(--green);border:2px solid #86efac;border-radius:10px;padding:9px;font-size:11px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📢 פרסם לתושבים</button>
+      </div>`).join(''):'<div class="empty-state"><div class="empty-icon">📜</div><div class="empty-title">אין החלטות</div></div>';
+  }
+  if(tab==='budget'){
+    const filtered=vaadData.budget.filter(b=>{const d=new Date(b.date||Date.now());return d.getMonth()===vaadCurrentMonth&&d.getFullYear()===vaadCurrentYear;});
+    const inc=filtered.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
+    const exp=filtered.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
+    const sv=(id,v)=>{const e=safe(id);if(e)e.textContent=v;};
+    sv('vaad-budget-total',`₪${(inc-exp).toLocaleString()}`);sv('vaad-income',`₪${inc.toLocaleString()}`);sv('vaad-expense',`₪${exp.toLocaleString()}`);
+    const bl=safe('budget-list');
+    if(bl)bl.innerHTML=filtered.length?filtered.map((b,bi)=>`
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;border-right:4px solid ${b.type==='income'?'var(--green)':'var(--red)'}">
+        <div><div style="font-size:13px;font-weight:800;color:var(--navy)">${b.desc}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${b.category||''}</div></div>
+        <div style="text-align:left;display:flex;align-items:center;gap:8px">
+          <div style="font-size:18px;font-weight:900;color:${b.type==='income'?'var(--green)':'var(--red)'}">${b.type==='income'?'+':'-'}₪${Number(b.amount).toLocaleString()}</div>
+          <button onclick="deleteBudgetItem(${vaadData.budget.indexOf(b)})" style="background:none;border:none;color:var(--muted2);font-size:14px;cursor:pointer">🗑</button>
+        </div>
+      </div>`).join(''):'<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">אין רשומות לחודש זה</div></div>';
+  }
+  if(tab==='members'){
+    const l=safe('members-list');if(!l)return;
+    l.innerHTML=vaadData.members.length?vaadData.members.map(m=>`
+      <div class="card" style="display:flex;align-items:center;gap:14px">
+        <div style="width:50px;height:50px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:var(--gold);flex-shrink:0">${(m.name||'?')[0]}</div>
+        <div>
+          <div style="font-size:15px;font-weight:900;color:var(--navy)">${m.name}</div>
+          <div style="font-size:12px;color:var(--gold);font-weight:700;margin-top:2px">${m.role}</div>
+          ${m.phone?`<div style="font-size:11px;color:var(--muted);margin-top:2px">📞 ${m.phone}</div>`:''}
+        </div>
+      </div>`).join(''):'<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">אין חברי ועד</div></div>';
+  }
 }
-function addMeeting(){const t=safe('meet-title')?.value.trim();if(!t){toast('נא להזין נושא');return;}vaadData.meetings.unshift({title:t,date:safe('meet-date')?.value||new Date().toLocaleDateString('he-IL'),agenda:safe('meet-agenda')?.value.trim()||'',id:Date.now()});saveVaad();if(safe('meet-title'))safe('meet-title').value='';if(safe('meet-date'))safe('meet-date').value='';if(safe('meet-agenda'))safe('meet-agenda').value='';renderVaad('meetings');toast('ישיבה נוספה ✓');}
-function addDecision(){const t=safe('dec-title')?.value.trim();if(!t){toast('נא להזין תיאור');return;}vaadData.decisions.unshift({title:t,for:safe('dec-for')?.value||0,against:safe('dec-against')?.value||0,abstain:safe('dec-abstain')?.value||0,date:new Date().toLocaleDateString('he-IL'),id:Date.now()});saveVaad();if(safe('dec-title'))safe('dec-title').value='';renderVaad('decisions');toast('החלטה נשמרה ✓');}
-function addBudgetItem(){const d=safe('budget-desc')?.value.trim();const a=safe('budget-amount')?.value;if(!d||!a){toast('נא למלא תיאור וסכום');return;}vaadData.budget.unshift({desc:d,amount:a,type:safe('budget-type')?.value||'income',date:new Date().toLocaleDateString('he-IL'),id:Date.now()});saveVaad();if(safe('budget-desc'))safe('budget-desc').value='';if(safe('budget-amount'))safe('budget-amount').value='';renderVaad('budget');toast('פריט נוסף ✓');}
-function addMember(){const n=safe('mem-name')?.value.trim();const r=safe('mem-role')?.value.trim();if(!n||!r){toast('נא למלא שם ותפקיד');return;}vaadData.members.push({name:n,role:r,phone:safe('mem-phone')?.value||'',id:Date.now()});saveVaad();if(safe('mem-name'))safe('mem-name').value='';if(safe('mem-role'))safe('mem-role').value='';if(safe('mem-phone'))safe('mem-phone').value='';renderVaad('members');toast('חבר ועד נוסף ✓');}
+function addMeeting(){
+  const t=safe('meet-title')?.value.trim();if(!t){toast('נא להזין נושא');return;}
+  vaadData.meetings.push({id:Date.now(),title:t,date:safe('meet-date')?.value||new Date().toLocaleDateString('he-IL'),protocol:safe('meet-protocol')?.value.trim()||'',attendees:safe('meet-attendees')?.value.trim()||''});
+  saveVaad();['meet-title','meet-protocol','meet-attendees'].forEach(id=>{const e=safe(id);if(e)e.value='';});if(safe('meet-date'))safe('meet-date').value='';
+  renderVaad('meetings');toast('ישיבה נשמרה ✓');
+}
+function deleteMeeting(i){if(confirm('למחוק ישיבה?')){vaadData.meetings.splice(i,1);saveVaad();renderVaad('meetings');}}
+function publishMeetingSummary(){
+  const t=safe('meet-title')?.value.trim();const p=safe('meet-protocol')?.value.trim();if(!t){toast('נא למלא נושא');return;}
+  if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📋 סיכום ישיבת ועד — ${t}`,body:(p||'').substring(0,400),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'}).then(()=>toast('סיכום שודר ✓')).catch(()=>toast('שידור ✓'));
+  else toast('שידור ✓');
+}
+function publishMeetingSummaryById(i){
+  const m=vaadData.meetings[i];if(!m)return;
+  if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📋 סיכום ישיבת ועד — ${m.title}`,body:(m.protocol||'לא הוזן פרוטוקול').substring(0,400),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'}).then(()=>toast('שודר לתושבים ✓')).catch(()=>toast('שידור ✓'));
+}
+function addDecision(){
+  const t=safe('dec-title')?.value.trim();if(!t){toast('נא להזין נושא');return;}
+  vaadData.decisions.push({id:Date.now(),title:t,details:safe('dec-details')?.value.trim()||'',for:safe('dec-for')?.value||0,against:safe('dec-against')?.value||0,abstain:safe('dec-abstain')?.value||0,date:new Date().toLocaleDateString('he-IL')});
+  saveVaad();['dec-title','dec-details','dec-for','dec-against','dec-abstain'].forEach(id=>{const e=safe(id);if(e)e.value='';});
+  renderVaad('decisions');toast('החלטה נשמרה ✓');
+}
+function publishDecision(){
+  const t=safe('dec-title')?.value.trim();if(!t){toast('נא למלא נושא');return;}
+  if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📜 החלטת ועד — ${t}`,body:`✓ בעד: ${safe('dec-for')?.value||0} | ✗ נגד: ${safe('dec-against')?.value||0}
+${safe('dec-details')?.value||''}`,date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'}).then(()=>toast('פורסם לתושבים ✓')).catch(()=>toast('פורסם ✓'));
+}
+function publishDecisionById(i){
+  const d=vaadData.decisions[i];if(!d)return;
+  if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📜 החלטת ועד — ${d.title}`,body:`✓ בעד: ${d.for} | ✗ נגד: ${d.against} | ○ נמנע: ${d.abstain}
+${d.details||''}`,date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'}).then(()=>toast('שודר ✓')).catch(()=>toast('שידור ✓'));
+}
+function addBudgetItem(){
+  const d=safe('budget-desc')?.value.trim();const a=safe('budget-amount')?.value;if(!d||!a){toast('נא למלא תיאור וסכום');return;}
+  vaadData.budget.push({id:Date.now(),desc:d,amount:a,type:safe('budget-type')?.value||'income',category:safe('budget-category')?.value||'',date:new Date(vaadCurrentYear,vaadCurrentMonth,15).toISOString().split('T')[0]});
+  saveVaad();if(safe('budget-desc'))safe('budget-desc').value='';if(safe('budget-amount'))safe('budget-amount').value='';
+  renderVaad('budget');updateVaadKPIs();toast('רשומה נוספה ✓');
+}
+function deleteBudgetItem(i){vaadData.budget.splice(i,1);saveVaad();renderVaad('budget');updateVaadKPIs();}
+async function exportMonthlyReport(){
+  const filtered=vaadData.budget.filter(b=>{const d=new Date(b.date||Date.now());return d.getMonth()===vaadCurrentMonth&&d.getFullYear()===vaadCurrentYear;});
+  const inc=filtered.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
+  const exp=filtered.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
+  const mn=`${MONTHS_HE[vaadCurrentMonth]} ${vaadCurrentYear}`;
+  let lines=[`📊 דוח רווח והפסד — ${mn}`,``,`💚 סה"כ הכנסות: ₪${inc.toLocaleString()}`];
+  filtered.filter(b=>b.type==='income').forEach(b=>lines.push(`  • ${b.desc}: ₪${Number(b.amount).toLocaleString()}`));
+  lines.push(``,`❤️ סה"כ הוצאות: ₪${exp.toLocaleString()}`);
+  filtered.filter(b=>b.type==='expense').forEach(b=>lines.push(`  • ${b.desc}: ₪${Number(b.amount).toLocaleString()}`));
+  lines.push(``,`📈 יתרה חודשית: ₪${(inc-exp).toLocaleString()}`);
+  if(window.DB){try{await window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📊 דוח חודשי ועד — ${mn}`,body:lines.join('
+').substring(0,500),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'});toast('דוח שודר לתושבים ✓');}catch(e){toast('שגיאה בשידור');}}
+  else toast('דוח מוכן');
+}
+function submitBudgetPlan(){
+  const y=safe('bp-year')?.value;const c=safe('bp-content')?.value.trim();if(!y||!c){toast('נא למלא שנה ותכנית');return;}
+  const plans=JSON.parse(localStorage.getItem('fs_vaad_plans')||'[]');
+  plans.push({id:Date.now(),year:y,content:c,submittedBy:currentVaadName,date:new Date().toLocaleDateString('he-IL'),comments:[],status:'ממתין'});
+  localStorage.setItem('fs_vaad_plans',JSON.stringify(plans));
+  if(safe('bp-content'))safe('bp-content').value='';if(safe('bp-year'))safe('bp-year').value='';
+  renderBudgetPlans();toast('תכנית תקציב הוגשה ✓');
+}
+function renderBudgetPlans(){
+  const l=safe('budget-plans-list');if(!l)return;
+  const plans=JSON.parse(localStorage.getItem('fs_vaad_plans')||'[]');
+  const isAdmin=CU?.isAdmin;
+  if(!plans.length){l.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין תכניות תקציב</div><div class="empty-sub">תכניות שהוגשו יופיעו כאן עם הערות הגזבר</div></div>';return;}
+  l.innerHTML=[...plans].reverse().map((p,i)=>`
+    <div class="card" style="border-right:4px solid ${p.status==='אושר'?'var(--green)':p.status==='נדחה'?'var(--red)':'var(--orange)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:15px;font-weight:900;color:var(--navy)">תכנית ${p.year}</span>
+        <span style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;background:${p.status==='אושר'?'var(--green-bg)':p.status==='נדחה'?'var(--red-bg)':'var(--orange-bg)'};color:${p.status==='אושר'?'var(--green)':p.status==='נדחה'?'var(--red)':'var(--orange)'}">${p.status}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);background:var(--bg);border-radius:10px;padding:12px;max-height:80px;overflow:hidden;margin-bottom:8px">${p.content.substring(0,200)}...</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px">הוגש ע"י: ${p.submittedBy} • ${p.date}</div>
+      ${p.comments.map(c=>`<div style="background:var(--blue-bg);border-right:3px solid #3b82f6;border-radius:10px;padding:10px;margin-bottom:8px;font-size:12px">💬 גזבר: ${c.text}<br><span style="font-size:10px;color:var(--muted)">${c.date}</span></div>`).join('')}
+      ${isAdmin?`<input id="pc-${i}" class="bc-inp" placeholder="הערת גזבר..." style="margin-bottom:8px">
+      <div style="display:flex;gap:6px">
+        <button onclick="addPlanComment(${i})" style="flex:1;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">💬 הוסף הערה</button>
+        <button onclick="setPlanStatus(${i},'אושר')" style="background:var(--green-bg);color:var(--green);border:2px solid #86efac;border-radius:10px;padding:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">✓</button>
+        <button onclick="setPlanStatus(${i},'נדחה')" style="background:var(--red-bg);color:var(--red);border:2px solid #fca5a5;border-radius:10px;padding:9px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">✗</button>
+      </div>`:''}
+    </div>`).join('');
+}
+function addPlanComment(i){
+  const plans=JSON.parse(localStorage.getItem('fs_vaad_plans')||'[]');
+  const ri=plans.length-1-i;const txt=safe(`pc-${i}`)?.value.trim();if(!txt)return;
+  plans[ri].comments.push({text:txt,date:new Date().toLocaleDateString('he-IL')});
+  localStorage.setItem('fs_vaad_plans',JSON.stringify(plans));renderBudgetPlans();toast('הערה נוספה ✓');
+}
+function setPlanStatus(i,status){
+  const plans=JSON.parse(localStorage.getItem('fs_vaad_plans')||'[]');
+  const ri=plans.length-1-i;plans[ri].status=status;
+  localStorage.setItem('fs_vaad_plans',JSON.stringify(plans));renderBudgetPlans();toast(`עודכן: ${status}`);
+}
+function renderVaadIdeas(){
+  const l=safe('vaad-ideas-list');if(!l)return;
+  const ideas=JSON.parse(localStorage.getItem('fs_vaad_ideas')||'[]');
+  const cnt=safe('vaad-ideas-count');if(cnt)cnt.textContent=ideas.filter(i=>i.status==='חדש').length;
+  if(!ideas.length){l.innerHTML='<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">אין פניות לועד</div><div class="empty-sub">פניות תושבים לועד יופיעו כאן</div></div>';return;}
+  l.innerHTML=[...ideas].reverse().map((idea,i)=>`
+    <div class="card" style="border-right:4px solid ${idea.status==='טופל'?'var(--green)':idea.status==='בבדיקה'?'var(--orange)':'var(--gold)'}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;font-weight:800;color:var(--gold)">${idea.status||'חדש'}</span>
+        <span style="font-size:10px;color:var(--muted)">${idea.date}</span>
+      </div>
+      <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:6px">${idea.title}</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:8px">${idea.body}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">👤 ${idea.userName||'תושב'}</div>
+      ${currentVaadName?`<div style="display:flex;gap:8px">
+        <button onclick="setIdeaStatus(${ideas.length-1-i},'בבדיקה')" style="flex:1;background:var(--orange-bg);color:var(--orange);border:2px solid #fcd34d;border-radius:10px;padding:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">בבדיקה</button>
+        <button onclick="setIdeaStatus(${ideas.length-1-i},'טופל')" style="flex:1;background:var(--green-bg);color:var(--green);border:2px solid #86efac;border-radius:10px;padding:8px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">טופל ✓</button>
+      </div>`:''}
+    </div>`).join('');
+}
+function setIdeaStatus(i,status){
+  const ideas=JSON.parse(localStorage.getItem('fs_vaad_ideas')||'[]');
+  const ri=ideas.length-1-i;ideas[ri].status=status;
+  localStorage.setItem('fs_vaad_ideas',JSON.stringify(ideas));renderVaadIdeas();toast(`עודכן: ${status}`);
+}
+function openVaadIdeaModal(){safe('vaad-idea-modal').classList.add('open');}
+function submitVaadIdea(){
+  const title=safe('idea-title')?.value.trim();const body=safe('idea-body')?.value.trim();
+  if(!title||!body){toast('נא למלא נושא ותוכן');return;}
+  const ideas=JSON.parse(localStorage.getItem('fs_vaad_ideas')||'[]');
+  ideas.push({id:Date.now(),title,body,userName:CU?.name||'תושב',userId:CU?.id,date:new Date().toLocaleDateString('he-IL'),status:'חדש'});
+  localStorage.setItem('fs_vaad_ideas',JSON.stringify(ideas));
+  if(safe('idea-title'))safe('idea-title').value='';if(safe('idea-body'))safe('idea-body').value='';
+  closeMod('vaad-idea-modal');toast('הפנייה נשלחה לועד ✓');
+  addNotif('💡 הפנייה שלך לועד נשלחה','הועד יבחן ויחזור אליך','כללי');
+}
+function addMember(){
+  const n=safe('mem-name')?.value.trim();const r=safe('mem-role')?.value.trim();if(!n||!r){toast('נא למלא שם ותפקיד');return;}
+  vaadData.members.push({name:n,role:r,phone:safe('mem-phone')?.value||'',id:Date.now()});
+  saveVaad();['mem-name','mem-role','mem-phone'].forEach(id=>{const e=safe(id);if(e)e.value='';});
+  renderVaad('members');toast('חבר ועד נוסף ✓');
+}
 
 // ── MODAL ──────────────────────────────
 function rateT(n){tRating=n;document.querySelectorAll('#tkstars .star').forEach((s,i)=>s.classList.toggle('lit',i<n));}
