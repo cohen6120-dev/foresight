@@ -2552,14 +2552,17 @@ async function exportMonthlyReport(){
   const filtered=vaadData.budget.filter(b=>{const d=new Date(b.date||Date.now());return d.getMonth()===vaadCurrentMonth&&d.getFullYear()===vaadCurrentYear;});
   const inc=filtered.filter(b=>b.type==='income').reduce((s,b)=>s+Number(b.amount),0);
   const exp=filtered.filter(b=>b.type==='expense').reduce((s,b)=>s+Number(b.amount),0);
-  const mn=`${MONTHS_HE[vaadCurrentMonth]} ${vaadCurrentYear}`;
-  let lines=[`📊 דוח רווח והפסד — ${mn}`,``,`💚 סה"כ הכנסות: ₪${inc.toLocaleString()}`];
-  filtered.filter(b=>b.type==='income').forEach(b=>lines.push(`  • ${b.desc}: ₪${Number(b.amount).toLocaleString()}`));
-  lines.push(``,`❤️ סה"כ הוצאות: ₪${exp.toLocaleString()}`);
-  filtered.filter(b=>b.type==='expense').forEach(b=>lines.push(`  • ${b.desc}: ₪${Number(b.amount).toLocaleString()}`));
-  lines.push(``,`📈 יתרה חודשית: ₪${(inc-exp).toLocaleString()}`);
-  if(window.DB){try{await window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📊 דוח חודשי ועד — ${mn}`,body:lines.join('
-').substring(0,500),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'});toast('דוח שודר לתושבים ✓');}catch(e){toast('שגיאה בשידור');}}
+  const mn=MONTHS_HE[vaadCurrentMonth]+' '+vaadCurrentYear;
+  const reportParts=[];
+  reportParts.push('📊 דוח רווח והפסד — '+mn);
+  reportParts.push('💚 הכנסות: ₪'+inc.toLocaleString());
+  filtered.filter(b=>b.type==='income').forEach(b=>reportParts.push('  • '+b.desc+': ₪'+Number(b.amount).toLocaleString()));
+  reportParts.push('❤️ הוצאות: ₪'+exp.toLocaleString());
+  filtered.filter(b=>b.type==='expense').forEach(b=>reportParts.push('  • '+b.desc+': ₪'+Number(b.amount).toLocaleString()));
+  reportParts.push('📈 יתרה: ₪'+(inc-exp).toLocaleString());
+  const reportBody=reportParts.join(' | ').substring(0,500);
+  const reportTitle='📊 דוח חודשי ועד — '+mn;
+  if(window.DB){try{await window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:reportTitle,body:reportBody,date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'});toast('דוח שודר לתושבים ✓');}catch(e){toast('שגיאה בשידור');}}
   else toast('דוח מוכן');
 }
 function submitBudgetPlan(){
