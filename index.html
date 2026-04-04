@@ -3163,6 +3163,81 @@ function showAchievement(ach){
   document.body.appendChild(div);
   setTimeout(()=>div.remove(),3500);
 }
+
+// ══ VAAD BUDGET MONTHLY ACTUAL ══
+function renderMonthlyActual(){
+  const cats=getBudgetCats();
+  const monthKey=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  const saved=vaadData.monthlyActual?.[monthKey]||{};
+  const annualBudget=cats.annualBudget||{};
+  const incEl=safe('monthly-income-cats');
+  if(incEl)incEl.innerHTML=cats.income.map(c=>{
+    const planned=annualBudget[c]?Math.round(annualBudget[c]/12):0;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+      +'<span style="flex:1;font-size:13px;font-weight:700;color:var(--navy)">'+c+'</span>'
+      +(planned?'<span style="font-size:10px;color:var(--muted)">₪'+planned.toLocaleString()+'</span>':'')
+      +'<input type="number" id="act-inc-'+c+'" value="'+(saved['inc-'+c]||'')+'" placeholder="0" oninput="updateMonthlyTotals()" '
+      +'style="width:90px;background:var(--green-bg);border:2px solid #86efac;border-radius:8px;padding:7px;font-size:13px;font-family:Heebo,sans-serif;outline:none;text-align:center;color:var(--green);font-weight:700">'
+      +'</div>';
+  }).join('');
+  const expEl=safe('monthly-expense-cats');
+  if(expEl)expEl.innerHTML=cats.expense.map(c=>{
+    const planned=annualBudget[c]?Math.round(annualBudget[c]/12):0;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+      +'<span style="flex:1;font-size:13px;font-weight:700;color:var(--navy)">'+c+'</span>'
+      +(planned?'<span style="font-size:10px;color:var(--muted)">₪'+planned.toLocaleString()+'</span>':'')
+      +'<input type="number" id="act-exp-'+c+'" value="'+(saved['exp-'+c]||'')+'" placeholder="0" oninput="updateMonthlyTotals()" '
+      +'style="width:90px;background:var(--red-bg);border:2px solid #fca5a5;border-radius:8px;padding:7px;font-size:13px;font-family:Heebo,sans-serif;outline:none;text-align:center;color:var(--red);font-weight:700">'
+      +'</div>';
+  }).join('');
+  updateMonthlyTotals();
+  updateAnnualStatus(cats);
+  const ml=safe('vaad-month-label2');if(ml)ml.textContent=MONTHS_HE[vaadCurrentMonth]+' '+vaadCurrentYear;
+  const yl=safe('vaad-year-label');if(yl)yl.textContent=vaadCurrentYear;
+}
+function updateMonthlyTotals(){
+  const cats=getBudgetCats();
+  let inc=0,exp=0;
+  cats.income.forEach(c=>{const v=safe('act-inc-'+c);if(v&&v.value)inc+=Number(v.value);});
+  cats.expense.forEach(c=>{const v=safe('act-exp-'+c);if(v&&v.value)exp+=Number(v.value);});
+  const net=inc-exp;
+  const ti=safe('vaad-month-inc-total');if(ti)ti.textContent='₪'+inc.toLocaleString();
+  const te=safe('vaad-month-exp-total');if(te)te.textContent='₪'+exp.toLocaleString();
+  const bt=safe('vaad-budget-total');if(bt){bt.textContent='₪'+net.toLocaleString();bt.style.color=net>=0?'var(--green)':'var(--red)';}
+}
+function saveMonthlyActual(){
+  const cats=getBudgetCats();
+  const monthKey=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  if(!vaadData.monthlyActual)vaadData.monthlyActual={};
+  const data={};let inc=0,exp=0;
+  cats.income.forEach(c=>{const v=safe('act-inc-'+c);if(v&&v.value){data['inc-'+c]=Number(v.value);inc+=Number(v.value);}});
+  cats.expense.forEach(c=>{const v=safe('act-exp-'+c);if(v&&v.value){data['exp-'+c]=Number(v.value);exp+=Number(v.value);}});
+  data._totalIncome=inc;data._totalExpense=exp;
+  vaadData.monthlyActual[monthKey]=data;
+  saveVaad();updateAnnualStatus(cats);toast('ביצוע חודשי נשמר ✓');
+}
+function updateAnnualStatus(cats){
+  if(!cats)cats=getBudgetCats();
+  const ab=cats.annualBudget||{};
+  const totalBudget=Object.values(ab).reduce((s,v)=>s+Number(v),0);
+  let totalInc=0,totalExp=0;
+  if(vaadData.monthlyActual){
+    Object.entries(vaadData.monthlyActual).forEach(([k,v])=>{
+      if(k.startsWith(String(vaadCurrentYear)+'-')){totalInc+=Number(v._totalIncome||0);totalExp+=Number(v._totalExpense||0);}
+    });
+  }
+  const openBal=vaadData.openingBalance?.[vaadCurrentYear]||0;
+  const balance=openBal+totalInc-totalExp;
+  const pct=totalBudget>0?Math.min(100,Math.round((totalExp/totalBudget)*100)):0;
+  const sv=(id,v)=>{const e=safe(id);if(e)e.textContent=v;};
+  sv('vaad-annual-budget-total','₪'+totalBudget.toLocaleString());
+  sv('vaad-annual-actual','₪'+totalExp.toLocaleString());
+  const balEl=safe('vaad-account-balance');if(balEl){balEl.textContent='₪'+balance.toLocaleString();balEl.style.color=balance>=0?'#4ade80':'#f87171';}
+  sv('vaad-budget-pct',pct+'%');
+  const bar=safe('vaad-budget-bar');if(bar){bar.style.width=pct+'%';bar.style.background=pct>90?'linear-gradient(90deg,#f87171,#dc2626)':pct>70?'linear-gradient(90deg,#facc15,#f59e0b)':'linear-gradient(90deg,#4ade80,#22c55e)';}
+}
+function showAddBudgetItem(){const c=safe('add-budget-item-card');if(c)c.style.display=c.style.display==='none'?'block':'none';}
+
 </script>
 </body>
 </html>
