@@ -409,7 +409,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <path d="M48 54 L54 54 L54 48" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
       </svg>
       <div class="auth-brand">FORESIGHT</div>
-      <div class="auth-sub">דואגים לך, עוד לפני שביקשת</div>
+      <div class="auth-sub">דואגים לך, מבלי שביקשת</div>
     </div>
   </div>
   <div class="auth-card">
@@ -493,7 +493,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         </svg>
         <div>
           <div class="logo-name">FORESIGHT</div>
-          <div class="logo-tagline">דואגים לך</div>
+          <div class="logo-tagline">דואגים לך מבלי שביקשת</div>
         </div>
       </div>
       <div class="tb-right">
@@ -680,9 +680,10 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <button class="mfbtn" onclick="filterMap('done',this)">טופלו</button>
       <button class="mfbtn" onclick="filterMap('shelter',this)">🏠 מרחבים מוגנים</button>
     </div>
-    <div style="background:#fff3cd;padding:8px 14px;font-size:11px;color:#856404;display:flex;align-items:center;gap:6px">
-      <span>🏠 לחץ על המפה לסימון מרחב מוגן</span>
-      <button onclick="toggleShelterMode()" id="shelter-mode-btn" style="background:#856404;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-right:auto">הפעל סימון</button>
+    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);padding:10px 14px;font-size:11px;color:#92400e;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fde68a">
+      <span>🏠 סמן מרחב מוגן על המפה</span>
+      <button onclick="toggleShelterMode()" id="shelter-mode-btn" style="background:#856404;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-right:auto">הפעל סימון</button>
+      <button onclick="showShelterManager()" style="background:var(--red-bg);color:var(--red);border:2px solid #fca5a5;border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">🗑️ נהל</button>
     </div>
     <div id="map-container">
       <div id="leaflet-map"></div>
@@ -898,49 +899,96 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 
       <!-- ═══ BUDGET ═══ -->
       <div id="vt-budget" style="display:none">
-        <!-- MONTH SELECTOR -->
-        <div style="background:var(--card);padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-          <button onclick="vaadMonthNav(-1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">← הקודם</button>
+
+        <!-- ניווט חודשים -->
+        <div style="background:var(--card);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10">
+          <button onclick="vaadMonthNav(-1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:7px 14px;font-size:14px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">←</button>
           <div style="text-align:center">
-            <div style="font-size:15px;font-weight:900;color:var(--navy)" id="vaad-month-label">—</div>
-            <div style="font-size:11px;color:var(--muted)">חודש תקציבי</div>
+            <div style="font-size:16px;font-weight:900;color:var(--navy)" id="vaad-month-label">—</div>
+            <div style="font-size:10px;color:var(--muted)">חודש ביצוע</div>
           </div>
-          <button onclick="vaadMonthNav(1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">הבא →</button>
+          <button onclick="vaadMonthNav(1)" style="background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:7px 14px;font-size:14px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">→</button>
         </div>
-        <!-- MONTH SUMMARY -->
-        <div style="background:linear-gradient(145deg,var(--navy),var(--blue));margin:12px 14px;border-radius:var(--radius-lg);padding:20px;text-align:center;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(200,168,75,.1),transparent);pointer-events:none"></div>
-          <div style="font-size:11px;color:var(--gold);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:1px">יתרה חודשית</div>
-          <div style="font-size:44px;font-weight:900;color:white;letter-spacing:-2px" id="vaad-budget-total">₪0</div>
-          <div style="display:flex;gap:10px;margin-top:14px">
-            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center">
-              <div style="font-size:18px;font-weight:900;color:#4ade80" id="vaad-income">₪0</div>
-              <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;font-weight:700">הכנסות</div>
+
+        <!-- מצב חשבון שנתי -->
+        <div style="background:linear-gradient(145deg,#0a1628,#1a3a6b);margin:12px 14px 0;border-radius:20px;padding:18px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(200,168,75,.1),transparent);pointer-events:none"></div>
+          <div style="font-size:10px;font-weight:800;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;position:relative;z-index:1">🏦 חשבון ועד — <span id="vaad-year-label">2025</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;position:relative;z-index:1;margin-bottom:12px">
+            <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:rgba(255,255,255,.4);font-weight:700;margin-bottom:4px;text-transform:uppercase">תקציב שנתי</div>
+              <div style="font-size:15px;font-weight:900;color:var(--gold)" id="vaad-annual-budget-total">₪0</div>
             </div>
-            <div style="flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center">
-              <div style="font-size:18px;font-weight:900;color:#f87171" id="vaad-expense">₪0</div>
-              <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px;font-weight:700">הוצאות</div>
+            <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:rgba(255,255,255,.4);font-weight:700;margin-bottom:4px;text-transform:uppercase">ביצוע שנתי</div>
+              <div style="font-size:15px;font-weight:900;color:#f87171" id="vaad-annual-actual">₪0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:rgba(255,255,255,.4);font-weight:700;margin-bottom:4px;text-transform:uppercase">יתרה בחשבון</div>
+              <div style="font-size:15px;font-weight:900;color:#4ade80" id="vaad-account-balance">₪0</div>
             </div>
           </div>
-          <button onclick="exportMonthlyReport()" style="width:100%;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:12px;padding:11px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:14px">📊 הפק דוח רווח והפסד חודשי ← שדר לתושבים</button>
-          <button onclick="showAnnualSummary()" style="width:100%;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:#3b82f6;border-radius:12px;padding:11px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">📈 סיכום שנתי מול תקציב מתוכנן</button>
+          <div style="position:relative;z-index:1;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.4);margin-bottom:4px">
+              <span>ניצול תקציב שנתי</span><span id="vaad-budget-pct">0%</span>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden">
+              <div id="vaad-budget-bar" style="height:100%;background:linear-gradient(90deg,#4ade80,#facc15);border-radius:3px;width:0%;transition:width 1s ease"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;position:relative;z-index:1">
+            <button onclick="showOpeningBalance()" style="flex:1;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:10px;padding:9px;font-size:10px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">⚙️ יתרת פתיחה</button>
+            <button onclick="exportMonthlyReport()" style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:white;border-radius:10px;padding:9px;font-size:10px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📊 דוח חודשי</button>
+            <button onclick="showAnnualSummary()" style="flex:1;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd;border-radius:10px;padding:9px;font-size:10px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">📈 שנתי</button>
+          </div>
         </div>
-        <!-- ADD ITEM -->
-        <div class="card">
-          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ רשומה חדשה</div>
-          <input id="budget-desc" class="bc-inp" placeholder="תיאור ההכנסה/הוצאה...">
+
+        <!-- ביצוע חודשי לפי קטגוריות -->
+        <div class="card" style="margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:14px;font-weight:900;color:var(--navy)">📅 ביצוע חודשי</div>
+            <div style="font-size:11px;color:var(--muted);background:var(--bg);padding:4px 10px;border-radius:20px" id="vaad-month-label2">—</div>
+          </div>
+          <div style="font-size:10px;font-weight:800;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">💚 הכנסות</div>
+          <div id="monthly-income-cats"></div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+          <div style="font-size:10px;font-weight:800;color:var(--red);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">❤️ הוצאות</div>
+          <div id="monthly-expense-cats"></div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:var(--green-bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:var(--green);font-weight:700;text-transform:uppercase">הכנסות</div>
+              <div style="font-size:18px;font-weight:900;color:var(--green)" id="vaad-month-inc-total">₪0</div>
+            </div>
+            <div style="background:var(--red-bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:var(--red);font-weight:700;text-transform:uppercase">הוצאות</div>
+              <div style="font-size:18px;font-weight:900;color:var(--red)" id="vaad-month-exp-total">₪0</div>
+            </div>
+            <div style="background:var(--bg);border-radius:10px;padding:10px;text-align:center">
+              <div style="font-size:8px;color:var(--muted);font-weight:700;text-transform:uppercase">יתרה</div>
+              <div style="font-size:18px;font-weight:900;color:var(--navy)" id="vaad-budget-total">₪0</div>
+            </div>
+          </div>
+          <button onclick="saveMonthlyActual()" class="big-btn" style="font-size:13px;padding:14px;margin-top:14px">💾 שמור ביצוע חודשי</button>
+        </div>
+
+        <!-- רשומות ידניות -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px 4px">
+          <span style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px">רשומות נוספות</span>
+          <button onclick="safe('add-budget-item-card').style.display=safe('add-budget-item-card').style.display==='none'?'block':'none'" style="background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:7px 14px;font-size:11px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer">➕ הוסף</button>
+        </div>
+        <div class="card" id="add-budget-item-card" style="display:none;border:2px solid var(--gold)">
+          <input id="budget-desc" class="bc-inp" placeholder="תיאור...">
           <div style="display:flex;gap:8px">
-            <select id="budget-type" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:13px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)"><option value="income">💚 הכנסה</option><option value="expense">❤️ הוצאה</option></select>
-            <select id="budget-category" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:13px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)">
+            <select id="budget-type" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:12px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)"><option value="income">💚 הכנסה</option><option value="expense">❤️ הוצאה</option></select>
+            <select id="budget-category" style="flex:1;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius);padding:12px;font-family:'Heebo',sans-serif;font-size:13px;outline:none;color:var(--navy)">
               <option>תשלומי ועד</option><option>תמיכת מועצה</option><option>תרומות</option>
-              <option>ניקיון</option><option>גינון</option><option>אחזקה</option>
-              <option>אירועים</option><option>משרד</option><option>אחר</option>
+              <option>ניקיון</option><option>גינון</option><option>אחזקה</option><option>אירועים</option><option>משרד</option><option>אחר</option>
             </select>
           </div>
-          <input id="budget-amount" class="bc-inp" type="number" placeholder="סכום בש״ח" style="margin-top:8px">
-          <button onclick="addBudgetItem()" class="big-btn" style="font-size:13px;padding:13px;margin-top:4px">הוסף רשומה</button>
+          <input id="budget-amount" class="bc-inp" type="number" placeholder="סכום ₪" style="margin-top:8px">
+          <button onclick="addBudgetItem()" class="big-btn" style="font-size:13px;padding:12px;margin-top:8px">הוסף רשומה</button>
         </div>
-        <div class="section-title">רשומות חודש זה</div>
         <div id="budget-list"></div>
       </div>
 
@@ -1195,6 +1243,30 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   </div>
 </div>
 
+<!-- OPENING BALANCE MODAL -->
+<div class="moverlay" id="ob-modal">
+  <div class="mcard">
+    <div class="mtitle">🏦 יתרת פתיחה שנתית</div>
+    <div class="mmeta">הכנס את יתרת חשבון הבנק של הועד בתחילת השנה</div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">שנה</div>
+    <input id="ob-year" type="number" class="bc-inp" placeholder="2025">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">יתרת פתיחה (₪)</div>
+    <input id="ob-amount" type="number" class="bc-inp" placeholder="0.00">
+    <button onclick="saveOpeningBalance()" class="rate-btn" style="margin-top:4px">שמור יתרת פתיחה</button>
+    <button class="mclose" onclick="closeMod('ob-modal')">ביטול</button>
+  </div>
+</div>
+
+<!-- SHELTER MANAGER MODAL -->
+<div class="moverlay" id="shelter-mgr-modal">
+  <div class="mcard">
+    <div class="mtitle">🏠 ניהול מרחבים מוגנים</div>
+    <div class="mmeta">לחץ על סמן למחיקה</div>
+    <div id="shelter-mgr-list"></div>
+    <button class="mclose" onclick="closeMod('shelter-mgr-modal')">סגור</button>
+  </div>
+</div>
+
 <!-- RATING MODAL -->
 <div class="moverlay" id="rating-modal">
   <div class="mcard">
@@ -1384,36 +1456,41 @@ function startApp(){
 // ── WEATHER ────────────────────────────
 async function fetchWeather(){
   try{
-    // קבל מיקום GPS
     const getPos=()=>new Promise((res,rej)=>
-      navigator.geolocation?.getCurrentPosition(res,rej,{timeout:5000})||rej('no geo')
+      navigator.geolocation?.getCurrentPosition(res,rej,{timeout:6000})||rej('no geo')
     );
-    let url='https://wttr.in/Israel?format=j1';
-    let cityName='';
+    let lat=null,lng=null,cityName='';
+    // קבל GPS
     try{
       const pos=await getPos();
-      const lat=pos.coords.latitude.toFixed(4);
-      const lng=pos.coords.longitude.toFixed(4);
-      url=`https://wttr.in/${lat},${lng}?format=j1`;
-      // קבל שם עיר מ-reverse geocoding
+      lat=pos.coords.latitude;lng=pos.coords.longitude;
+      // שם מקום מ-Nominatim
       try{
-        const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=he`);
+        const geo=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat.toFixed(5)+'&lon='+lng.toFixed(5)+'&format=json&accept-language=he&zoom=14');
         const gd=await geo.json();
-        cityName=gd.address?.village||gd.address?.town||gd.address?.city||gd.address?.county||'';
+        cityName=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||gd.address?.county||'';
       }catch(e){}
     }catch(e){}
+    // אם יש יישוב מהפרופיל — עדיף
+    if(!cityName&&CU?.vaad)cityName=CU.vaad.replace('ועד ','');
+    const url=lat?'https://wttr.in/'+lat.toFixed(4)+','+lng.toFixed(4)+'?format=j1':'https://wttr.in/Israel?format=j1';
     const res=await fetch(url);
     const data=await res.json();
     const temp=data.current_condition[0].temp_C;
+    const feels=data.current_condition[0].FeelsLikeC;
     const code=Number(data.current_condition[0].weatherCode);
     const icons={113:'☀️',116:'⛅',119:'☁️',122:'☁️',176:'🌦️',185:'🌧️',200:'⛈️',227:'🌨️',230:'❄️'};
     let icon='🌤️';
     for(const [k,v] of Object.entries(icons)){if(code<=Number(k)){icon=v;break;}}
     const wi=safe('weather-icon');const wt=safe('weather-temp');const wc=safe('weather-city');
     if(wi)wi.textContent=icon;
-    if(wt)wt.textContent=temp+'°C';
-    if(wc&&cityName)wc.textContent=cityName;
-  }catch(e){}
+    if(wt)wt.textContent=temp+'°';
+    if(wc)wc.textContent=cityName||'מרחבים';
+    // שמור מזג אוויר לשימוש בפעולות פרואקטיביות
+    window._weather={temp:Number(temp),feels:Number(feels),code,icon,city:cityName};
+  }catch(e){
+    const wc=safe('weather-city');if(wc)wc.textContent=CU?.vaad?.replace('ועד ','')||'מרחבים';
+  }
 }
 
 // ── RANK SYSTEM ────────────────────────
@@ -1508,7 +1585,7 @@ function initFirestore(){
   db.collection('tickets').orderBy('timestamp','desc').onSnapshot(snap=>{
     tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
     renderTickets();
-    if(CU?.isAdmin)updateScadaKPIs();
+    if(CU?.isAdmin){updateScadaKPIs();setTimeout(initAdminExtras,500);}
     if(mapInst)renderMapMarkers();
   });
   // האזן ל-SOS (למנהל בלבד)
@@ -2509,7 +2586,7 @@ function vaadMonthNav(dir){
   vaadCurrentMonth+=dir;
   if(vaadCurrentMonth>11){vaadCurrentMonth=0;vaadCurrentYear++;}
   if(vaadCurrentMonth<0){vaadCurrentMonth=11;vaadCurrentYear--;}
-  updateVaadMonthLabel();renderVaad('budget');updateVaadKPIs();
+  updateVaadMonthLabel();renderVaad('budget');updateVaadKPIs();renderMonthlyActual();
 }
 function updateVaadKPIs(){
   const now=new Date();const curM=now.getMonth();const curY=now.getFullYear();
@@ -2808,7 +2885,7 @@ function resetBudgetTemplate(){
 const _origSetVaadTab=setVaadTab;
 setVaadTab=function(tab,el){
   _origSetVaadTab(tab,el);
-  if(tab==='budget-template')renderBudgetTemplate();
+  if(tab==='budget-template')renderBudgetTemplate();if(tab==='budget'){updateVaadAccountStatus();renderMonthlyActual();}
 };
 
 
@@ -2829,6 +2906,68 @@ function showAnnualSummary(){
   if(confirm('לשדר סיכום שנתי לתושבים?')){
     if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title,body,date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד',targetVaad:currentVaadName}).then(()=>toast('סיכום שנתי שודר ✓')).catch(()=>toast('שגיאה'));
   }
+}
+
+
+// ── VAAD ACCOUNT & BUDGET ──────────────
+function showOpeningBalance(){
+  const curY=new Date().getFullYear();
+  const inp=safe('ob-year');if(inp)inp.value=curY;
+  const inpA=safe('ob-amount');
+  if(inpA&&vaadData.openingBalance)inpA.value=vaadData.openingBalance[curY]||'';
+  safe('ob-modal').classList.add('open');
+}
+
+function saveOpeningBalance(){
+  const y=Number(safe('ob-year')?.value||new Date().getFullYear());
+  const a=Number(safe('ob-amount')?.value||0);
+  if(!vaadData.openingBalance)vaadData.openingBalance={};
+  vaadData.openingBalance[y]=a;
+  saveVaad();
+  closeMod('ob-modal');
+  updateVaadAccountStatus();
+  toast('יתרת פתיחה נשמרה ✓');
+}
+
+function saveMonthlyBudget(){
+  const inc=Number(safe('monthly-budget-income')?.value||0);
+  const exp=Number(safe('monthly-budget-expense')?.value||0);
+  if(!vaadData.monthlyBudget)vaadData.monthlyBudget={};
+  const key=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  vaadData.monthlyBudget[key]={income:inc,expense:exp};
+  saveVaad();
+  updateMonthlyBudgetStatus();
+  toast('תקציב חודשי נשמר ✓');
+}
+
+function updateMonthlyBudgetStatus(){
+  const key=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  const mb=vaadData.monthlyBudget?.[key];
+  const el=safe('monthly-budget-status');
+  if(!el)return;
+  if(mb){
+    el.textContent='תקציב מתוכנן: הכנסות ₪'+Number(mb.income).toLocaleString()+' | הוצאות ₪'+Number(mb.expense).toLocaleString();
+    el.style.color='var(--green)';
+    const mi=safe('monthly-budget-income');const me=safe('monthly-budget-expense');
+    if(mi)mi.value=mb.income;if(me)me.value=mb.expense;
+  } else {
+    el.textContent='לא הוגדר תקציב לחודש זה';
+    el.style.color='var(--muted)';
+  }
+}
+
+function updateVaadAccountStatus(){
+  if(!vaadData.openingBalance)vaadData.openingBalance={};
+  if(!vaadData.monthlyBudget)vaadData.monthlyBudget={};
+  const curY=new Date().getFullYear();
+  const openBal=vaadData.openingBalance[curY]||0;
+  const totalInc=vaadData.budget.filter(b=>b.type==='income'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const totalExp=vaadData.budget.filter(b=>b.type==='expense'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const currentBal=openBal+totalInc-totalExp;
+  const ob=safe('vaad-open-bal');const cb=safe('vaad-current-bal');
+  if(ob)ob.textContent='₪'+openBal.toLocaleString();
+  if(cb){cb.textContent='₪'+currentBal.toLocaleString();cb.style.color=currentBal>=0?'var(--green)':'var(--red)';}
+  updateMonthlyBudgetStatus();
 }
 
 // ── MODAL ──────────────────────────────
