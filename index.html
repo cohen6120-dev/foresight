@@ -1171,6 +1171,7 @@ function initFirestore(){
       if(latest.timestamp>Number(lastSeen)&&latest.sentBy!==CU?.name){
         localStorage.setItem('fs_broadcast_seen',latest.timestamp.toString());
         addNotif(`📢 ${latest.title}`,latest.body,'כללי');
+        sendLocalNotification(`📢 ${latest.title}`,latest.body);
       }
     }
   });
@@ -2255,45 +2256,56 @@ function locateMe(){if(!mapInst)return;navigator.geolocation?.getCurrentPosition
 let pushToken = null;
 
 async function initPushNotifications(){
-  if(!('Notification' in window)){console.warn('Notifications not supported');return;}
-  if(!window.FCM){console.warn('FCM not ready');return;}
-  
+  if(!('Notification' in window)||!('serviceWorker' in navigator)){
+    toast('הדפדפן שלך לא תומך בהתראות');return;
+  }
   try{
-    // רשום Service Worker
-    const swReg = await navigator.serviceWorker.register('/foresight/firebase-messaging-sw.js');
-    console.log('SW registered:', swReg.scope);
-    
     // בקש הרשאה
     const permission = await Notification.requestPermission();
-    if(permission !== 'granted'){
-      console.log('Push permission denied');
-      return;
-    }
-    
-    // קבל FCM token
-    const token = await window.FCM.getToken({
-      vapidKey: window.VAPID_KEY,
-      serviceWorkerRegistration: swReg
-    });
-    
-    if(token){
-      pushToken = token;
-      console.log('FCM Token:', token.substring(0,20)+'...');
-      // שמור token ב-Firestore
-      await savePushToken(token);
-      toast('🔔 התראות פעילות!');
+    if(permission === 'granted'){
+      // שמור שהמשתמש אישר
+      if(CU){
+        CU.pushEnabled=true;
+        localStorage.setItem('fs_u',JSON.stringify(CU));
+        const allUsers=JSON.parse(localStorage.getItem('fs_users')||'{}');
+        if(allUsers[CU.id])allUsers[CU.id].pushEnabled=true;
+        localStorage.setItem('fs_users',JSON.stringify(allUsers));
+        // עדכן Firestore
+        if(window.DB){
+          try{
+            const snap=await window.DB.collection('users').where('id','==',CU.id).get();
+            if(!snap.empty)await snap.docs[0].ref.update({pushEnabled:true,pushUpdatedAt:Date.now()});
+          }catch(e){}
+        }
+      }
+      toast('🔔 התראות הופעלו בהצלחה!');
+      // שלח התראת ברכה
+      setTimeout(()=>{
+        new Notification('✅ FORESIGHT — התראות פעילות!',{
+          body:'תקבל עדכונים מהרשות בזמן אמת',
+          icon:'https://via.placeholder.com/192x192/0a1628/c8a84b?text=F',
+          badge:'https://via.placeholder.com/72x72/0a1628/c8a84b?text=F',
+        });
+      },500);
+    } else if(permission === 'denied'){
+      toast('❌ התראות חסומות — אפשר בהגדרות הדפדפן');
     }
   }catch(e){
-    console.warn('Push init error:', e);
+    console.warn('Push error:',e);
+    toast('שגיאה בהפעלת התראות: '+e.message);
   }
-  
-  // האזן להודעות כשהאפליקציה פתוחה
-  if(window.FCM){
-    window.FCM.onMessage((payload)=>{
-      console.log('Foreground message:', payload);
-      const title = payload.notification?.title || payload.data?.title || 'FORESIGHT';
-      const body = payload.notification?.body || payload.data?.body || '';
-      addNotif(title, body, payload.data?.type||'כללי');
+}
+
+// שלח התראה מקומית (כשהאפליקציה פתוחה)
+function sendLocalNotification(title, body, icon='🔔'){
+  if(Notification.permission==='granted'){
+    new Notification(title,{
+      body,
+      icon:'https://via.placeholder.com/192x192/0a1628/c8a84b?text=F',
+      badge:'https://via.placeholder.com/72x72/0a1628/c8a84b?text=F',
+      tag:'foresight',
+      renotify:true,
+      vibrate:[200,100,200]
     });
   }
 }
