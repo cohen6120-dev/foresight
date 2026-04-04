@@ -409,7 +409,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <path d="M48 54 L54 54 L54 48" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
       </svg>
       <div class="auth-brand">FORESIGHT</div>
-      <div class="auth-sub">דואגים לך, עוד לפני שביקשת</div>
+      <div class="auth-sub">דואגים לך, מבלי שביקשת</div>
     </div>
   </div>
   <div class="auth-card">
@@ -430,6 +430,28 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <input class="fi" id="aname" type="text" placeholder="ישראל ישראלי">
       <div class="fl">תאריך לידה</div>
       <input class="fi" id="abday" type="date">
+      <div class="fl">הועד המקומי שלי</div>
+      <select class="fi" id="avaad" style="appearance:auto">
+        <option value="">בחר יישוב / ועד מקומי...</option>
+        <option value="ועד אשבול">🏘️ אשבול</option>
+        <option value="ועד בטחה">🏘️ בטחה</option>
+        <option value="ועד גילת">🏘️ גילת</option>
+        <option value="ועד מבועים">🏘️ מבועים</option>
+        <option value="ועד מסלול">🏘️ מסלול</option>
+        <option value="ועד ניר משה">🏘️ ניר משה</option>
+        <option value="ועד ניר עקיבא">🏘️ ניר עקיבא</option>
+        <option value="ועד פדויים">🏘️ פדויים</option>
+        <option value="ועד פטיש">🏘️ פטיש</option>
+        <option value="ועד פעמי תש"ז">🏘️ פעמי תש"ז</option>
+        <option value="ועד קלחים">🏘️ קלחים</option>
+        <option value="ועד רנן">🏘️ רנן</option>
+        <option value="ועד שדה צבי">🏘️ שדה צבי</option>
+        <option value="ועד תלמי ביל"ו">🏘️ תלמי ביל"ו</option>
+        <option value="ועד תפרח">🏘️ תפרח</option>
+        <option value="ועד שבי דרום">🏘️ שבי דרום</option>
+        <option value="ועד אשל הנשיא">🏘️ אשל הנשיא</option>
+        <option value="אין ועד">ללא ועד מקומי</option>
+      </select>
     </div>
     <div class="adm-badge" id="admbadge">⭐ זוהית כמנהל מועצה</div>
     <button class="auth-btn" onclick="doAuth()">כניסה</button>
@@ -471,7 +493,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         </svg>
         <div>
           <div class="logo-name">FORESIGHT</div>
-          <div class="logo-tagline">דואגים לך</div>
+          <div class="logo-tagline">דואגים לך מבלי שביקשת</div>
         </div>
       </div>
       <div class="tb-right">
@@ -658,9 +680,10 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <button class="mfbtn" onclick="filterMap('done',this)">טופלו</button>
       <button class="mfbtn" onclick="filterMap('shelter',this)">🏠 מרחבים מוגנים</button>
     </div>
-    <div style="background:#fff3cd;padding:8px 14px;font-size:11px;color:#856404;display:flex;align-items:center;gap:6px">
-      <span>🏠 לחץ על המפה לסימון מרחב מוגן</span>
-      <button onclick="toggleShelterMode()" id="shelter-mode-btn" style="background:#856404;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-right:auto">הפעל סימון</button>
+    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);padding:10px 14px;font-size:11px;color:#92400e;display:flex;align-items:center;gap:8px;border-bottom:1px solid #fde68a">
+      <span>🏠 סמן מרחב מוגן על המפה</span>
+      <button onclick="toggleShelterMode()" id="shelter-mode-btn" style="background:#856404;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;margin-right:auto">הפעל סימון</button>
+      <button onclick="showShelterManager()" style="background:var(--red-bg);color:var(--red);border:2px solid #fca5a5;border-radius:8px;padding:6px 12px;font-size:10px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">🗑️ נהל</button>
     </div>
     <div id="map-container">
       <div id="leaflet-map"></div>
@@ -707,6 +730,28 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <h3>פרטים אישיים</h3>
       <input class="pinp" id="p-name" placeholder="שם מלא">
       <input class="pinp" id="p-phone" placeholder="טלפון" type="tel">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;margin-top:4px;text-transform:uppercase;letter-spacing:.5px">הועד המקומי שלי</div>
+      <select class="pinp" id="p-vaad" style="appearance:auto;margin-bottom:0">
+        <option value="">בחר יישוב / ועד מקומי...</option>
+        <option value="ועד אשבול">🏘️ אשבול</option>
+        <option value="ועד בטחה">🏘️ בטחה</option>
+        <option value="ועד גילת">🏘️ גילת</option>
+        <option value="ועד מבועים">🏘️ מבועים</option>
+        <option value="ועד מסלול">🏘️ מסלול</option>
+        <option value="ועד ניר משה">🏘️ ניר משה</option>
+        <option value="ועד ניר עקיבא">🏘️ ניר עקיבא</option>
+        <option value="ועד פדויים">🏘️ פדויים</option>
+        <option value="ועד פטיש">🏘️ פטיש</option>
+        <option value="ועד פעמי תש"ז">🏘️ פעמי תש"ז</option>
+        <option value="ועד קלחים">🏘️ קלחים</option>
+        <option value="ועד רנן">🏘️ רנן</option>
+        <option value="ועד שדה צבי">🏘️ שדה צבי</option>
+        <option value="ועד תלמי ביל"ו">🏘️ תלמי ביל"ו</option>
+        <option value="ועד תפרח">🏘️ תפרח</option>
+        <option value="ועד שבי דרום">🏘️ שבי דרום</option>
+        <option value="ועד אשל הנשיא">🏘️ אשל הנשיא</option>
+        <option value="אין ועד">ללא ועד מקומי</option>
+      </select>
     </div>
     <div class="psec">
       <h3>🎯 תחומי עניין</h3>
@@ -763,7 +808,11 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <input id="vaad-password" type="password" class="pinp" placeholder="סיסמת ועד..." style="text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:4px">
       <div style="font-size:11px;color:var(--red);display:none;margin-bottom:10px;font-weight:700" id="vaad-pw-err">❌ סיסמה שגויה</div>
       <button onclick="loginVaad()" class="big-btn" style="margin-top:12px">כניסה לוועד המקומי</button>
-      <div style="margin-top:20px;font-size:11px;color:var(--muted)">מנהל מערכת — השתמש בסיסמת מנהל</div>
+      <div style="margin-top:20px;font-size:11px;color:var(--muted);line-height:1.8">
+        מנהל מועצה — השתמש בסיסמת מנהל<br>
+        <span style="color:var(--gold);font-weight:700">סיסמת ועד: vaad+שם היישוב</span><br>
+        <span style="font-size:10px;color:var(--muted2)">לדוגמה: vaadשדה צבי</span>
+      </div>
     </div>
 
     <!-- CONTENT -->
@@ -804,6 +853,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <button class="mfbtn" onclick="setVaadTab('decisions',this)">📜 החלטות</button>
         <button class="mfbtn" onclick="setVaadTab('budget',this)">💰 תקציב</button>
         <button class="mfbtn" onclick="setVaadTab('budget-plan',this)">📋 תכנית תקציב</button>
+        <button class="mfbtn" onclick="setVaadTab('budget-template',this)">⚙️ פורמט תקציב</button>
         <button class="mfbtn" onclick="setVaadTab('members',this)">👥 חברי ועד</button>
         <button class="mfbtn" onclick="setVaadTab('resident-ideas',this)">💡 פניות תושבים</button>
       </div>
@@ -874,7 +924,35 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
             </div>
           </div>
           <button onclick="exportMonthlyReport()" style="width:100%;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);color:var(--gold);border-radius:12px;padding:11px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:14px">📊 הפק דוח רווח והפסד חודשי ← שדר לתושבים</button>
+          <button onclick="showAnnualSummary()" style="width:100%;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:#3b82f6;border-radius:12px;padding:11px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:8px">📈 סיכום שנתי מול תקציב מתוכנן</button>
         </div>
+        <!-- ACCOUNT STATUS -->
+        <div class="card" id="vaad-account-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac">
+          <div style="font-size:11px;font-weight:800;color:var(--green);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">🏦 מצב חשבון הועד</div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600">יתרת פתיחה</div>
+              <div style="font-size:18px;font-weight:900;color:var(--navy)" id="vaad-open-bal">₪0</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:11px;color:var(--muted);font-weight:600">יתרה נוכחית</div>
+              <div style="font-size:20px;font-weight:900;color:var(--green)" id="vaad-current-bal">₪0</div>
+            </div>
+          </div>
+          <button onclick="showOpeningBalance()" style="width:100%;background:white;border:2px solid #86efac;color:var(--green);border-radius:10px;padding:9px;font-size:11px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:10px">⚙️ הגדר יתרת פתיחה שנתית</button>
+        </div>
+
+        <!-- MONTHLY BUDGET -->
+        <div class="card" style="border:2px solid var(--border)">
+          <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">📅 תקציב חודשי מתוכנן</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="monthly-budget-income" type="number" class="bc-inp" placeholder="הכנסות חודשיות ₪" style="flex:1;margin:0">
+            <input id="monthly-budget-expense" type="number" class="bc-inp" placeholder="הוצאות חודשיות ₪" style="flex:1;margin:0">
+          </div>
+          <button onclick="saveMonthlyBudget()" style="width:100%;background:var(--navy);color:var(--gold);border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:800;font-family:'Heebo',sans-serif;cursor:pointer;margin-top:10px">שמור תקציב חודשי</button>
+          <div id="monthly-budget-status" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center"></div>
+        </div>
+
         <!-- ADD ITEM -->
         <div class="card">
           <div style="font-size:12px;font-weight:800;color:var(--navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">➕ רשומה חדשה</div>
@@ -905,6 +983,34 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         </div>
         <div class="section-title">תכניות תקציב שהוגשו</div>
         <div id="budget-plans-list"><div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">אין תכניות תקציב</div><div class="empty-sub">תכניות שהוגשו יופיעו כאן עם הערות הגזבר</div></div></div>
+      </div>
+
+      <!-- ═══ BUDGET TEMPLATE ═══ -->
+      <div id="vt-budget-template" style="display:none">
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:14px;font-weight:900;color:var(--navy);margin-bottom:4px">⚙️ פורמט קטגוריות תקציב</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px">הגדר את קטגוריות ההכנסות וההוצאות של הועד שלך</div>
+          <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">💚 קטגוריות הכנסות</div>
+          <div id="income-cats-list"></div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <input id="new-income-cat" class="bc-inp" placeholder="קטגוריית הכנסה חדשה..." style="flex:1;margin:0">
+            <button onclick="addBudgetCat('income')" style="background:var(--green);color:white;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">+</button>
+          </div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+          <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">❤️ קטגוריות הוצאות</div>
+          <div id="expense-cats-list"></div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <input id="new-expense-cat" class="bc-inp" placeholder="קטגוריית הוצאה חדשה..." style="flex:1;margin:0">
+            <button onclick="addBudgetCat('expense')" style="background:var(--red);color:white;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">+</button>
+          </div>
+          <div style="height:1px;background:var(--border);margin:14px 0"></div>
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">📊 תקציב שנתי מתוכנן (לפי קטגוריה)</div>
+          <div id="annual-budget-form"></div>
+          <button onclick="saveAnnualBudget()" class="big-btn" style="font-size:13px;padding:13px;margin-top:8px">שמור תקציב שנתי מתוכנן</button>
+        </div>
+        <div style="padding:0 14px 14px">
+          <button onclick="resetBudgetTemplate()" style="width:100%;background:none;color:var(--red);border:2px solid #fca5a5;border-radius:var(--radius);padding:12px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">איפוס לברירת מחדל</button>
+        </div>
       </div>
 
       <!-- ═══ MEMBERS ═══ -->
@@ -1117,6 +1223,30 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   </div>
 </div>
 
+<!-- OPENING BALANCE MODAL -->
+<div class="moverlay" id="ob-modal">
+  <div class="mcard">
+    <div class="mtitle">🏦 יתרת פתיחה שנתית</div>
+    <div class="mmeta">הכנס את יתרת חשבון הבנק של הועד בתחילת השנה</div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">שנה</div>
+    <input id="ob-year" type="number" class="bc-inp" placeholder="2025">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">יתרת פתיחה (₪)</div>
+    <input id="ob-amount" type="number" class="bc-inp" placeholder="0.00">
+    <button onclick="saveOpeningBalance()" class="rate-btn" style="margin-top:4px">שמור יתרת פתיחה</button>
+    <button class="mclose" onclick="closeMod('ob-modal')">ביטול</button>
+  </div>
+</div>
+
+<!-- SHELTER MANAGER MODAL -->
+<div class="moverlay" id="shelter-mgr-modal">
+  <div class="mcard">
+    <div class="mtitle">🏠 ניהול מרחבים מוגנים</div>
+    <div class="mmeta">לחץ על סמן למחיקה</div>
+    <div id="shelter-mgr-list"></div>
+    <button class="mclose" onclick="closeMod('shelter-mgr-modal')">סגור</button>
+  </div>
+</div>
+
 <!-- RATING MODAL -->
 <div class="moverlay" id="rating-modal">
   <div class="mcard">
@@ -1136,7 +1266,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 <script>
 // ── CONSTANTS ──────────────────────────
 const ADMINS=['000000000','123456789','040892424'];
-const VAAD_PASSWORDS={'vaad2024':'ועד שדה צבי','vaad2025':'ועד שכונה א'};
+const VAAD_PASSWORDS={'vaadאשבול':'ועד אשבול', 'vaadבטחה':'ועד בטחה', 'vaadגילת':'ועד גילת', 'vaadמבועים':'ועד מבועים', 'vaadמסלול':'ועד מסלול', 'vaadניר משה':'ועד ניר משה', 'vaadניר עקיבא':'ועד ניר עקיבא', 'vaadפדויים':'ועד פדויים', 'vaadפטיש':'ועד פטיש', 'vaadפעמי תש"ז':'ועד פעמי תש"ז', 'vaadקלחים':'ועד קלחים', 'vaadרנן':'ועד רנן', 'vaadשדה צבי':'ועד שדה צבי', 'vaadתלמי ביל"ו':'ועד תלמי ביל"ו', 'vaadתפרח':'ועד תפרח', 'vaadשבי דרום':'ועד שבי דרום', 'vaadאשל הנשיא':'ועד אשל הנשיא'};
 const ADMIN_VAAD_PASSWORD='admin2024';
 const DAILY_POLLS=[
   'האם אתה מרוצה מניקיון הרחובות בשכונתך?',
@@ -1217,7 +1347,7 @@ async function doAuth(){
     const ph=safe('aphone').value; if(!ph){toast('נא להזין טלפון');return;}
     const nm=safe('aname').value||'תושב';
     const bday=safe('abday').value||'';
-    CU={id,ph,name:nm,isAdmin:ADMINS.includes(id),pts:0,bday,joinDate:new Date().toLocaleDateString('he-IL')};
+    const vaadSel=safe('avaad')?.value||'';CU={id,ph,name:nm,isAdmin:ADMINS.includes(id),pts:0,bday,joinDate:new Date().toLocaleDateString('he-IL'),vaad:vaadSel};
     allUsers[id]=CU;
     localStorage.setItem('fs_users',JSON.stringify(allUsers));
     localStorage.setItem('fs_u',JSON.stringify(CU));
@@ -1287,6 +1417,7 @@ function startApp(){
   const pa=safe('pav');if(pa)pa.textContent=CU.name[0];
   const pp=safe('p-name');if(pp)pp.value=CU.name;
   const pph=safe('p-phone');if(pph)pph.value=CU.ph||'';
+  const pv=safe('p-vaad');if(pv)pv.value=CU.vaad||'';
   loadInterests();
   renderTickets();
   renderHomeTickets();
@@ -1305,36 +1436,41 @@ function startApp(){
 // ── WEATHER ────────────────────────────
 async function fetchWeather(){
   try{
-    // קבל מיקום GPS
     const getPos=()=>new Promise((res,rej)=>
-      navigator.geolocation?.getCurrentPosition(res,rej,{timeout:5000})||rej('no geo')
+      navigator.geolocation?.getCurrentPosition(res,rej,{timeout:6000})||rej('no geo')
     );
-    let url='https://wttr.in/Israel?format=j1';
-    let cityName='';
+    let lat=null,lng=null,cityName='';
+    // קבל GPS
     try{
       const pos=await getPos();
-      const lat=pos.coords.latitude.toFixed(4);
-      const lng=pos.coords.longitude.toFixed(4);
-      url=`https://wttr.in/${lat},${lng}?format=j1`;
-      // קבל שם עיר מ-reverse geocoding
+      lat=pos.coords.latitude;lng=pos.coords.longitude;
+      // שם מקום מ-Nominatim
       try{
-        const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=he`);
+        const geo=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat.toFixed(5)+'&lon='+lng.toFixed(5)+'&format=json&accept-language=he&zoom=14');
         const gd=await geo.json();
-        cityName=gd.address?.village||gd.address?.town||gd.address?.city||gd.address?.county||'';
+        cityName=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||gd.address?.county||'';
       }catch(e){}
     }catch(e){}
+    // אם יש יישוב מהפרופיל — עדיף
+    if(!cityName&&CU?.vaad)cityName=CU.vaad.replace('ועד ','');
+    const url=lat?'https://wttr.in/'+lat.toFixed(4)+','+lng.toFixed(4)+'?format=j1':'https://wttr.in/Israel?format=j1';
     const res=await fetch(url);
     const data=await res.json();
     const temp=data.current_condition[0].temp_C;
+    const feels=data.current_condition[0].FeelsLikeC;
     const code=Number(data.current_condition[0].weatherCode);
     const icons={113:'☀️',116:'⛅',119:'☁️',122:'☁️',176:'🌦️',185:'🌧️',200:'⛈️',227:'🌨️',230:'❄️'};
     let icon='🌤️';
     for(const [k,v] of Object.entries(icons)){if(code<=Number(k)){icon=v;break;}}
     const wi=safe('weather-icon');const wt=safe('weather-temp');const wc=safe('weather-city');
     if(wi)wi.textContent=icon;
-    if(wt)wt.textContent=temp+'°C';
-    if(wc&&cityName)wc.textContent=cityName;
-  }catch(e){}
+    if(wt)wt.textContent=temp+'°';
+    if(wc)wc.textContent=cityName||'מרחבים';
+    // שמור מזג אוויר לשימוש בפעולות פרואקטיביות
+    window._weather={temp:Number(temp),feels:Number(feels),code,icon,city:cityName};
+  }catch(e){
+    const wc=safe('weather-city');if(wc)wc.textContent=CU?.vaad?.replace('ועד ','')||'מרחבים';
+  }
 }
 
 // ── RANK SYSTEM ────────────────────────
@@ -1429,7 +1565,7 @@ function initFirestore(){
   db.collection('tickets').orderBy('timestamp','desc').onSnapshot(snap=>{
     tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
     renderTickets();
-    if(CU?.isAdmin)updateScadaKPIs();
+    if(CU?.isAdmin){updateScadaKPIs();setTimeout(initAdminExtras,500);}
     if(mapInst)renderMapMarkers();
   });
   // האזן ל-SOS (למנהל בלבד)
@@ -1802,17 +1938,16 @@ async function broadcastMsg(){
   const title=safe('bc-title')?.value.trim();
   const body=safe('bc-body')?.value.trim();
   if(!title||!body){toast('נא למלא כותרת ותוכן');return;}
-  const msg={id:Date.now(),timestamp:Date.now(),title,body,date:new Date().toLocaleDateString('he-IL'),sentBy:CU?.name||'מנהל'};
+  const targetVaad=safe('bc-vaad-filter')?.value||'';
+  const msg={id:Date.now(),timestamp:Date.now(),title,body,date:new Date().toLocaleDateString('he-IL'),sentBy:CU?.name||'מנהל',targetVaad};
   if(!window.DB){toast('Firebase לא מחובר');return;}
   try{
     await window.DB.collection('broadcasts').add(msg);
-    toast('✅ ההודעה שודרה לכל התושבים!');
+    const who=targetVaad?'לתושבי '+targetVaad:'לכל התושבים';
+    toast('✅ ההודעה שודרה '+who+'!');
     if(safe('bc-title'))safe('bc-title').value='';
     if(safe('bc-body'))safe('bc-body').value='';
-  }catch(e){
-    console.error(e);
-    toast('שגיאה: '+e.message);
-  }
+  }catch(e){console.error(e);toast('שגיאה: '+e.message);}
 }
 function exportCSV(){
   const rows=['ID,קטגוריה,תיאור,סטטוס,תאריך',...tickets.map(t=>`${t.id},${t.cat},"${t.desc}",${t.status},${t.date}`)];
@@ -2414,7 +2549,7 @@ const MONTHS_HE=['ינואר','פברואר','מרץ','אפריל','מאי','י�
 
 function loginVaad(){
   const pw=safe('vaad-password').value.trim();
-  if(pw===ADMIN_VAAD_PASSWORD){currentVaadName='מנהל מערכת';openVaad();}
+  if(pw===ADMIN_VAAD_PASSWORD){currentVaadName='מנהל מועצה אזורית מרחבים';openVaad();}
   else if(VAAD_PASSWORDS[pw]){currentVaadName=VAAD_PASSWORDS[pw];openVaad();}
   else{const e=safe('vaad-pw-err');if(e){e.style.display='block';setTimeout(()=>e.style.display='none',2500);}}
 }
@@ -2445,7 +2580,7 @@ function updateVaadKPIs(){
 }
 function setVaadTab(tab,el){
   document.querySelectorAll('#page-vaad .mfbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');
-  ['meetings','decisions','budget','budget-plan','members','resident-ideas'].forEach(t=>{const e=safe('vt-'+t);if(e)e.style.display=t===tab?'block':'none';});
+  ['meetings','decisions','budget','budget-plan','budget-template','members','resident-ideas'].forEach(t=>{const e=safe('vt-'+t);if(e)e.style.display=t===tab?'block':'none';});
   renderVaad(tab);if(tab==='resident-ideas')renderVaadIdeas();if(tab==='budget-plan')renderBudgetPlans();
 }
 function renderVaad(tab){
@@ -2523,7 +2658,7 @@ function publishMeetingSummary(){
 }
 function publishMeetingSummaryById(i){
   const m=vaadData.meetings[i];if(!m)return;
-  if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:`📋 סיכום ישיבת ועד — ${m.title}`,body:(m.protocol||'לא הוזן פרוטוקול').substring(0,400),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד'}).then(()=>toast('שודר לתושבים ✓')).catch(()=>toast('שידור ✓'));
+  if(window.DB){const vaadTarget=Object.entries(VAAD_PASSWORDS).find(([k,v])=>v===currentVaadName)?.[1]||'';window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title:'📋 סיכום ישיבת ועד — '+m.title,body:(m.protocol||'לא הוזן פרוטוקול').substring(0,400),date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד',targetVaad:vaadTarget}).then(()=>toast('שודר לתושבי '+( vaadTarget||'כולם')+' ✓')).catch(()=>toast('שידור ✓'))};
 }
 function addDecision(){
   const t=safe('dec-title')?.value.trim();if(!t){toast('נא להזין נושא');return;}
@@ -2647,6 +2782,172 @@ function addMember(){
   vaadData.members.push({name:n,role:r,phone:safe('mem-phone')?.value||'',id:Date.now()});
   saveVaad();['mem-name','mem-role','mem-phone'].forEach(id=>{const e=safe(id);if(e)e.value='';});
   renderVaad('members');toast('חבר ועד נוסף ✓');
+}
+
+
+// ── BUDGET TEMPLATE ────────────────────
+const MERHAVIM_YISHUVIM=["אשבול","בטחה","גילת","מבועים","מסלול","ניר משה","ניר עקיבא","פדויים","פטיש",'פעמי תש"ז',"קלחים","רנן","שדה צבי",'תלמי ביל"ו',"תפרח","שבי דרום","אשל הנשיא"];
+const DEFAULT_INCOME_CATS=['תשלומי ועד','תמיכת מועצה','תרומות','אחר'];
+const DEFAULT_EXPENSE_CATS=['ניקיון','גינון','אחזקה','אירועים','משרד','שונות'];
+
+function getBudgetCats(){
+  const vaadKey='fs_vaad_cats_'+(currentVaadName||'default');
+  const saved=localStorage.getItem(vaadKey);
+  if(saved)return JSON.parse(saved);
+  return {income:[...DEFAULT_INCOME_CATS],expense:[...DEFAULT_EXPENSE_CATS],annualBudget:{}};
+}
+function saveBudgetCats(cats){
+  const vaadKey='fs_vaad_cats_'+(currentVaadName||'default');
+  localStorage.setItem(vaadKey,JSON.stringify(cats));
+}
+
+function renderBudgetTemplate(){
+  const cats=getBudgetCats();
+  const il=document.getElementById('income-cats-list');
+  const el=document.getElementById('expense-cats-list');
+  const af=document.getElementById('annual-budget-form');
+  if(il)il.innerHTML=cats.income.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;background:var(--green-bg);border-radius:10px;padding:8px 12px">
+      <span style="flex:1;font-size:13px;font-weight:700;color:var(--navy)">${c}</span>
+      <button onclick="removeBudgetCat('income',${i})" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px">✕</button>
+    </div>`).join('');
+  if(el)el.innerHTML=cats.expense.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;background:var(--red-bg);border-radius:10px;padding:8px 12px">
+      <span style="flex:1;font-size:13px;font-weight:700;color:var(--navy)">${c}</span>
+      <button onclick="removeBudgetCat('expense',${i})" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px">✕</button>
+    </div>`).join('');
+  if(af){
+    const allCats=[...cats.income.map(c=>({c,t:'income'})),...cats.expense.map(c=>({c,t:'expense'}))];
+    af.innerHTML=allCats.map(({c,t})=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--navy);flex:1">${c}</span>
+        <span style="font-size:10px;color:${t==='income'?'var(--green)':'var(--red)'};font-weight:700">${t==='income'?'הכנסה':'הוצאה'}</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:13px;color:var(--muted)">₪</span>
+          <input type="number" id="ab-${c}" value="${cats.annualBudget[c]||''}" placeholder="0" style="width:90px;background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:7px;font-size:13px;font-family:'Heebo',sans-serif;outline:none;text-align:center">
+        </div>
+      </div>`).join('');
+  }
+  // Also update the budget category dropdown
+  updateBudgetCategoryDropdown(cats);
+}
+
+function updateBudgetCategoryDropdown(cats){
+  const sel=document.getElementById('budget-category');
+  if(!sel)return;
+  const allCats=[...cats.income,...cats.expense];
+  sel.innerHTML=allCats.map(c=>`<option>${c}</option>`).join('');
+}
+
+function addBudgetCat(type){
+  const inp=document.getElementById(type==='income'?'new-income-cat':'new-expense-cat');
+  const val=inp?.value.trim();if(!val)return;
+  const cats=getBudgetCats();
+  if(!cats[type].includes(val))cats[type].push(val);
+  saveBudgetCats(cats);inp.value='';renderBudgetTemplate();toast('קטגוריה נוספה ✓');
+}
+function removeBudgetCat(type,i){
+  const cats=getBudgetCats();cats[type].splice(i,1);saveBudgetCats(cats);renderBudgetTemplate();
+}
+function saveAnnualBudget(){
+  const cats=getBudgetCats();
+  const allCats=[...cats.income,...cats.expense];
+  allCats.forEach(c=>{const inp=document.getElementById('ab-'+c);if(inp&&inp.value)cats.annualBudget[c]=Number(inp.value);});
+  saveBudgetCats(cats);toast('תקציב שנתי נשמר ✓');
+}
+function resetBudgetTemplate(){
+  if(!confirm('לאפס לברירת מחדל?'))return;
+  const vaadKey='fs_vaad_cats_'+(currentVaadName||'default');
+  localStorage.removeItem(vaadKey);renderBudgetTemplate();toast('אופס לברירת מחדל');
+}
+
+// Update renderVaad to include template tab
+const _origSetVaadTab=setVaadTab;
+setVaadTab=function(tab,el){
+  _origSetVaadTab(tab,el);
+  if(tab==='budget-template')renderBudgetTemplate();if(tab==='budget')updateVaadAccountStatus();
+};
+
+
+function showAnnualSummary(){
+  const cats=getBudgetCats();
+  const now=new Date();const curY=now.getFullYear();
+  const yearItems=vaadData.budget.filter(b=>new Date(b.date||Date.now()).getFullYear()===curY);
+  let lines=['📈 סיכום שנתי '+curY+' — מול תקציב מתוכנן',''];
+  const allCats=[...cats.income.map(c=>({c,t:'income'})),...cats.expense.map(c=>({c,t:'expense'}))];
+  allCats.forEach(({c,t})=>{
+    const actual=yearItems.filter(b=>b.category===c&&b.type===t).reduce((s,b)=>s+Number(b.amount),0);
+    const planned=cats.annualBudget[c]||0;
+    const diff=actual-planned;
+    lines.push((t==='income'?'💚':'❤️')+' '+c+': ביצוע ₪'+actual.toLocaleString()+' / תוכנן ₪'+planned.toLocaleString()+(diff!==0?' ('+( diff>0?'+':'')+diff.toLocaleString()+')':''));
+  });
+  const body=lines.join(' | ').substring(0,500);
+  const title='📈 סיכום שנתי '+curY;
+  if(confirm('לשדר סיכום שנתי לתושבים?')){
+    if(window.DB)window.DB.collection('broadcasts').add({id:Date.now(),timestamp:Date.now(),title,body,date:new Date().toLocaleDateString('he-IL'),sentBy:currentVaadName||'ועד',targetVaad:currentVaadName}).then(()=>toast('סיכום שנתי שודר ✓')).catch(()=>toast('שגיאה'));
+  }
+}
+
+
+// ── VAAD ACCOUNT & BUDGET ──────────────
+function showOpeningBalance(){
+  const curY=new Date().getFullYear();
+  const inp=safe('ob-year');if(inp)inp.value=curY;
+  const inpA=safe('ob-amount');
+  if(inpA&&vaadData.openingBalance)inpA.value=vaadData.openingBalance[curY]||'';
+  safe('ob-modal').classList.add('open');
+}
+
+function saveOpeningBalance(){
+  const y=Number(safe('ob-year')?.value||new Date().getFullYear());
+  const a=Number(safe('ob-amount')?.value||0);
+  if(!vaadData.openingBalance)vaadData.openingBalance={};
+  vaadData.openingBalance[y]=a;
+  saveVaad();
+  closeMod('ob-modal');
+  updateVaadAccountStatus();
+  toast('יתרת פתיחה נשמרה ✓');
+}
+
+function saveMonthlyBudget(){
+  const inc=Number(safe('monthly-budget-income')?.value||0);
+  const exp=Number(safe('monthly-budget-expense')?.value||0);
+  if(!vaadData.monthlyBudget)vaadData.monthlyBudget={};
+  const key=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  vaadData.monthlyBudget[key]={income:inc,expense:exp};
+  saveVaad();
+  updateMonthlyBudgetStatus();
+  toast('תקציב חודשי נשמר ✓');
+}
+
+function updateMonthlyBudgetStatus(){
+  const key=vaadCurrentYear+'-'+String(vaadCurrentMonth+1).padStart(2,'0');
+  const mb=vaadData.monthlyBudget?.[key];
+  const el=safe('monthly-budget-status');
+  if(!el)return;
+  if(mb){
+    el.textContent='תקציב מתוכנן: הכנסות ₪'+Number(mb.income).toLocaleString()+' | הוצאות ₪'+Number(mb.expense).toLocaleString();
+    el.style.color='var(--green)';
+    const mi=safe('monthly-budget-income');const me=safe('monthly-budget-expense');
+    if(mi)mi.value=mb.income;if(me)me.value=mb.expense;
+  } else {
+    el.textContent='לא הוגדר תקציב לחודש זה';
+    el.style.color='var(--muted)';
+  }
+}
+
+function updateVaadAccountStatus(){
+  if(!vaadData.openingBalance)vaadData.openingBalance={};
+  if(!vaadData.monthlyBudget)vaadData.monthlyBudget={};
+  const curY=new Date().getFullYear();
+  const openBal=vaadData.openingBalance[curY]||0;
+  const totalInc=vaadData.budget.filter(b=>b.type==='income'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const totalExp=vaadData.budget.filter(b=>b.type==='expense'&&new Date(b.date||Date.now()).getFullYear()===curY).reduce((s,b)=>s+Number(b.amount),0);
+  const currentBal=openBal+totalInc-totalExp;
+  const ob=safe('vaad-open-bal');const cb=safe('vaad-current-bal');
+  if(ob)ob.textContent='₪'+openBal.toLocaleString();
+  if(cb){cb.textContent='₪'+currentBal.toLocaleString();cb.style.color=currentBal>=0?'var(--green)':'var(--red)';}
+  updateMonthlyBudgetStatus();
 }
 
 // ── MODAL ──────────────────────────────
