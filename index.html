@@ -134,7 +134,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .drawer-sep{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
 
 /* ═══ PAGES ═══ */
-.page{display:none;flex:1;overflow-y:auto;padding-bottom:100px}
+.page{display:none;flex:1;overflow-y:auto;padding-bottom:100pxpadding-bottom:80px;}
 .page.on{display:block;animation:pgIn .25s cubic-bezier(.4,0,.2,1)}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .pg-hdr{padding:22px 18px 10px}
@@ -348,7 +348,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══ CHATBOT ═══ */
-.chatbot-btn{position:fixed;bottom:104px;left:16px;width:52px;height:52px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:150;animation:bob 3.5s ease-in-out infinite}
+.chatbot-btn{position:fixed;bottom:20px;left:16px;width:48px;height:48px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:150;animation:bob 3.5s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .chatbot-btn svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:2}
 .chat-window{position:fixed;bottom:168px;left:12px;width:calc(100% - 24px);max-width:360px;background:var(--card);border-radius:20px;box-shadow:var(--shadow-lg);z-index:200;display:none;flex-direction:column;overflow:hidden;border:1px solid var(--border)}
@@ -1189,9 +1189,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <div class="bnav" style="display:none"></div>
 </div>
 <!-- כפתור בית צף -->
-<button id="home-fab" onclick="showPage('home')" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50px;padding:12px 28px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(10,22,40,.25);cursor:pointer;z-index:150;transition:all .2s">
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#c8a84b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-  <span style="font-size:13px;font-weight:800;color:#c8a84b;font-family:'Heebo',sans-serif">בית</span>
+<button id="home-fab" onclick="showPage('home')" style="position:fixed;bottom:20px;right:16px;width:48px;height:48px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(10,22,40,.25);cursor:pointer;z-index:150" title="חזור לבית">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c8a84b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 </button>
 
 <!-- CHATBOT -->
@@ -1548,11 +1547,20 @@ function startApp(){
 // ── WEATHER ────────────────────────────
 async function fetchWeather(){
   const wi=safe('weather-icon'),wt=safe('weather-temp'),wc=safe('weather-city');
+  // Set loading state
+  if(wi)wi.textContent='🌤️';
+  if(wt)wt.textContent='...';
   try{
-    // קבל GPS
-    const pos=await new Promise((res,rej)=>
-      navigator.geolocation?.getCurrentPosition(res,rej,{timeout:8000,enableHighAccuracy:true})||rej('no geo')
-    );
+    // קבל GPS עם timeout ארוך יותר
+    const pos=await new Promise((res,rej)=>{
+      if(!navigator.geolocation){rej('no geo');return;}
+      const t=setTimeout(()=>rej('timeout'),10000);
+      navigator.geolocation.getCurrentPosition(
+        p=>{clearTimeout(t);res(p);},
+        e=>{clearTimeout(t);rej(e);},
+        {timeout:9000,enableHighAccuracy:false,maximumAge:60000}
+      );
+    });
     const lat=pos.coords.latitude,lng=pos.coords.longitude;
     // שם מקום מ-Nominatim
     let cityName='';
@@ -1563,7 +1571,7 @@ async function fetchWeather(){
     }catch(e){}
     if(!cityName)cityName=CU?.unit||CU?.vaad?.replace('ועד ','')||'';
     // מזג אוויר מ-Open-Meteo (ללא API key)
-    const wRes=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=temperature_2m,weathercode,apparent_temperature&timezone=auto`);
+    const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)+'&current=temperature_2m,weathercode,apparent_temperature&timezone=auto&forecast_days=1');
     const wData=await wRes.json();
     const temp=Math.round(wData.current.temperature_2m);
     const feels=Math.round(wData.current.apparent_temperature);
@@ -1589,7 +1597,7 @@ async function fetchWeather(){
   }catch(e){
     // Fallback — ישראל כללי
     try{
-      const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude=31.5&longitude=34.75&current=temperature_2m,weathercode&timezone=auto');
+      const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude=31.25&longitude=34.79&current=temperature_2m,weathercode&timezone=auto&forecast_days=1');
       const wData=await wRes.json();
       const temp=Math.round(wData.current.temperature_2m);
       if(wi)wi.textContent='🌤️';
