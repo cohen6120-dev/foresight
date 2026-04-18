@@ -348,7 +348,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ═══ CHATBOT ═══ */
-.chatbot-btn{position:fixed;bottom:20px;left:16px;width:48px;height:48px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:150;animation:bob 3.5s ease-in-out infinite}
+.chatbot-btn{position:fixed;bottom:16px;left:16px;width:44px;height:44px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);cursor:pointer;z-index:150;animation:bob 3.5s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .chatbot-btn svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:2}
 .chat-window{position:fixed;bottom:168px;left:12px;width:calc(100% - 24px);max-width:360px;background:var(--card);border-radius:20px;box-shadow:var(--shadow-lg);z-index:200;display:none;flex-direction:column;overflow:hidden;border:1px solid var(--border)}
@@ -410,7 +410,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <path d="M48 54 L54 54 L54 48" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
       </svg>
       <div class="auth-brand">FORESIGHT</div>
-      <div class="auth-sub">דואגים לך, מבלי שביקשת</div>
+      <div class="auth-sub">אנחנו כאן בשבילך</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:10px;line-height:1.7;padding:0 20px">כל מה שצריך במסך אחד<br>לכל רשות, מועצה וגוף ציבורי</div>
     </div>
   </div>
   <div class="auth-card">
@@ -1189,7 +1190,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <div class="bnav" style="display:none"></div>
 </div>
 <!-- כפתור בית צף -->
-<button id="home-fab" onclick="showPage('home')" style="position:fixed;bottom:20px;right:16px;width:48px;height:48px;background:linear-gradient(135deg,var(--navy),var(--blue));border:2px solid var(--gold);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(10,22,40,.25);cursor:pointer;z-index:150" title="חזור לבית">
+<button id="home-fab" onclick="showPage('home')" style="position:fixed;bottom:16px;right:16px;width:44px;height:44px;background:var(--navy);border:1.5px solid rgba(200,168,75,.5);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(10,22,40,.2);cursor:pointer;z-index:200;opacity:0.85" title="חזור לבית">
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#c8a84b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 </button>
 
