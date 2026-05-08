@@ -8,12 +8,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="app-version" content="6.0.0">
 <script>
-// ── מחק Service Workers ישנים ──────────
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
-  });
-}
 // ── מחק קאש ישן ───────────────────────
 if('caches' in window){
   caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
@@ -134,7 +128,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .drawer-sep{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
 
 /* ═══ PAGES ═══ */
-.page{display:none;flex:1;overflow-y:auto;padding-bottom:100pxpadding-bottom:80px;}
+.page{display:none;flex:1;overflow-y:auto;padding-bottom:80px;}
 .page.on{display:block;animation:pgIn .25s cubic-bezier(.4,0,.2,1)}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .pg-hdr{padding:22px 18px 10px}
