@@ -654,8 +654,12 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     </div>
     <div class="fs">
       <div class="flbl">תמונה (אופציונלי)</div>
-      <button class="cchip" onclick="document.getElementById('photoinp').click()">📷 צרף תמונה</button>
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button class="cchip" style="flex:1;justify-content:center;display:flex;align-items:center;gap:6px" onclick="openCamera()">📷 צלם עכשיו</button>
+        <button class="cchip" style="flex:1;justify-content:center;display:flex;align-items:center;gap:6px" onclick="document.getElementById('photoinp').click()">🖼️ בחר מגלריה</button>
+      </div>
       <input type="file" id="photoinp" accept="image/*" style="display:none" onchange="showPic(this)">
+      <input type="file" id="camerainp" accept="image/*" capture="environment" style="display:none" onchange="showPic(this)">
       <div id="photo-spinner" class="photo-spin"><div class="spin-ring"></div><span>דוחס תמונה...</span></div>
       <div id="photo-preview-wrap" class="photo-wrap" style="display:none">
         <img id="photoprev" src="" alt="תצוגה מקדימה">
@@ -1794,6 +1798,16 @@ function compressImg(dataUrl,cb){
   img.src=dataUrl;
 }
 function showPhotoErr(msg){const e=safe('photo-error');if(e){e.textContent=msg;e.style.display='block';}}
+function openCamera(){
+  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(isMobile){
+    const inp=safe('camerainp');if(inp)inp.click();
+  } else {
+    const err=safe('photo-error');
+    if(err){err.textContent='📱 צילום ישיר זמין בנייד בלבד — במחשב השתמש בגלריה';err.style.display='block';}
+    setTimeout(()=>{const e=safe('photo-error');if(e)e.style.display='none';},3500);
+  }
+}
 function showPic(inp){
   const f=inp.files[0];if(!f)return;
   if(!f.type.startsWith('image/')){showPhotoErr('קובץ לא תקין — רק תמונות מותרות');inp.value='';return;}
@@ -1817,6 +1831,7 @@ function showPic(inp){
 function removePhoto(){
   currentImageData=null;
   const inp=safe('photoinp');if(inp)inp.value='';
+  const cam=safe('camerainp');if(cam)cam.value='';
   const wrap=safe('photo-preview-wrap');if(wrap)wrap.style.display='none';
   const err=safe('photo-error');if(err)err.style.display='none';
 }
