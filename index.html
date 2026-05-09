@@ -396,6 +396,11 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 
 .fs{padding:0 14px 12px}
 .flbl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;margin-top:4px;text-transform:uppercase;letter-spacing:.8px}
+/* ═══ TICKET CARD INTERNALS ═══ */
+.tk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tk-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;line-height:1.4}
+.tk-meta{font-size:var(--fs-xs);color:var(--muted);font-weight:600;margin-bottom:2px}
+.tk-date{font-size:var(--fs-xs);color:var(--muted2)}
 .poll-fbtn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
 .poll-fbtn.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
 .poll-fbtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold)}
@@ -1643,72 +1648,69 @@ function startApp(){
 }
 
 // ── WEATHER ────────────────────────────
-async function fetchWeather(){
+function _weatherIcon(c){
+  if(c===0)return'☀️';if(c<=2)return'⛅';if(c<=3)return'☁️';
+  if(c<=49)return'🌫️';if(c<=59)return'🌧️';if(c<=69)return'🌨️';
+  if(c<=79)return'❄️';if(c<=82)return'🌦️';if(c<=99)return'⛈️';return'🌤️';
+}
+async function _openMeteo(lat,lng){
+  const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)+'&current=temperature_2m,weathercode,apparent_temperature&timezone=auto&forecast_days=1');
+  if(!r.ok)throw new Error('meteo '+r.status);
+  return r.json();
+}
+function _showWeather(icon,temp,city){
   const wi=safe('weather-icon'),wt=safe('weather-temp'),wc=safe('weather-city');
-  if(wi)wi.textContent='🌤️';
-  if(wt)wt.textContent='...';
-  if(wc)wc.textContent='מאתר...';
+  if(wi)wi.textContent=icon;
+  if(wt)wt.textContent=temp+'°';
+  if(wc)wc.textContent=city;
+}
+async function fetchWeather(){
+  const defaultCity=CU?.unit||CU?.vaad?.replace('ועד ','')||'ישראל';
+
+  // 1. הצג מיד מהקאש אם טרי (< שעה)
   try{
-    // קבל GPS
+    const cached=JSON.parse(localStorage.getItem('fs_weather')||'null');
+    if(cached&&Date.now()-cached.ts<3600000){
+      _showWeather(cached.icon,cached.temp,cached.city);
+      window._weather=cached;
+    }
+  }catch(e){}
+
+  // 2. טען מיד למרכז ישראל (לא מחכה ל-GPS)
+  const applyWeather=(lat,lng,city)=>_openMeteo(lat,lng).then(d=>{
+    const temp=Math.round(d.current.temperature_2m);
+    const icon=_weatherIcon(d.current.weathercode);
+    _showWeather(icon,temp,city);
+    const w={icon,temp,city,lat,lng,ts:Date.now()};
+    window._weather=w;
+    localStorage.setItem('fs_weather',JSON.stringify(w));
+  });
+
+  // קבל מיד מזג אוויר ללא GPS (ישראל מרכז)
+  applyWeather(31.80,34.90,defaultCity).catch(()=>{});
+
+  // 3. נסה GPS במקביל — timeout קצר (7 שניות)
+  if(!navigator.geolocation)return;
+  try{
     const pos=await new Promise((res,rej)=>{
-      if(!navigator.geolocation){rej('no geo');return;}
-      const t=setTimeout(()=>rej('timeout'),15000);
+      const t=setTimeout(()=>rej('timeout'),7000);
       navigator.geolocation.getCurrentPosition(
         p=>{clearTimeout(t);res(p);},
         e=>{clearTimeout(t);rej(e);},
-        {timeout:14000,enableHighAccuracy:false,maximumAge:300000}
+        {timeout:6000,enableHighAccuracy:false,maximumAge:600000}
       );
     });
     const lat=pos.coords.latitude,lng=pos.coords.longitude;
     // שם מקום מ-Nominatim
-    let cityName='';
+    let city=defaultCity;
     try{
       const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&format=json&accept-language=he&zoom=14`);
       const gd=await geo.json();
-      cityName=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||'';
+      city=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||defaultCity;
     }catch(e){}
-    if(!cityName)cityName=CU?.unit||CU?.vaad?.replace('ועד ','')||'';
-    // מזג אוויר מ-Open-Meteo (ללא API key)
-    console.log('[Weather] fetching for:',lat.toFixed(4),lng.toFixed(4));
-    const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)+'&current=temperature_2m,weathercode,apparent_temperature&timezone=auto&forecast_days=1');
-    if(!wRes.ok){throw new Error('weather fetch failed: '+wRes.status);}
-    const wData=await wRes.json();
-    const temp=Math.round(wData.current.temperature_2m);
-    const feels=Math.round(wData.current.apparent_temperature);
-    const code=wData.current.weathercode;
-    // WMO weather codes → emoji
-    const getIcon=c=>{
-      if(c===0)return'☀️';
-      if(c<=2)return'⛅';
-      if(c<=3)return'☁️';
-      if(c<=49)return'🌫️';
-      if(c<=59)return'🌧️';
-      if(c<=69)return'🌨️';
-      if(c<=79)return'❄️';
-      if(c<=82)return'🌦️';
-      if(c<=99)return'⛈️';
-      return'🌤️';
-    };
-    const icon=getIcon(code);
-    if(wi)wi.textContent=icon;
-    if(wt)wt.textContent=temp+'°';
-    if(wc)wc.textContent=cityName||'מיקומך';
-    window._weather={temp,feels,code,icon,city:cityName,lat,lng};
-  }catch(e){
-    // Fallback — ישראל כללי
-    try{
-      const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude=31.25&longitude=34.79&current=temperature_2m,weathercode&timezone=auto&forecast_days=1');
-      const wData=await wRes.json();
-      const temp=Math.round(wData.current.temperature_2m);
-      if(wi)wi.textContent='🌤️';
-      if(wt)wt.textContent=temp+'°';
-      if(wc)wc.textContent=CU?.unit||CU?.vaad?.replace('ועד ','')||'ישראל';
-    }catch(e2){
-      if(wi)wi.textContent='🌤️';
-      if(wt)wt.textContent='';
-      if(wc)wc.textContent=CU?.unit||'';
-    }
-  }
+    // עדכן עם מיקום מדויק
+    await applyWeather(lat,lng,city);
+  }catch(e){/* GPS נדחה/timeout — כבר מציגים מזג אוויר כללי */}
 }
 
 // ── RANK SYSTEM ────────────────────────
@@ -1874,11 +1876,16 @@ function initFirestore(){
 
   // האזן לפניות בזמן אמת
   db.collection('tickets').orderBy('timestamp','desc').onSnapshot(snap=>{
-    tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
+    const fsTickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
+    // שמור פניות מקומיות שטרם הועברו ל-Firestore (כשל רשת/הרשאות)
+    const fsIds=new Set(fsTickets.map(t=>String(t.id)));
+    const localOnly=tickets.filter(t=>!t._fireId&&!fsIds.has(String(t.id)));
+    tickets=[...fsTickets,...localOnly].sort((a,b)=>b.timestamp-a.timestamp);
+    localStorage.setItem('fs_tickets',JSON.stringify(tickets.map(t=>{const{_fireId,...rest}=t;return rest;})));
     renderTickets();
     if(CU?.isAdmin){updateScadaKPIs();setTimeout(initAdminExtras,500);}
     if(mapInst)renderMapMarkers();
-  });
+  },err=>{console.warn('Tickets snapshot error:',err.message);});
   // האזן ל-SOS (למנהל בלבד)
   if(CU?.isAdmin){
     db.collection('sos').orderBy('timestamp','desc').onSnapshot(snap=>{
@@ -1940,8 +1947,16 @@ async function submitReport(){
   renderTickets();
   // נסה Firestore
   if(window.DB){
-    try{await window.DB.collection('tickets').add(tk);}
-    catch(e){console.warn('Firestore:',e.message);}
+    try{
+      const ref=await window.DB.collection('tickets').add(tk);
+      // עדכן _fireId בעותק המקומי
+      tk._fireId=ref.id;
+      const idx=tickets.findIndex(t=>t.id===tk.id);
+      if(idx>=0)tickets[idx]._fireId=ref.id;
+    }catch(e){
+      console.warn('Firestore write failed:',e.message);
+      // הפנייה נשמרת מקומית — המשתמש יראה אותה, אבל האדמין לא עד שהחיבור יחזור
+    }
   }
   // עדכן SCADA מיד
   if(CU?.isAdmin)updateScadaKPIs();
@@ -2003,6 +2018,9 @@ function openTk(i){
   safe('tkmmeta').textContent=`${t.cat} • ${t.date}`;
   const ra=safe('tkm-admin-reply');
   if(ra){ra.style.display=t.adminReply?'block':'none';if(t.adminReply){safe('tkm-admin-reply-text').textContent=t.adminReply;safe('tkm-admin-reply-date').textContent=t.adminReplyDate||'';}}
+  // תמונה
+  const tkImg=safe('tkm-image'),tkImgEl=safe('tkm-img');
+  if(tkImg&&tkImgEl){if(t.imageData){tkImg.style.display='block';tkImgEl.src=t.imageData;}else{tkImg.style.display='none';tkImgEl.src='';}}
   safe('tkmrating').style.display=t.status==='done'?'block':'none';
   safe('tkm').classList.add('open');
 }
