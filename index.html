@@ -1665,52 +1665,77 @@ function _showWeather(icon,temp,city){
   if(wc)wc.textContent=city;
 }
 async function fetchWeather(){
-  const defaultCity=CU?.unit||CU?.vaad?.replace('ועד ','')||'ישראל';
+  // שם היישוב מהפרופיל — לפולבאק אם GPS נדחה
+  const profileCity=CU?.vaad||CU?.unit||'';
 
-  // 1. הצג מיד מהקאש אם טרי (< שעה)
+  // הצג קאש מיד כדי לא להשאיר ריק בזמן הטעינה
   try{
     const cached=JSON.parse(localStorage.getItem('fs_weather')||'null');
-    if(cached&&Date.now()-cached.ts<3600000){
+    if(cached){
       _showWeather(cached.icon,cached.temp,cached.city);
       window._weather=cached;
+      // קאש עדכני מאוד (< 5 דק') — אין צורך לרענן
+      if(Date.now()-cached.ts<300000)return;
     }
   }catch(e){}
 
-  // 2. טען מיד למרכז ישראל (לא מחכה ל-GPS)
-  const applyWeather=(lat,lng,city)=>_openMeteo(lat,lng).then(d=>{
-    const temp=Math.round(d.current.temperature_2m);
-    const icon=_weatherIcon(d.current.weathercode);
+  // הצג "מאתר" רק אם אין קאש בכלל
+  if(!window._weather){_showWeather('🌤️','...','מאתר...');}
+
+  const saveAndShow=(icon,temp,city,lat,lng)=>{
     _showWeather(icon,temp,city);
     const w={icon,temp,city,lat,lng,ts:Date.now()};
     window._weather=w;
     localStorage.setItem('fs_weather',JSON.stringify(w));
-  });
+  };
 
-  // קבל מיד מזג אוויר ללא GPS (ישראל מרכז)
-  applyWeather(31.80,34.90,defaultCity).catch(()=>{});
+  let lat=null,lng=null,city='';
 
-  // 3. נסה GPS במקביל — timeout קצר (7 שניות)
-  if(!navigator.geolocation)return;
-  try{
-    const pos=await new Promise((res,rej)=>{
-      const t=setTimeout(()=>rej('timeout'),7000);
-      navigator.geolocation.getCurrentPosition(
-        p=>{clearTimeout(t);res(p);},
-        e=>{clearTimeout(t);rej(e);},
-        {timeout:6000,enableHighAccuracy:false,maximumAge:600000}
-      );
-    });
-    const lat=pos.coords.latitude,lng=pos.coords.longitude;
-    // שם מקום מ-Nominatim
-    let city=defaultCity;
+  // ── שלב 1: בקש GPS מהמשתמש (עד 10 שניות) ──────────────
+  if(navigator.geolocation){
     try{
-      const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&format=json&accept-language=he&zoom=14`);
+      const pos=await new Promise((res,rej)=>{
+        const t=setTimeout(()=>rej('timeout'),10000);
+        navigator.geolocation.getCurrentPosition(
+          p=>{clearTimeout(t);res(p);},
+          e=>{clearTimeout(t);rej(e);},
+          {timeout:9000,enableHighAccuracy:false,maximumAge:300000}
+        );
+      });
+      lat=pos.coords.latitude;
+      lng=pos.coords.longitude;
+      // קבל שם עיר/יישוב בעברית
+      try{
+        const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&format=json&accept-language=he&zoom=14`);
+        const gd=await geo.json();
+        city=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||profileCity||'מיקומך';
+      }catch(e){city=profileCity||'מיקומך';}
+    }catch(e){/* GPS נדחה או timeout — ממשיכים לפולבאק */}
+  }
+
+  // ── שלב 2: GPS לא עבד — גיאוקוד לפי יישוב הפרופיל ──────
+  if(!lat&&profileCity){
+    try{
+      const geo=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(profileCity)}&countrycodes=il&format=json&accept-language=he&limit=1`);
       const gd=await geo.json();
-      city=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||defaultCity;
+      if(gd&&gd[0]){
+        lat=parseFloat(gd[0].lat);
+        lng=parseFloat(gd[0].lon);
+        city=profileCity;
+      }
     }catch(e){}
-    // עדכן עם מיקום מדויק
-    await applyWeather(lat,lng,city);
-  }catch(e){/* GPS נדחה/timeout — כבר מציגים מזג אוויר כללי */}
+  }
+
+  // ── שלב 3: פולבאק אחרון — ישראל מרכז ───────────────────
+  if(!lat){lat=31.80;lng=34.90;city=profileCity||'ישראל';}
+
+  // ── שלב 4: שלוף מזג אוויר מ-Open-Meteo ─────────────────
+  try{
+    const d=await _openMeteo(lat,lng);
+    const temp=Math.round(d.current.temperature_2m);
+    const icon=_weatherIcon(d.current.weathercode);
+    saveAndShow(icon,temp,city,lat,lng);
+  }catch(e){_showWeather('🌤️','',city);}
 }
 
 // ── RANK SYSTEM ────────────────────────
