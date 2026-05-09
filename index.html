@@ -301,6 +301,16 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .mmeta{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5}
 .mclose{width:100%;background:none;border:none;padding:16px;font-size:14px;color:var(--muted);font-family:'Heebo',sans-serif;cursor:pointer;border-top:1px solid var(--border);margin-top:14px;font-weight:700;transition:color var(--transition)}
 .mclose:hover{color:var(--navy)}
+/* ═══ IMAGE FEATURE ═══ */
+.photo-wrap{position:relative;display:inline-block;margin-top:10px}
+.photo-wrap img{width:100px;height:100px;object-fit:cover;border-radius:10px;display:block;border:2px solid var(--border)}
+.photo-rm{position:absolute;top:-7px;right:-7px;width:22px;height:22px;background:var(--red);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.photo-spin{display:none;flex-direction:column;align-items:center;gap:8px;padding:14px 0;color:var(--muted);font-size:12px;font-weight:600}
+.spin-ring{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.img-thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1.5px solid var(--border);transition:opacity .2s;display:block;margin-bottom:8px}
+.img-thumb:hover{opacity:.8}
+.img-modal-card{border-radius:16px 16px 0 0;background:var(--card);padding:18px;width:100%;align-items:center}
 .stars-row{display:flex;justify-content:center;gap:12px;margin:16px 0}
 .star{font-size:40px;cursor:pointer;color:var(--border);transition:all var(--transition)}
 .star.lit{color:var(--gold)}
@@ -384,6 +394,8 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   /* Dark mode support - future */
 }
 
+.fs{padding:0 14px 12px}
+.flbl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;margin-top:4px;text-transform:uppercase;letter-spacing:.8px}
 .poll-fbtn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
 .poll-fbtn.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
 .poll-fbtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold)}
@@ -642,9 +654,14 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     </div>
     <div class="fs">
       <div class="flbl">תמונה (אופציונלי)</div>
-      <button class="cchip" onclick="document.getElementById('photoinp').click()">📷 צלם / גלריה</button>
-      <input type="file" id="photoinp" accept="image/*" capture="environment" style="display:none" onchange="showPic(this)">
-      <img id="photoprev" style="width:100%;height:150px;object-fit:cover;border-radius:11px;margin-top:8px;display:none">
+      <button class="cchip" onclick="document.getElementById('photoinp').click()">📷 צרף תמונה</button>
+      <input type="file" id="photoinp" accept="image/*" style="display:none" onchange="showPic(this)">
+      <div id="photo-spinner" class="photo-spin"><div class="spin-ring"></div><span>דוחס תמונה...</span></div>
+      <div id="photo-preview-wrap" class="photo-wrap" style="display:none">
+        <img id="photoprev" src="" alt="תצוגה מקדימה">
+        <button class="photo-rm" onclick="removePhoto()" title="הסר תמונה">✕</button>
+      </div>
+      <div id="photo-error" style="color:var(--red);font-size:12px;margin-top:6px;display:none"></div>
     </div>
     <div class="fs" style="padding-bottom:14px"><button class="big-btn" onclick="submitReport()">שלח דיווח</button></div>
   </div>
@@ -1261,6 +1278,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <div class="mcard">
     <div class="mtitle" id="tkmtitle"></div>
     <div class="mmeta" id="tkmmeta"></div>
+    <div id="tkm-image" style="display:none;margin-bottom:12px">
+      <img id="tkm-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="openImgModalFromTkm()" alt="תמונה מצורפת">
+    </div>
     <div id="tkm-admin-reply" style="display:none;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:12px;padding:14px;margin:10px 0">
       <div style="font-size:var(--fs-xs);font-weight:700;color:var(--gold);margin-bottom:6px">💬 תגובת המועצה</div>
       <div style="font-size:13px;color:white;line-height:1.6" id="tkm-admin-reply-text"></div>
@@ -1760,7 +1780,60 @@ function getLoc(){
     );
   } else {b.className='loc-btn lb-ok';b.textContent='✓ מיקום אומת';locOK=true;}
 }
-function showPic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const i=safe('photoprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);}
+let currentImageData=null;
+function compressImg(dataUrl,cb){
+  const img=new Image();
+  img.onload=()=>{
+    const MAX=800;let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',0.7));
+  };
+  img.onerror=()=>cb(null);
+  img.src=dataUrl;
+}
+function showPhotoErr(msg){const e=safe('photo-error');if(e){e.textContent=msg;e.style.display='block';}}
+function showPic(inp){
+  const f=inp.files[0];if(!f)return;
+  if(!f.type.startsWith('image/')){showPhotoErr('קובץ לא תקין — רק תמונות מותרות');inp.value='';return;}
+  const spin=safe('photo-spinner'),wrap=safe('photo-preview-wrap'),err=safe('photo-error');
+  if(err)err.style.display='none';
+  if(spin)spin.style.display='flex';if(wrap)wrap.style.display='none';
+  const r=new FileReader();
+  r.onload=e=>{
+    compressImg(e.target.result,compressed=>{
+      if(spin)spin.style.display='none';
+      if(!compressed){showPhotoErr('שגיאה בטעינת התמונה');inp.value='';return;}
+      const kb=Math.round((compressed.length*3/4)/1024);
+      if(kb>700){showPhotoErr(`התמונה גדולה מדי (${kb}KB) — נסה תמונה קטנה יותר`);inp.value='';return;}
+      currentImageData=compressed;
+      const prev=safe('photoprev');if(prev)prev.src=compressed;
+      if(wrap)wrap.style.display='block';
+    });
+  };
+  r.readAsDataURL(f);
+}
+function removePhoto(){
+  currentImageData=null;
+  const inp=safe('photoinp');if(inp)inp.value='';
+  const wrap=safe('photo-preview-wrap');if(wrap)wrap.style.display='none';
+  const err=safe('photo-error');if(err)err.style.display='none';
+}
+function openImgModal(idx){
+  const t=tickets[idx];if(!t||!t.imageData)return;
+  const img=safe('img-modal-img');if(img)img.src=t.imageData;
+  safe('img-modal').classList.add('open');
+}
+function openImgModalFromTkm(){
+  const img=safe('tkm-img');if(!img||!img.src)return;
+  const modalImg=safe('img-modal-img');if(modalImg)modalImg.src=img.src;
+  safe('img-modal').classList.add('open');
+}
+function downloadModalImg(){
+  const img=safe('img-modal-img');if(!img||!img.src)return;
+  const a=document.createElement('a');a.href=img.src;a.download='foresight-'+Date.now()+'.jpg';document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
 
 // ── FIRESTORE ──────────────────────────
 function initFirestore(){
@@ -1844,6 +1917,7 @@ async function submitReport(){
     orgId:CU.orgId||'',orgName:CU.orgName||'',
     unit:CU.unit||'',vaad:CU.vaad||'',
     lat:userLat,lng:userLng,
+    imageData:currentImageData||null,
   };
   // שמור תמיד מקומית
   tickets.unshift(tk);
@@ -1863,7 +1937,7 @@ async function submitReport(){
   localStorage.setItem('fs_u',JSON.stringify(CU));
   updatePtsDisplay();
   safe('rdesc').value='';safe('locbtn').className='loc-btn lb-idle';safe('locbtn').textContent='📍 אמת מיקום';
-  const pp=safe('photoprev');if(pp)pp.style.display='none';
+  removePhoto();
   locOK=false;userLat=null;userLng=null;selCatV='';
   document.querySelectorAll('#catgrid .cchip').forEach(c=>c.classList.remove('sel'));
   addNotif(`📋 הפנייה בנושא ${tk.cat} התקבלה!`,'נטפל בה בהקדם. +1 נקודה ⭐','פנייה');
@@ -1900,6 +1974,7 @@ function renderTickets(){
         <div class="tl ${t.status==='done'?'dn':''}"></div>
         <div class="ts"><div class="tc ${t.status==='done'?'dn':''}">★</div><div class="tlbl ${t.status==='done'?'dn':''}">טופל</div></div>
       </div>
+      ${t.imageData?`<div style="margin-top:8px;cursor:pointer" onclick="event.stopPropagation();openImgModal(${tickets.indexOf(t)})"><img src="${t.imageData}" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></div>`:''}
       ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-top:8px;font-size:11px;color:var(--green)">💬 יש תגובה מהמועצה — לחץ לצפייה</div>`:''}
     </div>`).join('');
   if(CU?.isAdmin)renderAdminTickets();
@@ -1966,6 +2041,7 @@ function renderAdminTickets(){
         <div style="font-size:var(--fs-xs);color:var(--muted);margin-top:2px">📅 ${t.date||''}${t.lat?' • 📍 GPS':''}
 </div>
       </div>
+      ${t.imageData?`<img class="img-thumb" src="${t.imageData}" onclick="openImgModal(${i})" alt="תמונה">`:''}
       ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">✓ תגובה: "${t.adminReply.substring(0,40)}..."</div>`:''}
       <div class="atk-acts">
         <button class="aa" style="background:#e8f0fd;color:#1a3a6b;flex:1.5" onclick="openReplyModal(${i})">💬 השב</button>
@@ -3821,5 +3897,16 @@ function initAdminExtras(){
   }
 }
 </script>
+
+<!-- IMAGE FULL-SIZE MODAL -->
+<div class="moverlay" id="img-modal">
+  <div class="mcard img-modal-card">
+    <img id="img-modal-img" style="max-width:100%;max-height:62vh;border-radius:10px;display:block;margin-bottom:14px" alt="תמונת פנייה">
+    <div style="display:flex;gap:10px;width:100%">
+      <button onclick="downloadModalImg()" style="flex:1;background:var(--navy);color:white;border:none;border-radius:10px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;font-weight:700;cursor:pointer">⬇ הורד תמונה</button>
+      <button onclick="closeMod('img-modal')" style="flex:1;background:none;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:var(--muted)">✕ סגור</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
