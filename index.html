@@ -8,6 +8,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="app-version" content="6.0.0">
 <script>
+// ── מחק Service Workers ישנים ──────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+}
 // ── מחק קאש ישן ───────────────────────
 if('caches' in window){
   caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
@@ -47,7 +53,7 @@ Promise.all([
 </script>
 <title>FORESIGHT</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230a1628'/><text y='75' font-size='70' text-anchor='middle' x='50'>👁️</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700;900&family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Cinzel:wght@700;900&display=swap');
@@ -128,7 +134,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .drawer-sep{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
 
 /* ═══ PAGES ═══ */
-.page{display:none;flex:1;overflow-y:auto;padding-bottom:80px;}
+.page{display:none;flex:1;overflow-y:auto;padding-bottom:100pxpadding-bottom:80px;}
 .page.on{display:block;animation:pgIn .25s cubic-bezier(.4,0,.2,1)}
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .pg-hdr{padding:22px 18px 10px}
@@ -301,16 +307,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .mmeta{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5}
 .mclose{width:100%;background:none;border:none;padding:16px;font-size:14px;color:var(--muted);font-family:'Heebo',sans-serif;cursor:pointer;border-top:1px solid var(--border);margin-top:14px;font-weight:700;transition:color var(--transition)}
 .mclose:hover{color:var(--navy)}
-/* ═══ IMAGE FEATURE ═══ */
-.photo-wrap{position:relative;display:inline-block;margin-top:10px}
-.photo-wrap img{width:100px;height:100px;object-fit:cover;border-radius:10px;display:block;border:2px solid var(--border)}
-.photo-rm{position:absolute;top:-7px;right:-7px;width:22px;height:22px;background:var(--red);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.photo-spin{display:none;flex-direction:column;align-items:center;gap:8px;padding:14px 0;color:var(--muted);font-size:12px;font-weight:600}
-.spin-ring{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.img-thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1.5px solid var(--border);transition:opacity .2s;display:block;margin-bottom:8px}
-.img-thumb:hover{opacity:.8}
-.img-modal-card{border-radius:16px 16px 0 0;background:var(--card);padding:18px;width:100%;align-items:center}
 .stars-row{display:flex;justify-content:center;gap:12px;margin:16px 0}
 .star{font-size:40px;cursor:pointer;color:var(--border);transition:all var(--transition)}
 .star.lit{color:var(--gold)}
@@ -394,13 +390,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   /* Dark mode support - future */
 }
 
-.fs{padding:0 14px 12px}
-.flbl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;margin-top:4px;text-transform:uppercase;letter-spacing:.8px}
-/* ═══ TICKET CARD INTERNALS ═══ */
-.tk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.tk-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;line-height:1.4}
-.tk-meta{font-size:var(--fs-xs);color:var(--muted);font-weight:600;margin-bottom:2px}
-.tk-date{font-size:var(--fs-xs);color:var(--muted2)}
 .poll-fbtn{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
 .poll-fbtn.on{background:var(--navy);color:var(--gold);border-color:var(--navy)}
 .poll-fbtn:hover{background:var(--gold);color:var(--navy);border-color:var(--gold)}
@@ -411,6 +400,23 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 .poll-score-1{background:var(--green-bg);color:var(--green)}
 .poll-score-2{background:var(--orange-bg);color:var(--orange)}
 .poll-score-3{background:var(--red-bg);color:var(--red)}
+
+/* Arabic specific */
+[lang="ar"] .ws-name,
+[lang="ar"] .section-title,
+[lang="ar"] .auth-brand { font-family: 'Noto Sans Arabic', Tahoma, Arial, sans-serif !important; }
+[lang="ar"] .auth-brand { letter-spacing: 0 !important; }
+.lang-ar-hint { 
+  display: none; 
+  background: rgba(200,168,75,.1); 
+  border: 1px solid rgba(200,168,75,.3); 
+  border-radius: 8px; 
+  padding: 6px 12px; 
+  font-size: 11px; 
+  color: #c8a84b; 
+  text-align: center;
+  margin: 6px 0;
+}
 </style>
 </head>
 <body>
@@ -432,7 +438,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <path d="M48 54 L54 54 L54 48" stroke="#c8a84b" stroke-width="1.2" opacity=".5"/>
       </svg>
       <div class="auth-brand">FORESIGHT</div>
-      <div class="auth-sub">אנחנו כאן בשבילך</div>
+      <div class="auth-sub" id="auth-tagline">אנחנו כאן בשבילך</div>
       <div style="font-size:12px;color:rgba(255,255,255,.35);margin-top:10px;line-height:1.7;padding:0 20px">כל מה שצריך במסך אחד<br>לכל רשות, מועצה וגוף ציבורי</div>
     </div>
   </div>
@@ -482,7 +488,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
 <div id="welcome-screen">
   <div>
     <div class="wl-brand">FORESIGHT</div>
-    <div class="wl-gold">דואגים לך, עוד לפני שביקשת</div>
+    <div class="wl-gold" id="wl-gold-text">דואגים לך, עוד לפני שביקשת</div>
     <div class="wl-name" id="wl-name">ברוכ.ה הבא.ה!</div>
     <div class="wl-msg">ב-FORESIGHT אנחנו דואגים לך עוד לפני שביקשת.<br>דווח, עקוב, השתתף — והמועצה תגיב.</div>
     <button class="wl-cta" onclick="dismissWelcome()">בוא נתחיל!</button>
@@ -551,10 +557,13 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
           <div class="ws-sub" id="gr-sub">ברוכ.ה הבא.ה</div>
           <div class="ws-pts"><span id="ws-pts-val">0 נקודות ⭐</span></div>
         </div>
-        <div class="weather-box" onclick="fetchWeather()" style="cursor:pointer" title="לחץ לרענון">
-          <div style="font-size:26px" id="weather-icon">🌤️</div>
-          <div style="font-size:14px;color:white;font-weight:900;margin-top:3px" id="weather-temp">—°</div>
-          <div style="font-size:var(--fs-xs);color:rgba(255,255,255,.4);margin-top:2px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="weather-city">מאתר...</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <button id="lang-toggle-btn" onclick="toggleLang()" style="background:rgba(200,168,75,.18);border:1.5px solid rgba(200,168,75,.5);color:#c8a84b;border-radius:20px;padding:5px 13px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;line-height:1" title="عربي / עברית">ع</button>
+          <div class="weather-box" onclick="fetchWeather()" style="cursor:pointer" title="לחץ לרענון">
+            <div style="font-size:26px" id="weather-icon">🌤️</div>
+            <div style="font-size:14px;color:white;font-weight:900;margin-top:3px" id="weather-temp">—°</div>
+            <div style="font-size:var(--fs-xs);color:rgba(255,255,255,.4);margin-top:2px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="weather-city">מאתר...</div>
+          </div>
         </div>
       </div>
       <div class="ws-stats">
@@ -575,9 +584,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
         <!-- QUICK ACTIONS -->
     <div class="section-title">פעולות מהירות</div>
     <div class="quick-grid" style="grid-template-columns:repeat(3,1fr)">
-      <button class="qa" onclick="showPage('report')"><span class="qa-icon">📝</span><span class="qa-lbl">דיווח</span></button>
-      <button class="qa" onclick="navTo('history')"><span class="qa-icon">📋</span><span class="qa-lbl">פניות</span></button>
-      <button class="qa" onclick="navTo('map')"><span class="qa-icon">🗺️</span><span class="qa-lbl">מפה</span></button>
+      <button class="qa" onclick="showPage('report')"><span class="qa-icon">📝</span><span class="qa-lbl" id="qa-lbl-report">דיווח</span></button>
+      <button class="qa" onclick="navTo('history')"><span class="qa-icon">📋</span><span class="qa-lbl" id="qa-lbl-requests">פניות</span></button>
+      <button class="qa" onclick="navTo('map')"><span class="qa-icon">🗺️</span><span class="qa-lbl" id="qa-lbl-map">מפה</span></button>
     </div>
     <!-- VAAD IDEA BUTTON -->
     <div style="padding:10px 14px 0">
@@ -595,9 +604,9 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
       <div style="font-size:var(--fs-xs);font-weight:700;color:var(--gold);margin-bottom:6px">📊 שאלת היום</div>
       <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px" id="poll-question">האם אתה מרוצה מהשירות?</div>
       <div style="display:flex;gap:8px" id="poll-btns">
-        <button onclick="answerPoll(1)" style="flex:1;background:var(--green-bg);color:var(--green);border:1.5px solid #86efac;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😊 מרוצה</button>
-        <button onclick="answerPoll(2)" style="flex:1;background:var(--orange-bg);color:var(--orange);border:1.5px solid #fcd34d;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😐 בינוני</button>
-        <button onclick="answerPoll(3)" style="flex:1;background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer">😞 לא מרוצה</button>
+        <button onclick="answerPoll(1)" style="flex:1;background:var(--green-bg);color:var(--green);border:1.5px solid #86efac;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer"><span id="poll-btn-1">😊 מרוצה</span></button>
+        <button onclick="answerPoll(2)" style="flex:1;background:var(--orange-bg);color:var(--orange);border:1.5px solid #fcd34d;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer"><span id="poll-btn-2">😐 בינוני</span></button>
+        <button onclick="answerPoll(3)" style="flex:1;background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5;border-radius:10px;padding:10px;font-size:12px;font-weight:700;font-family:'Heebo',sans-serif;cursor:pointer"><span id="poll-btn-3">😞 לא מרוצה</span></button>
       </div>
       <div id="poll-answered" style="display:none;text-align:center;padding:8px;font-size:13px;color:var(--muted)">תודה על המשוב! 🙏</div>
     </div>
@@ -659,20 +668,11 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
     </div>
     <div class="fs">
       <div class="flbl">תמונה (אופציונלי)</div>
-      <div style="display:flex;gap:8px;margin-bottom:4px">
-        <button class="cchip" style="flex:1;justify-content:center;display:flex;align-items:center;gap:6px" onclick="openCamera()">📷 צלם עכשיו</button>
-        <button class="cchip" style="flex:1;justify-content:center;display:flex;align-items:center;gap:6px" onclick="document.getElementById('photoinp').click()">🖼️ בחר מגלריה</button>
-      </div>
-      <input type="file" id="photoinp" accept="image/*" style="display:none" onchange="showPic(this)">
-      <input type="file" id="camerainp" accept="image/*" capture="environment" style="display:none" onchange="showPic(this)">
-      <div id="photo-spinner" class="photo-spin"><div class="spin-ring"></div><span>דוחס תמונה...</span></div>
-      <div id="photo-preview-wrap" class="photo-wrap" style="display:none">
-        <img id="photoprev" src="" alt="תצוגה מקדימה">
-        <button class="photo-rm" onclick="removePhoto()" title="הסר תמונה">✕</button>
-      </div>
-      <div id="photo-error" style="color:var(--red);font-size:12px;margin-top:6px;display:none"></div>
+      <button class="cchip" onclick="document.getElementById('photoinp').click()">📷 צלם / גלריה</button>
+      <input type="file" id="photoinp" accept="image/*" capture="environment" style="display:none" onchange="showPic(this)">
+      <img id="photoprev" style="width:100%;height:150px;object-fit:cover;border-radius:11px;margin-top:8px;display:none">
     </div>
-    <div class="fs" style="padding-bottom:14px"><button class="big-btn" onclick="submitReport()">שלח דיווח</button></div>
+    <div class="fs" style="padding-bottom:14px"><button class="big-btn" onclick="submitReport()"><span id="report-send-btn">שלח דיווח</span></button></div>
   </div>
 
   <!-- HISTORY -->
@@ -1201,7 +1201,7 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
           </div>
           <div style="background:var(--orange-bg);border:1px solid #fcd34d;border-radius:12px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:900;color:var(--orange);line-height:1" id="polls-mid">0</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:700;margin-top:4px">😐 בינוני</div>
+            <div style="font-size:10px;color:var(--muted);font-weight:700;margin-top:4px"><span id="poll-btn-2">😐 בינוני</span></div>
           </div>
           <div style="background:var(--red-bg);border:1px solid #fca5a5;border-radius:12px;padding:12px;text-align:center">
             <div style="font-size:24px;font-weight:900;color:var(--red);line-height:1" id="polls-sad">0</div>
@@ -1287,9 +1287,6 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);direc
   <div class="mcard">
     <div class="mtitle" id="tkmtitle"></div>
     <div class="mmeta" id="tkmmeta"></div>
-    <div id="tkm-image" style="display:none;margin-bottom:12px">
-      <img id="tkm-img" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="openImgModalFromTkm()" alt="תמונה מצורפת">
-    </div>
     <div id="tkm-admin-reply" style="display:none;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:12px;padding:14px;margin:10px 0">
       <div style="font-size:var(--fs-xs);font-weight:700;color:var(--gold);margin-bottom:6px">💬 תגובת המועצה</div>
       <div style="font-size:13px;color:white;line-height:1.6" id="tkm-admin-reply-text"></div>
@@ -1497,6 +1494,17 @@ const DAILY_POLLS=[
   // איכות סביבה
   {q:'האם מרוצה מאיכות האוויר באזור?',cat:'סביבה'},
   {q:'האם המועצה פועלת לקיימות?',cat:'סביבה'},
+  // שאלות בערבית
+  {q:'هل أنت راضٍ عن نظافة الشوارع؟',cat:'النظافة',lang:'ar'},
+  {q:'كيف تقيّم خدمة جمع النفايات؟',cat:'النظافة',lang:'ar'},
+  {q:'هل أنت راضٍ عن الإضاءة العامة؟',cat:'الكهرباء',lang:'ar'},
+  {q:'كيف تقيّم حالة الطرق والأرصفة؟',cat:'البنية التحتية',lang:'ar'},
+  {q:'هل الحدائق العامة مُصانة جيداً؟',cat:'المساحات الخضراء',lang:'ar'},
+  {q:'كيف تقيّم الأمن في حيّك؟',cat:'الأمن',lang:'ar'},
+  {q:'هل أنت راضٍ عن خدمات التعليم؟',cat:'التعليم',lang:'ar'},
+  {q:'كيف تقيّم استجابة البلدية للطلبات؟',cat:'الخدمات',lang:'ar'},
+  {q:'هل وسائل النقل العام كافية؟',cat:'المواصلات',lang:'ar'},
+  {q:'هل البلدية تتواصل معك بشكل فعّال؟',cat:'الخدمات',lang:'ar'},
 ];
 
 // ── STATE ──────────────────────────────
@@ -1636,7 +1644,7 @@ function startApp(){
   renderTickets();
   renderHomeTickets();
   loadNotifs(); renderNotifs();
-  setTimeout(initDailyPoll,50);setTimeout(initDailyPoll,500);
+  setTimeout(initDailyPoll,50);setTimeout(initDailyPoll,500);setTimeout(applyTranslations,200);
   if(CU.isAdmin)updateScadaKPIs();
   checkBirthday();
   if(window.firebaseReady){initFirestore();loadPollsFirestore();}
@@ -1648,94 +1656,72 @@ function startApp(){
 }
 
 // ── WEATHER ────────────────────────────
-function _weatherIcon(c){
-  if(c===0)return'☀️';if(c<=2)return'⛅';if(c<=3)return'☁️';
-  if(c<=49)return'🌫️';if(c<=59)return'🌧️';if(c<=69)return'🌨️';
-  if(c<=79)return'❄️';if(c<=82)return'🌦️';if(c<=99)return'⛈️';return'🌤️';
-}
-async function _openMeteo(lat,lng){
-  const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)+'&current=temperature_2m,weathercode,apparent_temperature&timezone=auto&forecast_days=1');
-  if(!r.ok)throw new Error('meteo '+r.status);
-  return r.json();
-}
-function _showWeather(icon,temp,city){
-  const wi=safe('weather-icon'),wt=safe('weather-temp'),wc=safe('weather-city');
-  if(wi)wi.textContent=icon;
-  if(wt)wt.textContent=temp+'°';
-  if(wc)wc.textContent=city;
-}
 async function fetchWeather(){
-  // שם היישוב מהפרופיל — לפולבאק אם GPS נדחה
-  const profileCity=CU?.vaad||CU?.unit||'';
-
-  // הצג קאש מיד כדי לא להשאיר ריק בזמן הטעינה
+  const wi=safe('weather-icon'),wt=safe('weather-temp'),wc=safe('weather-city');
+  if(wi)wi.textContent='🌤️';
+  if(wt)wt.textContent='...';
+  if(wc)wc.textContent='מאתר...';
   try{
-    const cached=JSON.parse(localStorage.getItem('fs_weather')||'null');
-    if(cached){
-      _showWeather(cached.icon,cached.temp,cached.city);
-      window._weather=cached;
-      // קאש עדכני מאוד (< 5 דק') — אין צורך לרענן
-      if(Date.now()-cached.ts<300000)return;
-    }
-  }catch(e){}
-
-  // הצג "מאתר" רק אם אין קאש בכלל
-  if(!window._weather){_showWeather('🌤️','...','מאתר...');}
-
-  const saveAndShow=(icon,temp,city,lat,lng)=>{
-    _showWeather(icon,temp,city);
-    const w={icon,temp,city,lat,lng,ts:Date.now()};
-    window._weather=w;
-    localStorage.setItem('fs_weather',JSON.stringify(w));
-  };
-
-  let lat=null,lng=null,city='';
-
-  // ── שלב 1: בקש GPS מהמשתמש (עד 10 שניות) ──────────────
-  if(navigator.geolocation){
+    // קבל GPS
+    const pos=await new Promise((res,rej)=>{
+      if(!navigator.geolocation){rej('no geo');return;}
+      const t=setTimeout(()=>rej('timeout'),15000);
+      navigator.geolocation.getCurrentPosition(
+        p=>{clearTimeout(t);res(p);},
+        e=>{clearTimeout(t);rej(e);},
+        {timeout:14000,enableHighAccuracy:false,maximumAge:300000}
+      );
+    });
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    // שם מקום מ-Nominatim
+    let cityName='';
     try{
-      const pos=await new Promise((res,rej)=>{
-        const t=setTimeout(()=>rej('timeout'),10000);
-        navigator.geolocation.getCurrentPosition(
-          p=>{clearTimeout(t);res(p);},
-          e=>{clearTimeout(t);rej(e);},
-          {timeout:9000,enableHighAccuracy:false,maximumAge:300000}
-        );
-      });
-      lat=pos.coords.latitude;
-      lng=pos.coords.longitude;
-      // קבל שם עיר/יישוב בעברית
-      try{
-        const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&format=json&accept-language=he&zoom=14`);
-        const gd=await geo.json();
-        city=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||profileCity||'מיקומך';
-      }catch(e){city=profileCity||'מיקומך';}
-    }catch(e){/* GPS נדחה או timeout — ממשיכים לפולבאק */}
-  }
-
-  // ── שלב 2: GPS לא עבד — גיאוקוד לפי יישוב הפרופיל ──────
-  if(!lat&&profileCity){
-    try{
-      const geo=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(profileCity)}&countrycodes=il&format=json&accept-language=he&limit=1`);
+      const geo=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(5)}&lon=${lng.toFixed(5)}&format=json&accept-language=he&zoom=14`);
       const gd=await geo.json();
-      if(gd&&gd[0]){
-        lat=parseFloat(gd[0].lat);
-        lng=parseFloat(gd[0].lon);
-        city=profileCity;
-      }
+      cityName=gd.address?.village||gd.address?.town||gd.address?.suburb||gd.address?.city||'';
     }catch(e){}
+    if(!cityName)cityName=CU?.unit||CU?.vaad?.replace('ועד ','')||'';
+    // מזג אוויר מ-Open-Meteo (ללא API key)
+    console.log('[Weather] fetching for:',lat.toFixed(4),lng.toFixed(4));
+    const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(4)+'&longitude='+lng.toFixed(4)+'&current=temperature_2m,weathercode,apparent_temperature&timezone=auto&forecast_days=1');
+    if(!wRes.ok){throw new Error('weather fetch failed: '+wRes.status);}
+    const wData=await wRes.json();
+    const temp=Math.round(wData.current.temperature_2m);
+    const feels=Math.round(wData.current.apparent_temperature);
+    const code=wData.current.weathercode;
+    // WMO weather codes → emoji
+    const getIcon=c=>{
+      if(c===0)return'☀️';
+      if(c<=2)return'⛅';
+      if(c<=3)return'☁️';
+      if(c<=49)return'🌫️';
+      if(c<=59)return'🌧️';
+      if(c<=69)return'🌨️';
+      if(c<=79)return'❄️';
+      if(c<=82)return'🌦️';
+      if(c<=99)return'⛈️';
+      return'🌤️';
+    };
+    const icon=getIcon(code);
+    if(wi)wi.textContent=icon;
+    if(wt)wt.textContent=temp+'°';
+    if(wc)wc.textContent=cityName||'מיקומך';
+    window._weather={temp,feels,code,icon,city:cityName,lat,lng};
+  }catch(e){
+    // Fallback — ישראל כללי
+    try{
+      const wRes=await fetch('https://api.open-meteo.com/v1/forecast?latitude=31.25&longitude=34.79&current=temperature_2m,weathercode&timezone=auto&forecast_days=1');
+      const wData=await wRes.json();
+      const temp=Math.round(wData.current.temperature_2m);
+      if(wi)wi.textContent='🌤️';
+      if(wt)wt.textContent=temp+'°';
+      if(wc)wc.textContent=CU?.unit||CU?.vaad?.replace('ועד ','')||'ישראל';
+    }catch(e2){
+      if(wi)wi.textContent='🌤️';
+      if(wt)wt.textContent='';
+      if(wc)wc.textContent=CU?.unit||'';
+    }
   }
-
-  // ── שלב 3: פולבאק אחרון — ישראל מרכז ───────────────────
-  if(!lat){lat=31.80;lng=34.90;city=profileCity||'ישראל';}
-
-  // ── שלב 4: שלוף מזג אוויר מ-Open-Meteo ─────────────────
-  try{
-    const d=await _openMeteo(lat,lng);
-    const temp=Math.round(d.current.temperature_2m);
-    const icon=_weatherIcon(d.current.weathercode);
-    saveAndShow(icon,temp,city,lat,lng);
-  }catch(e){_showWeather('🌤️','',city);}
 }
 
 // ── RANK SYSTEM ────────────────────────
@@ -1811,71 +1797,7 @@ function getLoc(){
     );
   } else {b.className='loc-btn lb-ok';b.textContent='✓ מיקום אומת';locOK=true;}
 }
-let currentImageData=null;
-function compressImg(dataUrl,cb){
-  const img=new Image();
-  img.onload=()=>{
-    const MAX=800;let w=img.width,h=img.height;
-    if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
-    const c=document.createElement('canvas');c.width=w;c.height=h;
-    c.getContext('2d').drawImage(img,0,0,w,h);
-    cb(c.toDataURL('image/jpeg',0.7));
-  };
-  img.onerror=()=>cb(null);
-  img.src=dataUrl;
-}
-function showPhotoErr(msg){const e=safe('photo-error');if(e){e.textContent=msg;e.style.display='block';}}
-function openCamera(){
-  const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if(isMobile){
-    const inp=safe('camerainp');if(inp)inp.click();
-  } else {
-    const err=safe('photo-error');
-    if(err){err.textContent='📱 צילום ישיר זמין בנייד בלבד — במחשב השתמש בגלריה';err.style.display='block';}
-    setTimeout(()=>{const e=safe('photo-error');if(e)e.style.display='none';},3500);
-  }
-}
-function showPic(inp){
-  const f=inp.files[0];if(!f)return;
-  if(!f.type.startsWith('image/')){showPhotoErr('קובץ לא תקין — רק תמונות מותרות');inp.value='';return;}
-  const spin=safe('photo-spinner'),wrap=safe('photo-preview-wrap'),err=safe('photo-error');
-  if(err)err.style.display='none';
-  if(spin)spin.style.display='flex';if(wrap)wrap.style.display='none';
-  const r=new FileReader();
-  r.onload=e=>{
-    compressImg(e.target.result,compressed=>{
-      if(spin)spin.style.display='none';
-      if(!compressed){showPhotoErr('שגיאה בטעינת התמונה');inp.value='';return;}
-      const kb=Math.round((compressed.length*3/4)/1024);
-      if(kb>700){showPhotoErr(`התמונה גדולה מדי (${kb}KB) — נסה תמונה קטנה יותר`);inp.value='';return;}
-      currentImageData=compressed;
-      const prev=safe('photoprev');if(prev)prev.src=compressed;
-      if(wrap)wrap.style.display='block';
-    });
-  };
-  r.readAsDataURL(f);
-}
-function removePhoto(){
-  currentImageData=null;
-  const inp=safe('photoinp');if(inp)inp.value='';
-  const cam=safe('camerainp');if(cam)cam.value='';
-  const wrap=safe('photo-preview-wrap');if(wrap)wrap.style.display='none';
-  const err=safe('photo-error');if(err)err.style.display='none';
-}
-function openImgModal(idx){
-  const t=tickets[idx];if(!t||!t.imageData)return;
-  const img=safe('img-modal-img');if(img)img.src=t.imageData;
-  safe('img-modal').classList.add('open');
-}
-function openImgModalFromTkm(){
-  const img=safe('tkm-img');if(!img||!img.src)return;
-  const modalImg=safe('img-modal-img');if(modalImg)modalImg.src=img.src;
-  safe('img-modal').classList.add('open');
-}
-function downloadModalImg(){
-  const img=safe('img-modal-img');if(!img||!img.src)return;
-  const a=document.createElement('a');a.href=img.src;a.download='foresight-'+Date.now()+'.jpg';document.body.appendChild(a);a.click();document.body.removeChild(a);
-}
+function showPic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{const i=safe('photoprev');i.src=e.target.result;i.style.display='block';};r.readAsDataURL(f);}
 
 // ── FIRESTORE ──────────────────────────
 function initFirestore(){
@@ -1901,16 +1823,11 @@ function initFirestore(){
 
   // האזן לפניות בזמן אמת
   db.collection('tickets').orderBy('timestamp','desc').onSnapshot(snap=>{
-    const fsTickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
-    // שמור פניות מקומיות שטרם הועברו ל-Firestore (כשל רשת/הרשאות)
-    const fsIds=new Set(fsTickets.map(t=>String(t.id)));
-    const localOnly=tickets.filter(t=>!t._fireId&&!fsIds.has(String(t.id)));
-    tickets=[...fsTickets,...localOnly].sort((a,b)=>b.timestamp-a.timestamp);
-    localStorage.setItem('fs_tickets',JSON.stringify(tickets.map(t=>{const{_fireId,...rest}=t;return rest;})));
+    tickets=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
     renderTickets();
     if(CU?.isAdmin){updateScadaKPIs();setTimeout(initAdminExtras,500);}
     if(mapInst)renderMapMarkers();
-  },err=>{console.warn('Tickets snapshot error:',err.message);});
+  });
   // האזן ל-SOS (למנהל בלבד)
   if(CU?.isAdmin){
     db.collection('sos').orderBy('timestamp','desc').onSnapshot(snap=>{
@@ -1964,7 +1881,6 @@ async function submitReport(){
     orgId:CU.orgId||'',orgName:CU.orgName||'',
     unit:CU.unit||'',vaad:CU.vaad||'',
     lat:userLat,lng:userLng,
-    imageData:currentImageData||null,
   };
   // שמור תמיד מקומית
   tickets.unshift(tk);
@@ -1972,16 +1888,8 @@ async function submitReport(){
   renderTickets();
   // נסה Firestore
   if(window.DB){
-    try{
-      const ref=await window.DB.collection('tickets').add(tk);
-      // עדכן _fireId בעותק המקומי
-      tk._fireId=ref.id;
-      const idx=tickets.findIndex(t=>t.id===tk.id);
-      if(idx>=0)tickets[idx]._fireId=ref.id;
-    }catch(e){
-      console.warn('Firestore write failed:',e.message);
-      // הפנייה נשמרת מקומית — המשתמש יראה אותה, אבל האדמין לא עד שהחיבור יחזור
-    }
+    try{await window.DB.collection('tickets').add(tk);}
+    catch(e){console.warn('Firestore:',e.message);}
   }
   // עדכן SCADA מיד
   if(CU?.isAdmin)updateScadaKPIs();
@@ -1992,7 +1900,7 @@ async function submitReport(){
   localStorage.setItem('fs_u',JSON.stringify(CU));
   updatePtsDisplay();
   safe('rdesc').value='';safe('locbtn').className='loc-btn lb-idle';safe('locbtn').textContent='📍 אמת מיקום';
-  removePhoto();
+  const pp=safe('photoprev');if(pp)pp.style.display='none';
   locOK=false;userLat=null;userLng=null;selCatV='';
   document.querySelectorAll('#catgrid .cchip').forEach(c=>c.classList.remove('sel'));
   addNotif(`📋 הפנייה בנושא ${tk.cat} התקבלה!`,'נטפל בה בהקדם. +1 נקודה ⭐','פנייה');
@@ -2029,7 +1937,6 @@ function renderTickets(){
         <div class="tl ${t.status==='done'?'dn':''}"></div>
         <div class="ts"><div class="tc ${t.status==='done'?'dn':''}">★</div><div class="tlbl ${t.status==='done'?'dn':''}">טופל</div></div>
       </div>
-      ${t.imageData?`<div style="margin-top:8px;cursor:pointer" onclick="event.stopPropagation();openImgModal(${tickets.indexOf(t)})"><img src="${t.imageData}" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"></div>`:''}
       ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-top:8px;font-size:11px;color:var(--green)">💬 יש תגובה מהמועצה — לחץ לצפייה</div>`:''}
     </div>`).join('');
   if(CU?.isAdmin)renderAdminTickets();
@@ -2043,9 +1950,6 @@ function openTk(i){
   safe('tkmmeta').textContent=`${t.cat} • ${t.date}`;
   const ra=safe('tkm-admin-reply');
   if(ra){ra.style.display=t.adminReply?'block':'none';if(t.adminReply){safe('tkm-admin-reply-text').textContent=t.adminReply;safe('tkm-admin-reply-date').textContent=t.adminReplyDate||'';}}
-  // תמונה
-  const tkImg=safe('tkm-image'),tkImgEl=safe('tkm-img');
-  if(tkImg&&tkImgEl){if(t.imageData){tkImg.style.display='block';tkImgEl.src=t.imageData;}else{tkImg.style.display='none';tkImgEl.src='';}}
   safe('tkmrating').style.display=t.status==='done'?'block':'none';
   safe('tkm').classList.add('open');
 }
@@ -2099,7 +2003,6 @@ function renderAdminTickets(){
         <div style="font-size:var(--fs-xs);color:var(--muted);margin-top:2px">📅 ${t.date||''}${t.lat?' • 📍 GPS':''}
 </div>
       </div>
-      ${t.imageData?`<img class="img-thumb" src="${t.imageData}" onclick="openImgModal(${i})" alt="תמונה">`:''}
       ${t.adminReply?`<div style="background:var(--green-bg);border-right:3px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">✓ תגובה: "${t.adminReply.substring(0,40)}..."</div>`:''}
       <div class="atk-acts">
         <button class="aa" style="background:#e8f0fd;color:#1a3a6b;flex:1.5" onclick="openReplyModal(${i})">💬 השב</button>
@@ -2351,7 +2254,8 @@ function initDailyPoll(){
     const today=new Date();
     const doy=Math.floor((today-new Date(today.getFullYear(),0,0))/86400000);
     const polls=typeof DAILY_POLLS!=='undefined'?DAILY_POLLS:[{q:'האם אתה מרוצה מהשירות?',cat:'שירות'}];
-    const pollItem=polls[doy%polls.length]||polls[0];
+    const filteredPolls=polls.filter(p=>!p.lang||p.lang===LANG);
+    const pollItem=filteredPolls[doy%filteredPolls.length]||filteredPolls[0];
     const q=typeof pollItem==='string'?pollItem:pollItem.q;
     const pq=safe('poll-question');
     if(pq&&q)pq.textContent=q;
@@ -3606,6 +3510,278 @@ function loadPollsFirestore(){
   },err=>console.warn('polls listener:',err));
 }
 
+
+// ══ מערכת תרגום עברית/ערבית ══════════════════════════════
+const TRANSLATIONS = {
+  he: {
+    // Auth
+    appName: 'FORESIGHT',
+    appTagline: 'אנחנו כאן בשבילך',
+    login: 'כניסה',
+    register: 'הרשמה ראשונה',
+    idNumber: 'מספר תעודת זהות',
+    fullName: 'שם מלא',
+    phone: 'טלפון',
+    selectOrg: 'בחר גוף ציבורי',
+    selectUnit: 'בחר יחידה / ישוב',
+    enterApp: 'כנס לאפליקציה',
+    // Home
+    hello: 'שלום',
+    welcome: 'ברוכ.ה הבא.ה',
+    quickActions: 'פעולות מהירות',
+    report: 'דיווח',
+    requests: 'פניות',
+    map: 'מפה',
+    updates: 'עדכונים',
+    dailyPoll: 'שאלת היום',
+    satisfied: 'מרוצה 😊',
+    neutral: 'בינוני 😐',
+    unsatisfied: 'לא מרוצה 😞',
+    alreadyAnswered: 'תודה על תשובתך! נראה מחר שאלה חדשה.',
+    sosBtn: 'לחצן מצוקה / קריאה לעזרה',
+    // Report
+    newReport: 'דיווח חדש',
+    reportTitle: 'נושא הפנייה',
+    reportDesc: 'תיאור הבעיה',
+    descPlaceholder: 'תאר את הבעיה בפירוט...',
+    attachPhoto: '📷 צרף תמונה',
+    takePhoto: '📸 צלם',
+    fromGallery: '🖼️ גלריה',
+    addGPS: '📍 הוסף מיקום',
+    sendReport: 'שלח דיווח',
+    // History
+    myRequests: 'הפניות שלי',
+    status_open: 'פתוח',
+    status_inprogress: 'בטיפול',
+    status_done: 'טופל',
+    status_closed: 'סגור',
+    // Nav & general
+    home: 'בית',
+    back: 'חזרה',
+    save: 'שמור',
+    cancel: 'ביטול',
+    send: 'שלח',
+    close: 'סגור',
+    loading: 'טוען...',
+    // Vaad
+    vaadTitle: 'ועד מקומי',
+    budget: 'תקציב',
+    protocols: 'פרוטוקולים',
+    decisions: 'החלטות',
+    // SOS
+    sosTitle: 'קריאת מצוקה',
+    sosSending: 'שולח קריאת עזרה...',
+    sosSent: 'הקריאה נשלחה! הצוות בדרך.',
+    // Weather
+    locating: 'מאתר...',
+    // Poll categories
+    catSanitation: 'תברואה',
+    catElectric: 'חשמל',
+    catInfra: 'תשתיות',
+    catGarden: 'גינון',
+    catSecurity: 'בטחון',
+    catEducation: 'חינוך',
+    catCommunity: 'קהילה',
+    catService: 'שירות',
+    catTransport: 'תחבורה',
+    catEnv: 'סביבה',
+  },
+  ar: {
+    // Auth
+    appName: 'FORESIGHT',
+    appTagline: 'نحن هنا من أجلك',
+    login: 'دخول',
+    register: 'تسجيل جديد',
+    idNumber: 'رقم الهوية',
+    fullName: 'الاسم الكامل',
+    phone: 'رقم الهاتف',
+    selectOrg: 'اختر الجهة العامة',
+    selectUnit: 'اختر الحي / القرية',
+    enterApp: 'ادخل إلى التطبيق',
+    // Home
+    hello: 'مرحباً',
+    welcome: 'أهلاً وسهلاً',
+    quickActions: 'إجراءات سريعة',
+    report: 'إبلاغ',
+    requests: 'الطلبات',
+    map: 'الخريطة',
+    updates: 'التحديثات',
+    dailyPoll: 'سؤال اليوم',
+    satisfied: 'راضٍ 😊',
+    neutral: 'عادي 😐',
+    unsatisfied: 'غير راضٍ 😞',
+    alreadyAnswered: 'شكراً على إجابتك! غداً سيكون هناك سؤال جديد.',
+    sosBtn: 'زر الطوارئ / طلب مساعدة',
+    // Report
+    newReport: 'بلاغ جديد',
+    reportTitle: 'موضوع البلاغ',
+    reportDesc: 'وصف المشكلة',
+    descPlaceholder: 'صِف المشكلة بالتفصيل...',
+    attachPhoto: '📷 إرفاق صورة',
+    takePhoto: '📸 التقط صورة',
+    fromGallery: '🖼️ من المعرض',
+    addGPS: '📍 أضف الموقع',
+    sendReport: 'أرسل البلاغ',
+    // History
+    myRequests: 'طلباتي',
+    status_open: 'مفتوح',
+    status_inprogress: 'قيد المعالجة',
+    status_done: 'تمت المعالجة',
+    status_closed: 'مغلق',
+    // Nav & general
+    home: 'الرئيسية',
+    back: 'رجوع',
+    save: 'حفظ',
+    cancel: 'إلغاء',
+    send: 'إرسال',
+    close: 'إغلاق',
+    loading: '...جاري التحميل',
+    // Vaad
+    vaadTitle: 'لجنة الحي',
+    budget: 'الميزانية',
+    protocols: 'محاضر الجلسات',
+    decisions: 'القرارات',
+    // SOS
+    sosTitle: 'نداء استغاثة',
+    sosSending: 'جاري إرسال طلب المساعدة...',
+    sosSent: 'تم الإرسال! الفريق في الطريق.',
+    // Weather
+    locating: 'جاري التحديد...',
+    // Poll categories
+    catSanitation: 'النظافة',
+    catElectric: 'الكهرباء',
+    catInfra: 'البنية التحتية',
+    catGarden: 'المساحات الخضراء',
+    catSecurity: 'الأمن',
+    catEducation: 'التعليم',
+    catCommunity: 'المجتمع',
+    catService: 'الخدمات',
+    catTransport: 'المواصلات',
+    catEnv: 'البيئة',
+  }
+};
+
+// Language state
+let LANG = localStorage.getItem('fs_lang') || 'he';
+function t(key) { return TRANSLATIONS[LANG]?.[key] || TRANSLATIONS.he[key] || key; }
+function isArabic() { return LANG === 'ar'; }
+
+function setLang(lang) {
+  LANG = lang;
+  localStorage.setItem('fs_lang', lang);
+  document.documentElement.lang = lang;
+  // dir stays RTL — Arabic is also RTL ✓
+  applyTranslations();
+}
+
+function applyTranslations() {
+  const AR = isArabic();
+  // Font
+  document.body.style.fontFamily = AR
+    ? "'Noto Sans Arabic','Tahoma','Arial',sans-serif"
+    : "'Heebo','Arial',sans-serif";
+
+  const el = (id, txt) => { const e = safe(id); if(e && txt !== undefined) e.textContent = txt; };
+
+  // ── Auth screen ──
+  el('auth-tagline',   AR ? 'نحن هنا من أجلك' : 'אנחנו כאן בשבילך');
+
+  // ── Welcome strip ──
+  el('wl-gold-text',   AR ? 'نحن هنا من أجلك، قبل أن تطلب' : 'דואגים לך, עוד לפני שביקשת');
+  if(CU?.name) {
+    el('gr-name', (AR ? 'مرحباً، ' : 'שלום, ') + CU.name + ' 👋');
+    el('gr-sub',  AR ? 'أهلاً وسهلاً' : 'ברוכ.ה הבא.ה');
+  }
+
+  // ── Section titles ──
+  el('title-quick-actions', AR ? 'إجراءات سريعة' : 'פעולות מהירות');
+  el('title-updates',       AR ? 'التحديثات'      : 'עדכונים');
+
+  // ── Quick actions ──
+  el('qa-lbl-report',   AR ? 'إبلاغ'      : 'דיווח');
+  el('qa-lbl-requests', AR ? 'الطلبات'    : 'פניות');
+  el('qa-lbl-map',      AR ? 'الخريطة'    : 'מפה');
+
+  // ── Vaad button ──
+  el('vaad-idea-btn-text', AR
+    ? '💡 أرسل اقتراحاً / طلباً للجنة الحي'
+    : '💡 שלח רעיון / פנייה לועד המקומי');
+
+  // ── SOS button ──
+  el('sos-btn-text', AR
+    ? '🆘 زر الطوارئ / طلب مساعدة'
+    : '🆘 לחצן מצוקה / קריאה לעזרה');
+
+  // ── Poll buttons ──
+  el('poll-btn-1', AR ? '😊 راضٍ'      : '😊 מרוצה');
+  el('poll-btn-2', AR ? '😐 عادي'      : '😐 בינוני');
+  el('poll-btn-3', AR ? '😞 غير راضٍ' : '😞 לא מרוצה');
+  el('poll-answered-text', AR
+    ? 'شكراً! تم تسجيل إجابتك 🙏'
+    : 'תודה! תשובתך נרשמה 🙏');
+
+  // ── Weather city fallback ──
+  const wc = safe('weather-city');
+  if(wc && (wc.textContent === 'מאתר...' || wc.textContent === 'جاري التحديد...')) {
+    wc.textContent = AR ? 'جاري التحديد...' : 'מאתר...';
+  }
+
+  // ── Report page ──
+  el('report-title-lbl', AR ? 'موضوع البلاغ'      : 'נושא הפנייה');
+  el('report-desc-lbl',  AR ? 'وصف المشكلة'        : 'תיאור הבעיה');
+  el('report-send-btn',  AR ? 'إرسال البلاغ'        : 'שלח דיווח');
+
+  // ── History page ──
+  el('history-title', AR ? 'طلباتي' : 'הפניות שלי');
+
+  applyNavTranslations();
+  // ── Lang button ──
+  const btn = safe('lang-toggle-btn');
+  if(btn) btn.textContent = AR ? 'ע' : 'ع';
+
+  // ── Re-init poll in correct language ──
+  setTimeout(initDailyPoll, 100);
+}
+
+function detectOrgLang() {
+  if(!CU?.orgId) return;
+  const org = getCurrentOrg();
+  if(org?.lang === 'ar' && LANG !== 'ar') {
+    // Suggest Arabic
+    if(confirm('Switch to Arabic? / לעבור לערבית?')) {
+      setLang('ar');
+    }
+  }
+}
+
+
+function toggleLang() {
+  const newLang = LANG === 'he' ? 'ar' : 'he';
+  setLang(newLang);
+  const btn = safe('lang-toggle-btn');
+  if(btn) btn.textContent = newLang === 'ar' ? 'ע' : 'ع';
+  toast(newLang === 'ar' ? 'تم التغيير إلى العربية ✓' : 'שפה שונתה לעברית ✓');
+}
+
+
+function applyNavTranslations() {
+  const AR = isArabic();
+  const navMap = {
+    'nav-item-home':    AR ? '🏠 الرئيسية'     : '🏠 בית',
+    'nav-item-history': AR ? '📋 طلباتي'        : '📋 הפניות שלי',
+    'nav-item-report':  AR ? '➕ إبلاغ'          : '➕ דיווח על בעיה',
+    'nav-item-map':     AR ? '🗺️ الخريطة'      : '🗺️ מפה',
+    'nav-item-notif':   AR ? '🔔 الإشعارات'    : '🔔 התראות',
+    'nav-item-profile': AR ? '👤 الملف الشخصي' : '👤 פרופיל',
+    'nav-item-scada':   AR ? '🎛️ غرفة العمليات': '🎛️ חדר בקרה',
+    'nav-item-vaad':    AR ? '🏛️ لجنة الحي'    : '🏛️ ועד מקומי',
+    'nav-item-logout':  AR ? 'تسجيل الخروج 👋' : 'התנתקות 👋',
+  };
+  Object.entries(navMap).forEach(([id, txt]) => {
+    const e = safe(id); if(e) e.textContent = txt;
+  });
+}
+
 // ── TOAST ──────────────────────────────
 function toast(msg){const t=safe('toastEl');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 
@@ -3955,16 +4131,5 @@ function initAdminExtras(){
   }
 }
 </script>
-
-<!-- IMAGE FULL-SIZE MODAL -->
-<div class="moverlay" id="img-modal">
-  <div class="mcard img-modal-card">
-    <img id="img-modal-img" style="max-width:100%;max-height:62vh;border-radius:10px;display:block;margin-bottom:14px" alt="תמונת פנייה">
-    <div style="display:flex;gap:10px;width:100%">
-      <button onclick="downloadModalImg()" style="flex:1;background:var(--navy);color:white;border:none;border-radius:10px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;font-weight:700;cursor:pointer">⬇ הורד תמונה</button>
-      <button onclick="closeMod('img-modal')" style="flex:1;background:none;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:'Heebo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:var(--muted)">✕ סגור</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
