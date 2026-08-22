@@ -690,31 +690,31 @@ body.a11y-mode .a11y-toggle-btn {
 
   <!-- REPORT -->
   <div class="page" id="page-report">
-    <div class="pg-hdr"><h2>📝 דיווח על בעיה</h2><p>הדיווח שלך מגיע ישירות לגורם המקצועי</p></div>
+    <div class="pg-hdr"><h2 id="report-pg-title">📝 דיווח על בעיה</h2><p id="report-pg-sub">הדיווח שלך מגיע ישירות לגורם המקצועי</p></div>
     <div class="fs">
       <div class="flbl">קטגוריה</div>
       <div class="cgrid" id="catgrid">
-        <button class="cchip" onclick="selCat(this,'הנדסה')" data-he-label="🔧 הנדסה">🔧 הנדסה</button>
-        <button class="cchip" onclick="selCat(this,'תברואה')" data-he-label="🗑️ תברואה">🗑️ תברואה</button>
-        <button class="cchip" onclick="selCat(this,'תשתיות')" data-he-label="🏗️ תשתיות">🏗️ תשתיות</button>
-        <button class="cchip" onclick="selCat(this,'קהילה')" data-he-label="🤝 קהילה">🤝 קהילה</button>
-        <button class="cchip" onclick="selCat(this,'חינוך')" data-he-label="📚 חינוך">📚 חינוך</button>
-        <button class="cchip" onclick="selCat(this,'ספורט')" data-he-label="⚽ ספורט">⚽ ספורט</button>
-        <button class="cchip" onclick="selCat(this,'רווחה')" data-he-label="❤️ רווחה">❤️ רווחה</button>
-        <button class="cchip" onclick="selCat(this,'חירום/בטחון')" data-he-label="🚨 חירום">🚨 חירום</button>
-        <button class="cchip" onclick="selCat(this,'איכות סביבה')" data-he-label="🌿 סביבה">🌿 סביבה</button>
-        <button class="cchip" onclick="selCat(this,'גיל שלישי')" data-he-label="👴 גיל שלישי">👴 גיל שלישי</button>
-        <button class="cchip" onclick="selCat(this,'רישוי עסקים')" data-he-label="📋 רישוי">📋 רישוי</button>
-        <button class="cchip" onclick="selCat(this,'תרבות')" data-he-label="🎭 תרבות">🎭 תרבות</button>
+        <button class="cchip" onclick="selCat(this,'הנדסה')" data-he-label="🔧 הנדסה" data-ar-label="🔧 الهندسة" data-ru-label="🔧 Инженерия">🔧 הנדסה</button>
+        <button class="cchip" onclick="selCat(this,'תברואה')" data-he-label="🗑️ תברואה" data-ar-label="🗑️ النظافة" data-ru-label="🗑️ Санитария">🗑️ תברואה</button>
+        <button class="cchip" onclick="selCat(this,'תשתיות')" data-he-label="🏗️ תשתיות" data-ar-label="🏗️ البنية التحتية" data-ru-label="🏗️ Инфраструктура">🏗️ תשתיות</button>
+        <button class="cchip" onclick="selCat(this,'קהילה')" data-he-label="🤝 קהילה" data-ar-label="🤝 المجتمع" data-ru-label="🤝 Сообщество">🤝 קהילה</button>
+        <button class="cchip" onclick="selCat(this,'חינוך')" data-he-label="📚 חינוך" data-ar-label="📚 التعليم" data-ru-label="📚 Образование">📚 חינוך</button>
+        <button class="cchip" onclick="selCat(this,'ספורט')" data-he-label="⚽ ספורט" data-ar-label="⚽ الرياضة" data-ru-label="⚽ Спорт">⚽ ספורט</button>
+        <button class="cchip" onclick="selCat(this,'רווחה')" data-he-label="❤️ רווחה" data-ar-label="❤️ الرعاية" data-ru-label="❤️ Соцзащита">❤️ רווחה</button>
+        <button class="cchip" onclick="selCat(this,'חירום/בטחון')" data-he-label="🚨 חירום" data-ar-label="🚨 الطوارئ" data-ru-label="🚨 Экстренная служба">🚨 חירום</button>
+        <button class="cchip" onclick="selCat(this,'איכות סביבה')" data-he-label="🌿 סביבה" data-ar-label="🌿 البيئة" data-ru-label="🌿 Экология">🌿 סביבה</button>
+        <button class="cchip" onclick="selCat(this,'גיל שלישי')" data-he-label="👴 גיל שלישי" data-ar-label="👴 كبار السن" data-ru-label="👴 Пожилые">👴 גיל שלישי</button>
+        <button class="cchip" onclick="selCat(this,'רישוי עסקים')" data-he-label="📋 רישוי" data-ar-label="📋 ترخيص" data-ru-label="📋 Лицензирование">📋 רישוי</button>
+        <button class="cchip" onclick="selCat(this,'תרבות')" data-he-label="🎭 תרבות" data-ar-label="🎭 الثقافة" data-ru-label="🎭 Культура">🎭 תרבות</button>
         <button class="cchip" onclick="selCat(this,'דת')" data-he-label="✡️ דת">✡️ דת</button>
         <button class="cchip" onclick="selCat(this,'חדשנות')" data-he-label="💡 חדשנות">💡 חדשנות</button>
         <button class="cchip" onclick="selCat(this,'גבייה')" data-he-label="💰 גבייה">💰 גבייה</button>
         <button class="cchip" onclick="selCat(this,'מנהל כללי')" data-he-label="🏛️ מנהל">🏛️ מנהל</button>
         <button class="cchip" onclick="selCat(this,'תכנון ובנייה')" data-he-label="📐 תכנון">📐 תכנון</button>
-        <button class="cchip" onclick="selCat(this,'כבישים ותחבורה')" data-he-label="🚗 כבישים">🚗 כבישים</button>
+        <button class="cchip" onclick="selCat(this,'כבישים ותחבורה')" data-he-label="🚗 כבישים" data-ar-label="🚗 الطرق" data-ru-label="🚗 Дороги">🚗 כבישים</button>
         <button class="cchip" onclick="selCat(this,'גנים ופארקים')" data-he-label="🌳 גנים">🌳 גנים</button>
-        <button class="cchip" onclick="selCat(this,'מים וביוב')" data-he-label="💧 מים">💧 מים</button>
-        <button class="cchip" onclick="selCat(this,'חשמל ותאורה')" data-he-label="💡 חשמל">💡 חשמל</button>
+        <button class="cchip" onclick="selCat(this,'מים וביוב')" data-he-label="💧 מים" data-ar-label="💧 المياه" data-ru-label="💧 Водоснабжение">💧 מים</button>
+        <button class="cchip" onclick="selCat(this,'חשמל ותאורה')" data-he-label="💡 חשמל" data-ar-label="⚡ الكهرباء" data-ru-label="⚡ Электричество">💡 חשמל</button>
         <button class="cchip" onclick="selCat(this,'בריאות')" data-he-label="🏥 בריאות">🏥 בריאות</button>
         <button class="cchip" onclick="selCat(this,'נוער')" data-he-label="👶 נוער">👶 נוער</button>
         <button class="cchip" onclick="selCat(this,'אירועים')" data-he-label="🎉 אירועים">🎉 אירועים</button>
@@ -3820,13 +3820,13 @@ function applyTranslations() {
   }
 
   // ── Section titles ──
-  el('title-quick-actions', AR ? 'إجراءات سريعة' : 'פעולות מהירות');
+  el('title-quick-actions', AR?'إجراءات سريعة':LANG==='ru'?'Быстрые действия':'פעולות מהירות');
   el('title-updates',       AR ? 'التحديثات'      : 'עדכונים');
 
   // ── Quick actions ──
-  el('qa-lbl-report',   AR ? 'إبلاغ'      : 'דיווח');
-  el('qa-lbl-requests', AR ? 'الطلبات'    : 'פניות');
-  el('qa-lbl-map',      AR ? 'الخريطة'    : 'מפה');
+  el('qa-lbl-report',   AR?'إبلاغ':LANG==='ru'?'Сообщить':'דיווח');
+  el('qa-lbl-requests', AR?'الطلبات':LANG==='ru'?'Запросы':'פניות');
+  el('qa-lbl-map',      AR?'الخريطة':LANG==='ru'?'Карта':'מפה');
 
   // ── Vaad button ──
   el('vaad-idea-btn-text', AR
@@ -3834,9 +3834,9 @@ function applyTranslations() {
     : '💡 שלח רעיון / פנייה לועד המקומי');
 
   // ── SOS button ──
-  el('sos-btn-text', AR
-    ? '🆘 زر الطوارئ / طلب مساعدة'
-    : '🆘 לחצן מצוקה / קריאה לעזרה');
+  el('sos-btn-text', AR?'🆘 زر الطوارئ':LANG==='ru'?'🆘 Экстренный вызов':'🆘 לחצן מצוקה / קריאה לעזרה');
+  el('report-pg-title', AR?'📝 تقديم بلاغ':LANG==='ru'?'📝 Отправить сообщение':'📝 דיווח על בעיה');
+  el('report-pg-sub',   AR?'بلاغك يصل مباشرة للمختص':LANG==='ru'?'Ваше обращение поступит специалисту':'הדיווח שלך מגיע ישירות לגורם המקצועי');
 
   // ── Poll buttons ──
   el('poll-btn-1', AR ? '😊 راضٍ'      : '😊 מרוצה');
@@ -3899,6 +3899,15 @@ function applyTranslations() {
     const e = safe(id);
     if(e) e.placeholder = AR ? e.dataset.phAr : e.dataset.phHe;
   });
+  // ── Update category chips ──
+  document.querySelectorAll('.cchip').forEach(btn => {
+    const heL = btn.getAttribute('data-he-label');
+    const arL = btn.getAttribute('data-ar-label');
+    const ruL = btn.getAttribute('data-ru-label');
+    if(LANG==='ar' && arL) btn.textContent = arL;
+    else if(LANG==='ru' && ruL) btn.textContent = ruL;
+    else if(heL) btn.textContent = heL;
+  });
   // ── Lang button ──
   const btn = safe('lang-toggle-btn');
   if(btn) btn.textContent = AR ? 'ע' : (LANG==='ru' ? 'ع' : 'Р');
@@ -3930,7 +3939,7 @@ function detectOrgLang() {
 
 function toggleLang() {
   const cycle = {he:'ar', ar:'ru', ru:'he'};
-  const labels = {he:'ע', ar:'Р', ru:'ع'};
+  const labels = {he:'ع', ar:'Р', ru:'ע'};
   const msgs = {
     ar: 'تم التغيير إلى العربية ✓',
     ru: 'Переключено на русский ✓',
